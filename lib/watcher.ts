@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs';
-import chokidar from 'chokidar';
+import { readFileSync } from 'node:fs'
+import chokidar from 'chokidar'
 
 /**
  * Type definition for the file watcher callback function
  */
-type WatchCallback = () => void;
+type WatchCallback = () => void
 
 /**
  * Watches for changes in file contents that match a specific regex pattern
@@ -12,94 +12,88 @@ type WatchCallback = () => void;
  * @param regex - Regular expression to match file contents
  * @param callback - Function to call when matching content changes
  */
-const watchForFileContentChanges = (
-    path: string | string[],
-    regex: RegExp,
-    callback: WatchCallback
-): void => {
-    if (typeof callback !== 'function') {
-        throw new Error('kss-scheibo watch requires a callback function');
+function watchForFileContentChanges(path: string | string[], regex: RegExp, callback: WatchCallback): void {
+  if (typeof callback !== 'function') {
+    throw new TypeError('kss-scheibo watch requires a callback function')
+  }
+
+  // Store file contents matches in a Map
+  const regexFileContents = new Map<string, RegExpMatchArray | null>()
+
+  /**
+   * Register initial file content matches
+   * @param filePath - Path to the file being processed
+   */
+  const registerFileContentMatches = (filePath: string): void => {
+    const currentFileContent = readFileSync(filePath, 'utf8')
+    const currentFileMatches = currentFileContent.match(regex)
+
+    if (currentFileMatches === null) {
+      return
     }
 
-    // Store file contents matches in a Map
-    const regexFileContents = new Map<string, RegExpMatchArray | null>();
+    regexFileContents.set(filePath, currentFileMatches)
+  }
 
-    /**
-     * Register initial file content matches
-     * @param filePath - Path to the file being processed
-     */
-    const registerFileContentMatches = (filePath: string): void => {
-        const currentFileContent = readFileSync(filePath, 'utf8');
-        const currentFileMatches = currentFileContent.match(regex);
+  /**
+   * Handle changes in file content
+   * @param filePath - Path to the changed file
+   */
+  const handleContentChanges = (filePath: string): void => {
+    const previousFileMatches = regexFileContents.get(filePath)
+    const hasFileBeenReadBefore = previousFileMatches !== undefined
 
-        if (currentFileMatches === null) {
-            return;
-        }
+    const currentFileContent = readFileSync(filePath, 'utf8')
+    const currentFileMatches = currentFileContent.match(regex)
 
-        regexFileContents.set(filePath, currentFileMatches);
-    };
+    if (!hasFileBeenReadBefore) {
+      regexFileContents.set(filePath, currentFileMatches)
+      if (currentFileMatches === null) {
+        return
+      }
+      callback()
+      return
+    }
 
-    /**
-     * Handle changes in file content
-     * @param filePath - Path to the changed file
-     */
-    const handleContentChanges = (filePath: string): void => {
-        const previousFileMatches = regexFileContents.get(filePath);
-        const hasFileBeenReadBefore = previousFileMatches !== undefined;
+    const haveFileMatchesChanged
+            = JSON.stringify(previousFileMatches) !== JSON.stringify(currentFileMatches)
 
-        const currentFileContent = readFileSync(filePath, 'utf8');
-        const currentFileMatches = currentFileContent.match(regex);
+    if (!haveFileMatchesChanged) {
+      return
+    }
 
-        if (!hasFileBeenReadBefore) {
-            regexFileContents.set(filePath, currentFileMatches);
-            if (currentFileMatches === null) {
-                return;
-            }
-            callback();
-            return;
-        }
+    regexFileContents.set(filePath, currentFileMatches)
+    callback()
+  }
 
-        const haveFileMatchesChanged =
-            JSON.stringify(previousFileMatches) !== JSON.stringify(currentFileMatches);
+  /**
+   * Handle file removal
+   * @param filePath - Path to the removed file
+   */
+  const handleFileRemoval = (filePath: string): void => {
+    regexFileContents.delete(filePath)
+  }
 
-        if (!haveFileMatchesChanged) {
-            return;
-        }
-
-        regexFileContents.set(filePath, currentFileMatches);
-        callback();
-    };
-
-    /**
-     * Handle file removal
-     * @param filePath - Path to the removed file
-     */
-    const handleFileRemoval = (filePath: string): void => {
-        regexFileContents.delete(filePath);
-    };
-
-    // Set up file watcher
-    chokidar.watch(path)
-        .on('add', registerFileContentMatches)
-        .on('change', handleContentChanges)
-        .on('unlink', handleFileRemoval);
-};
+  // Set up file watcher
+  chokidar.watch(path)
+    .on('add', registerFileContentMatches)
+    .on('change', handleContentChanges)
+    .on('unlink', handleFileRemoval)
+}
 
 /**
  * Watch for changes in KSS section comment blocks
  * @param path - File path or glob pattern to watch
  * @param callback - Function to call when KSS sections change
  */
-const watchKssChanges = (path: string | string[], callback: WatchCallback): void => {
-    // Matches the KSS section comment block
-    // (file must start with "/*", end with "*/" and contain "Styleguide"
-    const kssSectionRegex = /\/\*[^*]*Styleguide.*?\*\//gs;
+export function watchStyleguideForChanges(path: string | string[], callback: WatchCallback): void {
+  // Matches the KSS section comment block
+  // (file must start with "/*", end with "*/" and contain "Styleguide"
+  const kssSectionRegex = /\/\*[^*]*Styleguide.*?\*\//gs
 
-    watchForFileContentChanges(
-        path,
-        kssSectionRegex,
-        callback
-    );
-};
-
-export default watchKssChanges;
+  watchForFileContentChanges(
+    path,
+    kssSectionRegex,
+    callback,
+  )
+}
