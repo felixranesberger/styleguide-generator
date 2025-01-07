@@ -73,10 +73,7 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
   }
 
   // Set up file watcher
-  const validFiles = ['.css', '.scss', '.less']
-  chokidar.watch(path, {
-    ignored: path => !validFiles.some(validExt => path.endsWith(validExt)),
-  })
+  chokidar.watch(path)
     .on('add', registerFileContentMatches)
     .on('change', handleContentChanges)
     .on('unlink', handleFileRemoval)

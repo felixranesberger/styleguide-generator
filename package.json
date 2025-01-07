@@ -11,7 +11,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "chokidar": "^4.0.1",
+    "chokidar": "^3",
     "fs-extra": "^11.2.0",
     "glob": "^11.0.0",
     "pug": "^3.0.3"

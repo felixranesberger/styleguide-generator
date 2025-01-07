@@ -239,7 +239,10 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 export async function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void) {
   await buildStyleguide(config)
 
-  await watchStyleguideForChanges(config.contentDir, () => {
+  // marke sure content dir ends with /
+  const contentDirPath = config.contentDir.endsWith('/') ? config.contentDir : `${config.contentDir}/`
+
+  await watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
     (async () => {
       await buildStyleguide(config)
       if (onChange)
