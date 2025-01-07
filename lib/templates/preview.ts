@@ -102,10 +102,10 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
   let output = ''
 
   function renderSection(section: in2Section) {
-    if (section.colors) {
+    if (section.colors && section.colors.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentColors(section))
     }
-    else if (section.icons) {
+    else if (section.icons && section.icons.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentIcons(section))
     }
     else {
@@ -121,19 +121,8 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
 }
 
 function getMainContentSectionWrapper(section: in2Section, html?: string): string {
-  if (section.sectionLevel === 'second') {
-    const hgroupWrapperTag = section.description ? 'hgroup' : 'div'
-
-    return `
-      <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
-          <${hgroupWrapperTag} class="max-w-[800px]">
-              <h1 class="text-4xl font-semibold text-styleguide-highlight">${section.header}</h1>
-              ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ''}
-          </${hgroupWrapperTag}>
-${html ?? ''}
-      </section>
-  `
-  }
+  const headingTag = section.sectionLevel === 'second' ? 'h1' : 'h2'
+  const headingClass = section.sectionLevel === 'second' ? 'text-4xl' : 'text-2xl'
 
   return `
 <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
@@ -144,7 +133,7 @@ ${html ?? ''}
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
                 <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/>
             </svg>
-            <h2 class="text-2xl font-semibold text-styleguide-highlight">${section.header}</h2>
+            <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
         </a>
 
         <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
@@ -155,6 +144,7 @@ ${html ?? ''}
             </svg>
         </a>
     </div>
+    ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ''}
 ${html ?? ''}
 </section>
   `
@@ -168,7 +158,7 @@ function getMainContentRegular(section: in2Section): string {
             <iframe
                     id="preview-fullpage-${section.id}"
                     src="/${section.fullpageFileName}"
-                    class="w-full preview-iframe rounded-[8px]"
+                    class="w-full preview-iframe"
                     title="${section.header} Preview"
             ></iframe>
         </div>
@@ -231,7 +221,7 @@ ${replaceVitePugTags('production', section.markup)}
     
                     <iframe
                           src="/${section.fullpageFileName}?modifier=${modifier.value}"
-                          class="mt-2 w-full preview-iframe rounded-[8px]"
+                          class="mt-2 w-full preview-iframe"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                     ></iframe>
                 </div>
@@ -314,7 +304,7 @@ function getMainContentIcons(section: in2Section): string {
                       title="Copy svg content"
                   ></button>
               </li>
-            `)}
+            `).join('\n')}
         </ul>
     </div>
   `
@@ -454,7 +444,7 @@ export function generatePreviewFile(data: {
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ''}
+    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">

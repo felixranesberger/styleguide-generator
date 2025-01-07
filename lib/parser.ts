@@ -107,20 +107,27 @@ function parseIcons(text: string): IconObject[] {
   text = text.trim()
   const icons: IconObject[] = []
 
-  // Updated regex to match newlines within SVG content
-  const regex = /^([^:]+):\s*(<svg>[\s\S]*?<\/svg>)$/gim
+  // Updated regex to handle SVG tags with attributes
+  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>)$/gm
 
-  let test = regex.exec(text)
+  let match = regex.exec(text)
 
-  while (test !== null) {
+  while (match !== null) {
     const icon: IconObject = {
-      name: test[1].trim(),
-      svg: test[2],
+      name: match[1].trim(),
+      svg: match[2],
     }
 
     icons.push(icon)
-    test = regex.exec(text)
+    match = regex.exec(text)
   }
+
+  // Add validation and error handling
+  icons.forEach((icon, index) => {
+    if (!icon.svg.startsWith('<svg') || !icon.svg.endsWith('</svg>')) {
+      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed SVG content`)
+    }
+  })
 
   return icons
 }

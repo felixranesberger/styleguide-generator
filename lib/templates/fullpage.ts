@@ -25,7 +25,7 @@ export function generateFullPageFile(data: {
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ''}
+    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">

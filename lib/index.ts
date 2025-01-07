@@ -1,5 +1,6 @@
 import path from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'glob'
 import { type in2Section, parse } from './parser.ts'
@@ -167,6 +168,8 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       } = {}
 
       if (sectionBefore) {
+        // TODO: calculate href correctly (index.html)
+        const href = indexFirstLevel === 0 && indexSecondLevel === 0 ? '/index.html' : `/${secondLevelSection.previewFileName}`
         nextPageControlsData.before = {
           label: sectionBefore.header,
           href: sectionBefore.previewFileName,
@@ -203,9 +206,14 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
     })
   })
 
-  // copy styleguide assets to outDir
+  // ensure assets directory exists
   fs.ensureDirSync(path.join(config.outDir, 'assets'))
-  fs.copySync(path.join('dist', 'assets'), path.join(config.outDir, 'assets'))
+
+  // copy styleguide assets to outDir
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
+  const assetsDirectoryPath = path.resolve(__dirname, '../../assets')
+  fs.copySync(assetsDirectoryPath, path.join(config.outDir, 'assets'))
 }
 
 /**
