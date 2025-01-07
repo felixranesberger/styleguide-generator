@@ -296,7 +296,7 @@ function getMainContentIcons(section: in2Section): string {
         >
             ${section.icons?.map(icon => `
               <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 transition duration-700 items icon-search-list__item bg-styleguide-bg-highlight hover:border-styleguide-border focus:border-styleguide-border">
-                  <div class="relative flex w-full justify-center size-6 text-styleguide-highlight">
+                  <div class="relative flex w-full justify-center size-6 text-styleguide-highlight [&>svg]:h-full [&>svg]:w-auto">
                       ${icon.svg}
   
                       <!-- Successfully copied icon -->
