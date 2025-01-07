@@ -14,7 +14,7 @@ type WatchCallback = () => void
  */
 function watchForFileContentChanges(path: string | string[], regex: RegExp, callback: WatchCallback): void {
   if (typeof callback !== 'function') {
-    throw new TypeError('kss-scheibo watch requires a callback function')
+    throw new TypeError('styleguide watch requires a callback function')
   }
 
   // Store file contents matches in a Map
@@ -55,9 +55,7 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
       return
     }
 
-    const haveFileMatchesChanged
-            = JSON.stringify(previousFileMatches) !== JSON.stringify(currentFileMatches)
-
+    const haveFileMatchesChanged = JSON.stringify(previousFileMatches) !== JSON.stringify(currentFileMatches)
     if (!haveFileMatchesChanged) {
       return
     }
