@@ -1,0 +1,175 @@
+/* geist-mono-latin-300-normal */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: url(/assets/fonts/geist-mono-latin-300-normal.woff2) format('woff2');
+}
+
+/* geist-mono-latin-400-normal */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/assets/fonts/geist-mono-latin-400-normal.woff2) format('woff2');
+}
+
+/* geist-mono-latin-600-normal */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/assets/fonts/geist-mono-latin-600-normal.woff2) format('woff2');
+}
+
+/* geist-sans-latin-300-normal */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: url(/assets/fonts/geist-sans-latin-300-normal.woff2) format('woff2');
+}
+
+/* geist-sans-latin-400-normal */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/assets/fonts/geist-sans-latin-400-normal.woff2) format('woff2');
+}
+
+/* geist-sans-latin-600-normal */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+
+  /* Background colors */
+  --styleguide-color-background: light-dark(rgb(250, 250, 250), black);
+  --styleguide-color-background-highlight: light-dark(white, rgb(10, 10, 10));
+
+  /* Text colors */
+  --styleguide-color-highlight: light-dark(rgb(17 24 39), white);
+  --styleguide-color-regular: light-dark(hsla(0,0%,40%,1), rgb(161, 161, 161));
+
+  /* Border colors */
+  --styleguide-color-border: light-dark(rgb(235, 235, 235), rgb(31, 31, 31));
+}
+
+body {
+  @apply invisible;
+  background-color: var(--styleguide-color-background);
+  color: var(--styleguide-color-regular);
+}
+
+body.js-loaded {
+  @apply visible;
+}
+
+summary::marker,
+summary::-webkit-details-marker {
+  display: none;
+}
+
+.theme-normal {
+  color-scheme: light dark;
+}
+
+.theme-light {
+  color-scheme: only light;
+}
+
+.theme-dark {
+  color-scheme: only dark;
+}
+
+.theme-dark {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+/* Disable shiki background color */
+pre.shiki.shiki-themes {
+  background-color: transparent !important;
+}
+
+.theme-select input[type="radio"]:checked + label {
+  @apply outline outline-styleguide-border rounded-3xl;
+}
+
+.theme-select input[type="radio"]:focus + label,
+.theme-select input[type="radio"] + label:hover {
+  @apply outline-blue-600;
+}
+
+.search {
+  max-height: 85dvh;
+
+  @media (max-width: 768px) {
+    min-height: 60dvh;
+  }
+}
+
+.search::backdrop {
+  background-color: rgba(0 0 0 / 70%);
+  pointer-events: none;
+  opacity: 50%;
+}
+
+.search-category {
+  display: none;
+}
+
+.search-category__item:not(.search-category__item--active) {
+  display: none;
+}
+
+.search-category:has(.search-category__item--active) {
+  display: block;
+}
+
+.c-tabs__item {
+  @apply font-semibold transition;
+}
+
+.c-tabs__item--active {
+  @apply text-styleguide-highlight font-semibold
+}
+
+.icon-search-list__item-copy-icon {
+  @apply opacity-0 pointer-events-none scale-75 transition duration-500 absolute left-1/2 -translate-x-1/2;
+}
+
+.icon-search-list__item-copy-icon--active {
+  @apply opacity-100 scale-100;
+}
+
+.menu-item {
+  @apply block p-3 rounded-md text-sm hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition;
+}
+
+.menu-item--active {
+  @apply bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)];
+}

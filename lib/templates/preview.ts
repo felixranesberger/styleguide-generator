@@ -1,5 +1,6 @@
-import type { in2Section } from '../parser.ts'
+import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import { logicalWriteFile } from '../utils.ts'
+import { replaceVitePugTags } from '../vite-pug.ts'
 
 export function getHeaderHtml(data: { projectTitle: string }) {
   return `
@@ -97,7 +98,227 @@ export function getSidebarMenuHtml(
 `.trim()
 }
 
-export function getMainContentHtml(data: in2Section) {}
+export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
+  let output = ''
+
+  function renderSection(section: in2Section) {
+    if (section.colors) {
+      output += getMainContentSectionWrapper(section, getMainContentColors(section))
+    }
+    else if (section.icons) {
+      output += getMainContentSectionWrapper(section, getMainContentIcons(section))
+    }
+    else {
+      const content = section.markup ? getMainContentRegular(section) : undefined
+      output += getMainContentSectionWrapper(section, content)
+    }
+  }
+
+  renderSection(secondLevelSection)
+  secondLevelSection.sections.forEach(renderSection)
+
+  return output
+}
+
+function getMainContentSectionWrapper(section: in2Section, html?: string): string {
+  if (section.sectionLevel === 'second') {
+    const hgroupWrapperTag = section.description ? 'hgroup' : 'div'
+
+    return `
+      <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
+          <${hgroupWrapperTag} class="max-w-[800px]">
+              <h1 class="text-4xl font-semibold text-styleguide-highlight">${section.header}</h1>
+              ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ''}
+          </${hgroupWrapperTag}>
+${html ?? ''}
+      </section>
+  `
+  }
+
+  return `
+<section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
+    <div class="flex items-center justify-between gap-6">
+        <a class="relative group" href="#section-${section.id}">
+            <svg class="absolute top-1/2 -left-6 -translate-y-1/2 opacity-0 transition size-[18px] group-hover:opacity-100 group-focus:opacity-100"
+                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
+                <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/>
+            </svg>
+            <h2 class="text-2xl font-semibold text-styleguide-highlight">${section.header}</h2>
+        </a>
+
+        <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
+                <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px"
+                      d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
+            </svg>
+        </a>
+    </div>
+${html ?? ''}
+</section>
+  `
+}
+
+function getMainContentRegular(section: in2Section): string {
+  return `
+    <!-- Preview Box -->
+    <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
+        <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
+            <iframe
+                    id="preview-fullpage-${section.id}"
+                    src="/${section.fullpageFileName}"
+                    class="w-full preview-iframe rounded-[8px]"
+                    title="${section.header} Preview"
+            ></iframe>
+        </div>
+
+        <!-- Code -->
+        <details class="group">
+           <summary class="flex cursor-pointer items-center gap-2 rounded-b-2xl px-6 py-4 text-sm font-light bg-styleguide-bg">
+                <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                </svg>
+  
+                <span class="group-open:hidden">Show code</span>
+                <span class="group-open:block hidden">Hide code</span>
+            </summary>
+
+            <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
+                <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
+                  <template data-type="code">
+${replaceVitePugTags('production', section.markup)}
+                  </template>
+              </div>
+            </div>
+        </details>
+    </div>
+    
+    ${section.modifiers?.length > 0
+      ? `
+       <!-- Modifiers List -->
+      <h3 class="mt-6 flex items-center text-xl font-semibold text-styleguide-highlight gap-1.5">
+          ${section.header} Modifiers
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 text-styleguide">
+              <path d="M7.25 1.75a.75.75 0 0 1 1.5 0v1.5a.75.75 0 0 1-1.5 0v-1.5ZM11.536 2.904a.75.75 0 1 1 1.06 1.06l-1.06 1.061a.75.75 0 0 1-1.061-1.06l1.06-1.061ZM14.5 7.5a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .75-.75ZM4.464 9.975a.75.75 0 0 1 1.061 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061ZM4.5 7.5a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .75-.75ZM5.525 3.964a.75.75 0 0 1-1.06 1.061l-1.061-1.06a.75.75 0 0 1 1.06-1.061l1.061 1.06ZM8.779 7.438a.75.75 0 0 0-1.368.366l-.396 5.283a.75.75 0 0 0 1.212.646l.602-.474.288 1.074a.75.75 0 1 0 1.449-.388l-.288-1.075.759.11a.75.75 0 0 0 .726-1.165L8.78 7.438Z" />
+          </svg>
+      </h3>
+      <ul class="mt-4 grid gap-6 overflow-hidden rounded-2xl border p-6 border-styleguide-border bg-styleguide-bg-highlight md:grid-cols-2 md:gap-x-10 md:gap-y-14">
+          ${section.modifiers?.map(modifier => `
+              <li>
+                <div>
+                    <div class="flex items-center justify-between gap-6">
+                        <div class="flex items-center gap-3">
+                            <h4 class="font-semibold text-styleguide-highlight">${modifier.description}</h4>
+    
+                            <button
+                                  class="inline-block rounded-md border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
+                                  title="Copy content"
+                                  data-clipboard-value="${modifier.value}"
+                            >
+                                ${modifier.value}
+                            </button>
+                        </div>
+    
+                        <a class="p-2 group" href="/${section.fullpageFileName}?modifier=${modifier.value}" target="_blank" title="Open in fullpage">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                                <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px"
+                                      d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+                                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
+                            </svg>
+                        </a>
+                    </div>
+    
+                    <iframe
+                          src="/${section.fullpageFileName}?modifier=${modifier.value}"
+                          class="mt-2 w-full preview-iframe rounded-[8px]"
+                          title="${section.header} Preview - Modifier: ${modifier.value}"
+                    ></iframe>
+                </div>
+            </li>
+          `).join('\n')}
+      </ul>      
+    `
+      : ''}
+  `
+}
+
+function getMainContentColors(section: in2Section): string {
+  return `
+    <ul class="my-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+        ${section.colors?.map(
+          color => `<li class="relative rounded-2xl px-4 py-6" style="background-color: ${color.color}"></li>`,
+        ).join('\n')}
+    </ul>
+  `
+}
+
+function getMainContentIcons(section: in2Section): string {
+  return `
+    <form
+        id="icon-search"
+        class="my-6 flex items-center overflow-hidden rounded-2xl border px-4 py-2 gap-2.5 bg-styleguide-bg-highlight border-styleguide-border"
+        onsubmit="return false;"
+    >
+        <label for="icon-search-input">
+            <span class="sr-only">Search icons</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+            </svg>
+        </label>
+
+        <input
+            id="icon-search-input"
+            class="flex-grow bg-transparent icon-search-input h-[28px] focus:outline-none"
+            placeholder="Search icons..."
+            aria-autocomplete="list"
+            autocomplete="off"
+            role="combobox"
+            spellcheck="false"
+            type="text"
+            value=""
+            aria-controls="icon-search"
+        >
+
+        <button
+            id="icon-search-input-reset"
+            class="hidden icon-search-input-reset"
+            type="reset"
+        >
+            <span class="sr-only">Reset search input</span>
+
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
+            </svg>
+        </button>
+    </form>
+
+    <div class="min-h-[400px] md:min-h-[250px]">
+        <ul
+            id="icon-search-list"
+            class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+        >
+            ${section.icons?.map(icon => `
+              <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 transition duration-700 items icon-search-list__item bg-styleguide-bg-highlight hover:border-styleguide-border focus:border-styleguide-border">
+                  <div class="relative flex w-full justify-center size-6 text-styleguide-highlight">
+                      ${icon.svg}
+  
+                      <!-- Successfully copied icon -->
+                      <svg class="pointer-events-none ease-in-out icon-search-list__item-copy-icon size-5 text-styleguide-highlight" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+                      </svg>
+                  </div>
+                  <p class="text-center font-mono text-sm font-semibold">${icon.name}</p>
+                  <button
+                      class="absolute inset-0 cursor-pointer bg-transparent icon-search-list__item-copy"
+                      title="Copy svg content"
+                  ></button>
+              </li>
+            `)}
+        </ul>
+    </div>
+  `
+}
 
 export function getNextPageControlsHtml(data: {
   before?: {
@@ -151,7 +372,7 @@ export function getNextPageControlsHtml(data: {
 
 export function getSearchHtml(sections: {
   title: string
-  items: { label: string, searchKeywords: string[] }[]
+  items: { label: string, searchKeywords: string[], href: string }[]
 }[]) {
   return `
 <dialog
@@ -179,8 +400,14 @@ export function getSearchHtml(sections: {
                 <h3 class="mb-2">${section.title}</h3>
                 <ul>
                     ${section.items.map(item => `
-                        <li class="search-category__item search-category__item--active" data-search-keywords="${item.searchKeywords.join(',')}">
-                            <a class="flex items-center gap-4 px-1.5 py-2.5 group rounded-md hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition" href="#">
+                        <li 
+                            class="search-category__item search-category__item--active" 
+                            data-search-keywords="${item.searchKeywords.map(x => x.replaceAll('"', `'`)).join(',')}"
+                          >
+                            <a 
+                                class="flex items-center gap-4 px-1.5 py-2.5 group rounded-md hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition" 
+                                href="${item.href}"
+                              >
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="transition-all size-5 group-hover:translate-x-0.5 group-focus:translate-x-0.5">
                                     <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
                                 </svg>
@@ -222,27 +449,22 @@ export function generatePreviewFile(data: {
     search: string
   }
 }) {
-  const computedScriptTags = data.js.map((js) => {
-    const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(' ') : ''
-    return `<script src="${js.src}" ${additionalAttributes}></script>`
-  })
-
   const content = `
 <!doctype html>
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    <meta name="description" content="${data.page.description || ''}">
+    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">
-    ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
-    <script type="module" src="/fullpage.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
+    <script type="module" src="/assets/client.js"></script>
 </head>
 <body class="relative min-h-screen antialiased text-styleguide">
     ${data.html.header}
     
-    <main class="relative mx-auto -mx-[2px] flex h-full min-h-screen border-x max-w-[1220px] border-styleguide-border">
+    <main class="relative -mx-[2px] flex h-full min-h-screen border-x min-[1220px]:mx-auto max-w-[1220px] border-styleguide-border">
       <aside
           class="sticky order-1 -mx-px hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
           style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
@@ -250,13 +472,12 @@ export function generatePreviewFile(data: {
         ${data.html.sidebarMenu}
       </aside>
       
-      <div class="order-2 grow">
+      <div class="order-2 w-full xl:w-[calc(100%-260px)]">
         ${data.html.mainContent}
         ${data.html.nextPageControls}
       </div>
     </main>
     ${data.html.search}
-    ${computedScriptTags.join('\n')}
 </body>
 </html>
 `.trim()

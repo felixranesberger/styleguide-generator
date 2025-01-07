@@ -1,4 +1,5 @@
 import { logicalWriteFile } from '../utils.ts'
+import { replaceVitePugTags } from '../vite-pug.ts'
 
 export function generateFullPageFile(data: {
   filePath: string
@@ -24,15 +25,15 @@ export function generateFullPageFile(data: {
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    <meta name="description" content="${data.page.description || ''}">
+    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">
+    <script type="module" src="/assets/client-fullpage.js"></script>
     ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
-    <script type="module" src="/fullpage.js"></script>
 </head>
 <body>
-    ${data.html}
+    ${replaceVitePugTags(globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join('\n')}
 </body>
 </html>
