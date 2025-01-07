@@ -229,7 +229,13 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }
 
   const assetsDirectoryPath = findAssetsDirectoryPath()
-  fs.copySync(assetsDirectoryPath, path.join(config.outDir, 'assets'))
+
+  // don't replace already existing assets, because they don't change
+  // and replacing them will cause a vite reload
+  const isAssetsDirectoryExists = fs.existsSync(assetsDirectoryPath)
+  if (!isAssetsDirectoryExists) {
+    fs.copySync(assetsDirectoryPath, path.join(config.outDir, 'assets'))
+  }
 }
 
 /**
