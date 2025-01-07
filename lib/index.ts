@@ -228,13 +228,14 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
     return path.resolve(__dirname, '../../assets')
   }
 
-  const assetsDirectoryPath = findAssetsDirectoryPath()
-
+  // copy styleguide assets folder
   // don't replace already existing assets, because they don't change
   // and replacing them will cause a vite reload
-  const isAssetsDirectoryExists = fs.existsSync(assetsDirectoryPath)
-  if (!isAssetsDirectoryExists) {
-    fs.copySync(assetsDirectoryPath, path.join(config.outDir, 'assets'))
+  const assetsDirectoryPath = findAssetsDirectoryPath()
+  const assetsDirectoryOutputPath = path.join(config.outDir, 'assets')
+  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath)
+  if (!isAssetsDirectoryAlreadyCopied) {
+    fs.copySync(assetsDirectoryPath, assetsDirectoryOutputPath)
   }
 }
 
