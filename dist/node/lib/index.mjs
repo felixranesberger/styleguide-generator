@@ -1,5 +1,6 @@
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
 import { glob } from 'glob';
 import pug from 'pug';
@@ -29,16 +30,21 @@ function parseColors(text) {
 function parseIcons(text) {
   text = text.trim();
   const icons = [];
-  const regex = /^([^:]+):\s*(<svg>[\s\S]*?<\/svg>)$/gim;
-  let test = regex.exec(text);
-  while (test !== null) {
+  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>)$/gm;
+  let match = regex.exec(text);
+  while (match !== null) {
     const icon = {
-      name: test[1].trim(),
-      svg: test[2]
+      name: match[1].trim(),
+      svg: match[2]
     };
     icons.push(icon);
-    test = regex.exec(text);
+    match = regex.exec(text);
   }
+  icons.forEach((icon, index) => {
+    if (!icon.svg.startsWith("<svg") || !icon.svg.endsWith("</svg>")) {
+      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed SVG content`);
+    }
+  });
   return icons;
 }
 function toFloat(value) {
@@ -437,7 +443,7 @@ function generateFullPageFile(data) {
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ""}
+    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">
@@ -542,9 +548,9 @@ function getSidebarMenuHtml(sections, activePageHref) {
 function getMainContentHtml(secondLevelSection) {
   let output = "";
   function renderSection(section) {
-    if (section.colors) {
+    if (section.colors && section.colors.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentColors(section));
-    } else if (section.icons) {
+    } else if (section.icons && section.icons.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentIcons(section));
     } else {
       const content = section.markup ? getMainContentRegular(section) : undefined;
@@ -556,18 +562,8 @@ function getMainContentHtml(secondLevelSection) {
   return output;
 }
 function getMainContentSectionWrapper(section, html) {
-  if (section.sectionLevel === "second") {
-    const hgroupWrapperTag = section.description ? "hgroup" : "div";
-    return `
-      <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
-          <${hgroupWrapperTag} class="max-w-[800px]">
-              <h1 class="text-4xl font-semibold text-styleguide-highlight">${section.header}</h1>
-              ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ""}
-          </${hgroupWrapperTag}>
-${html ?? ""}
-      </section>
-  `;
-  }
+  const headingTag = section.sectionLevel === "second" ? "h1" : "h2";
+  const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
   return `
 <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
     <div class="flex items-center justify-between gap-6">
@@ -577,7 +573,7 @@ ${html ?? ""}
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
                 <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/>
             </svg>
-            <h2 class="text-2xl font-semibold text-styleguide-highlight">${section.header}</h2>
+            <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
         </a>
 
         <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
@@ -588,6 +584,7 @@ ${html ?? ""}
             </svg>
         </a>
     </div>
+    ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ""}
 ${html ?? ""}
 </section>
   `;
@@ -600,7 +597,7 @@ function getMainContentRegular(section) {
             <iframe
                     id="preview-fullpage-${section.id}"
                     src="/${section.fullpageFileName}"
-                    class="w-full preview-iframe rounded-[8px]"
+                    class="w-full preview-iframe"
                     title="${section.header} Preview"
             ></iframe>
         </div>
@@ -662,7 +659,7 @@ ${replaceVitePugTags("production", section.markup)}
     
                     <iframe
                           src="/${section.fullpageFileName}?modifier=${modifier.value}"
-                          class="mt-2 w-full preview-iframe rounded-[8px]"
+                          class="mt-2 w-full preview-iframe"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                     ></iframe>
                 </div>
@@ -742,7 +739,7 @@ function getMainContentIcons(section) {
                       title="Copy svg content"
                   ></button>
               </li>
-            `)}
+            `).join("\n")}
         </ul>
     </div>
   `;
@@ -844,7 +841,7 @@ function generatePreviewFile(data) {
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description}">` : ""}
+    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">
@@ -996,6 +993,7 @@ async function buildStyleguide(config) {
       }
       const nextPageControlsData = {};
       if (sectionBefore) {
+        indexFirstLevel === 0 && indexSecondLevel === 0 ? "/index.html" : `/${secondLevelSection.previewFileName}`;
         nextPageControlsData.before = {
           label: sectionBefore.header,
           href: sectionBefore.previewFileName
@@ -1030,7 +1028,10 @@ async function buildStyleguide(config) {
     });
   });
   fs.ensureDirSync(path.join(config.outDir, "assets"));
-  fs.copySync(path.join("dist", "assets"), path.join(config.outDir, "assets"));
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const assetsDirectoryPath = path.resolve(__dirname, "../../assets");
+  fs.copySync(assetsDirectoryPath, path.join(config.outDir, "assets"));
 }
 async function watchStyleguide(config, onChange) {
   await buildStyleguide(config);

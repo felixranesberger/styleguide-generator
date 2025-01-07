@@ -28,6 +28,9 @@ interface Section {
   deprecated?: boolean
   experimental?: boolean
   colors?: ColorObject[]
+  wrapper?: string
+  htmlclass?: string
+  bodyclass?: string
   source: {
     filename: string
     path: string
@@ -101,6 +104,10 @@ function parseColors(text: string): ColorObject[] {
   }
 
   return colors
+}
+
+function parseWrapper(text: string): string {
+  return text.trim()
 }
 
 function parseIcons(text: string): IconObject[] {
@@ -209,6 +216,9 @@ function kssParser(input: string | (string | FileObject)[], options: ParseOption
 
       // Process properties
       processProperty.call(newSection, paragraphs, 'Colors', parseColors)
+      processProperty.call(newSection, paragraphs, 'Wrapper', x => x.trim())
+      processProperty.call(newSection, paragraphs, 'htmlclass', x => x.trim())
+      processProperty.call(newSection, paragraphs, 'bodyclass', x => x.trim())
       processProperty.call(newSection, paragraphs, 'Icons', parseIcons)
       processProperty.call(newSection, paragraphs, 'Markup')
       processProperty.call(newSection, paragraphs, 'Weight', toFloat)
@@ -481,6 +491,9 @@ export interface in2Section {
   }[]
   colors?: ColorObject[]
   icons?: IconObject[]
+  wrapper?: string
+  htmlclass?: string
+  bodyclass?: string
   previewFileName: string
   fullpageFileName: string
 }
@@ -525,6 +538,9 @@ export function parse(text: string) {
         })),
         colors: section.colors,
         icons: section.icons,
+        wrapper: section.wrapper,
+        htmlclass: section.htmlclass,
+        bodyclass: section.bodyclass,
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`,
       }
@@ -554,6 +570,9 @@ export function parse(text: string) {
           })),
           colors: section.colors,
           icons: section.icons,
+          wrapper: section.wrapper,
+          htmlclass: section.htmlclass,
+          bodyclass: section.bodyclass,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         }
@@ -572,6 +591,9 @@ export function parse(text: string) {
           })),
           colors: section.colors,
           icons: section.icons,
+          wrapper: section.wrapper,
+          htmlclass: section.htmlclass,
+          bodyclass: section.bodyclass,
           sections: [],
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,

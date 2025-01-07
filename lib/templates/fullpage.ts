@@ -7,6 +7,8 @@ export function generateFullPageFile(data: {
     title: string
     description?: string
     lang: string
+    htmlclass?: string
+    bodyclass?: string
   }
   css: string[]
   js: {
@@ -22,7 +24,7 @@ export function generateFullPageFile(data: {
 
   const content = `
 <!doctype html>
-<html lang="${data.page.lang}">
+<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ''}>
 <head>
     <title>${data.page.title}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
@@ -32,7 +34,7 @@ export function generateFullPageFile(data: {
     <script type="module" src="/assets/client-fullpage.js"></script>
     ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
 </head>
-<body>
+<body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
     ${replaceVitePugTags(globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join('\n')}
 </body>
