@@ -576,7 +576,7 @@ function getMainContentHtml(secondLevelSection) {
 function getMainContentSectionWrapper(section, html) {
   const headingTag = section.sectionLevel === "second" ? "h1" : "h2";
   const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
-  const hasSectionExternalFullPage = (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
+  const hasSectionExternalFullPage = section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
   return `
 <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
     <div class="flex items-center justify-between gap-6">
