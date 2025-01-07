@@ -99,6 +99,9 @@ function kssParser(input, options = {}) {
         continue;
       }
       processProperty.call(newSection, paragraphs, "Colors", parseColors);
+      processProperty.call(newSection, paragraphs, "Wrapper", (x) => x.trim());
+      processProperty.call(newSection, paragraphs, "htmlclass", (x) => x.trim());
+      processProperty.call(newSection, paragraphs, "bodyclass", (x) => x.trim());
       processProperty.call(newSection, paragraphs, "Icons", parseIcons);
       processProperty.call(newSection, paragraphs, "Markup");
       processProperty.call(newSection, paragraphs, "Weight", toFloat);
@@ -322,6 +325,9 @@ function parse(text) {
         })),
         colors: section.colors,
         icons: section.icons,
+        wrapper: section.wrapper,
+        htmlclass: section.htmlclass,
+        bodyclass: section.bodyclass,
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`
       };
@@ -346,6 +352,9 @@ function parse(text) {
           })),
           colors: section.colors,
           icons: section.icons,
+          wrapper: section.wrapper,
+          htmlclass: section.htmlclass,
+          bodyclass: section.bodyclass,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`
         };
@@ -362,6 +371,9 @@ function parse(text) {
           })),
           colors: section.colors,
           icons: section.icons,
+          wrapper: section.wrapper,
+          htmlclass: section.htmlclass,
+          bodyclass: section.bodyclass,
           sections: [],
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`
@@ -440,7 +452,7 @@ function generateFullPageFile(data) {
   });
   const content = `
 <!doctype html>
-<html lang="${data.page.lang}">
+<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ""}>
 <head>
     <title>${data.page.title}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
@@ -450,7 +462,7 @@ function generateFullPageFile(data) {
     <script type="module" src="/assets/client-fullpage.js"><\/script>
     ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}" />`).join("\n")}
 </head>
-<body>
+<body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
     ${replaceVitePugTags(globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join("\n")}
 </body>
@@ -564,6 +576,7 @@ function getMainContentHtml(secondLevelSection) {
 function getMainContentSectionWrapper(section, html) {
   const headingTag = section.sectionLevel === "second" ? "h1" : "h2";
   const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
+  const hasSectionExternalFullPage = (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
   return `
 <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
     <div class="flex items-center justify-between gap-6">
@@ -576,13 +589,14 @@ function getMainContentSectionWrapper(section, html) {
             <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
         </a>
 
-        <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
+        ${hasSectionExternalFullPage ? `
+          <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
-                <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px"
-                      d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+                <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
                 <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
             </svg>
-        </a>
+          </a>
+        ` : ""}
     </div>
     ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ""}
 ${html ?? ""}
@@ -933,16 +947,22 @@ async function buildStyleguide(config) {
   const handleGenerateFullpage = (data) => {
     if (data.markup === undefined || data.markup.length === 0)
       return;
+    let htmlMarkup = data.markup;
+    if (data.wrapper) {
+      htmlMarkup = data.wrapper.replace("<wrapper-content/>", htmlMarkup);
+    }
     generateFullPageFile({
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
         description: data.description,
-        lang: config.html.lang
+        lang: config.html.lang,
+        htmlclass: data.htmlclass,
+        bodyclass: data.bodyclass
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: data.markup
+      html: htmlMarkup
     });
   };
   const searchSectionMapping = [];
@@ -1030,8 +1050,18 @@ async function buildStyleguide(config) {
   fs.ensureDirSync(path.join(config.outDir, "assets"));
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const assetsDirectoryPath = path.resolve(__dirname, "../../assets");
-  fs.copySync(assetsDirectoryPath, path.join(config.outDir, "assets"));
+  const findAssetsDirectoryPath = () => {
+    const isLibraryDevelopmentIndexTs = __filename.endsWith("/lib/index.ts");
+    if (isLibraryDevelopmentIndexTs)
+      return path.resolve(process.cwd(), "dist/assets");
+    return path.resolve(__dirname, "../../assets");
+  };
+  const assetsDirectoryPath = findAssetsDirectoryPath();
+  const assetsDirectoryOutputPath = path.join(config.outDir, "assets");
+  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath);
+  if (!isAssetsDirectoryAlreadyCopied) {
+    fs.copySync(assetsDirectoryPath, assetsDirectoryOutputPath);
+  }
 }
 async function watchStyleguide(config, onChange) {
   await buildStyleguide(config);
