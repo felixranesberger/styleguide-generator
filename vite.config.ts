@@ -7,7 +7,6 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
-        // 'styleguide': resolve(__dirname, 'lib/index.ts'),
         'client': resolve(__dirname, 'client/main.ts'),
         'client-fullpage': resolve(__dirname, 'client/fullpage.ts'),
       },
@@ -21,5 +20,4 @@ export default defineConfig({
       },
     },
   },
-  // plugins: [dts({ rollupTypes: true })],
 })
