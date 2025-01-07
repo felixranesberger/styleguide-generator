@@ -123,7 +123,8 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
 function getMainContentSectionWrapper(section: in2Section, html?: string): string {
   const headingTag = section.sectionLevel === 'second' ? 'h1' : 'h2'
   const headingClass = section.sectionLevel === 'second' ? 'text-4xl' : 'text-2xl'
-  const hasSectionExternalFullpage = !section.colors && !section.icons
+  const hasSectionExternalFullPage = (section.icons === undefined || section.icons.length === 0)
+    && (section.colors === undefined || section.colors.length === 0)
 
   return `
 <section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
@@ -137,7 +138,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
             <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
         </a>
 
-        ${hasSectionExternalFullpage
+        ${hasSectionExternalFullPage
           ? `
           <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
