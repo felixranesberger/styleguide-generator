@@ -4,7 +4,7 @@ declare global {
 interface StyleguideConfiguration {
     mode: 'development' | 'production';
     outDir: string;
-    contentDir: string;
+    contentDir: `${string}/`;
     projectTitle: string;
     html: {
         lang: string;
@@ -26,6 +26,6 @@ declare function buildStyleguide(config: StyleguideConfiguration): Promise<void>
  * Builds the styleguide and watches for changes
  * @param config - The configuration for the styleguide
  */
-declare function watchStyleguide(config: StyleguideConfiguration): Promise<void>;
+declare function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void): Promise<void>;
 
 export { type StyleguideConfiguration, buildStyleguide, watchStyleguide };

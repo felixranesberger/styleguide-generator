@@ -876,7 +876,7 @@ function generatePreviewFile(data) {
 
 function watchForFileContentChanges(path, regex, callback) {
   if (typeof callback !== "function") {
-    throw new TypeError("kss-scheibo watch requires a callback function");
+    throw new TypeError("styleguide watch requires a callback function");
   }
   const regexFileContents = /* @__PURE__ */ new Map();
   const registerFileContentMatches = (filePath) => {
@@ -1032,10 +1032,15 @@ async function buildStyleguide(config) {
   fs.ensureDirSync(path.join(config.outDir, "assets"));
   fs.copySync(path.join("dist", "assets"), path.join(config.outDir, "assets"));
 }
-async function watchStyleguide(config) {
+async function watchStyleguide(config, onChange) {
   await buildStyleguide(config);
-  await watchStyleguideForChanges(config.contentDir, () => {
-    (async () => await buildStyleguide(config))();
+  const contentDirPath = config.contentDir.endsWith("/") ? config.contentDir : `${config.contentDir}/`;
+  await watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
+    (async () => {
+      await buildStyleguide(config);
+      if (onChange)
+        onChange();
+    })();
   });
 }
 
