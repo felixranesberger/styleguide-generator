@@ -1,6 +1,9 @@
 import path from 'node:path'
 import fs from 'fs-extra'
 
+/**
+ * Write a file only if the content has changed
+ */
 export function logicalWriteFile(filepath: string, content: string) {
   // ensure directory exists
   const dir = path.dirname(filepath)
