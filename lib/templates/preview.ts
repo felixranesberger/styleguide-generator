@@ -123,7 +123,8 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
 function getMainContentSectionWrapper(section: in2Section, html?: string): string {
   const headingTag = section.sectionLevel === 'second' ? 'h1' : 'h2'
   const headingClass = section.sectionLevel === 'second' ? 'text-4xl' : 'text-2xl'
-  const hasSectionExternalFullPage = (section.icons === undefined || section.icons.length === 0)
+  const hasSectionExternalFullPage = section.markup.length > 0
+    && (section.icons === undefined || section.icons.length === 0)
     && (section.colors === undefined || section.colors.length === 0)
 
   return `
