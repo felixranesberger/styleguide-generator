@@ -69,16 +69,23 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
     if (data.markup === undefined || data.markup.length === 0)
       return
 
+    let htmlMarkup = data.markup
+    if (data.wrapper) {
+      htmlMarkup = data.wrapper.replace('<wrapper-content/>', htmlMarkup)
+    }
+
     generateFullPageFile({
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
         description: data.description,
         lang: config.html.lang,
+        htmlclass: data.htmlclass,
+        bodyclass: data.bodyclass,
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: data.markup,
+      html: htmlMarkup,
     })
   }
 
@@ -209,10 +216,19 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   // ensure assets directory exists
   fs.ensureDirSync(path.join(config.outDir, 'assets'))
 
-  // copy styleguide assets to outDir
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
-  const assetsDirectoryPath = path.resolve(__dirname, '../../assets')
+
+  const findAssetsDirectoryPath = () => {
+    const isLibraryDevelopmentIndexTs = __filename.endsWith('/lib/index.ts')
+    if (isLibraryDevelopmentIndexTs)
+      return path.resolve(process.cwd(), 'dist/assets')
+
+    // this is returned when the library is run by the real user
+    return path.resolve(__dirname, '../../assets')
+  }
+
+  const assetsDirectoryPath = findAssetsDirectoryPath()
   fs.copySync(assetsDirectoryPath, path.join(config.outDir, 'assets'))
 }
 
