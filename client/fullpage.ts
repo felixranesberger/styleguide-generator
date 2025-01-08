@@ -27,7 +27,8 @@ export class ModifierReplacer {
       return null
     }
 
-    const replacer = new ModifierReplacer({ modifier })
+    const computedModifier = modifier.split('.').filter(x => x.length > 0).join(' ')
+    const replacer = new ModifierReplacer({ modifier: computedModifier })
     replacer.initialize(targetDocument)
     return replacer
   }
