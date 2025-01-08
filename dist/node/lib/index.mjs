@@ -405,7 +405,7 @@ function logicalWriteFile(filepath, content) {
 }
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
-function replaceVitePugTags(mode, html) {
+function compilePug(mode, html) {
   const vitePugTags = html.match(regexModifierLine);
   if (!vitePugTags) {
     return html;
@@ -423,24 +423,19 @@ function replaceVitePugTags(mode, html) {
         modifierClass: pugModifierClass[1]
       };
     }
-    if (mode === "development") {
-      let pugTag = `<pug src="${pugSourcePath}"></pug>`;
-      if (pugModifierClass && pugModifierClass[1]) {
-        pugTag = `<pug src="${pugSourcePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>`;
+    const pugFilePath = path.join(globalThis.styleguideConfiguration.contentDir, pugSourcePath);
+    if (mode === "production") {
+      const isPugFile = path.extname(pugSourcePath) === ".pug";
+      if (!isPugFile) {
+        throw new Error(`${pugSourcePath} is not a valid .pug file`);
       }
+      const pugFn = pug.compileFile(pugFilePath, { pretty: true });
+      const pugOutput = pugFn(pugLocals);
+      markupOutput = markupOutput.replace(vitePugTag, pugOutput);
+    } else {
+      const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
     }
-    const isPugFile = path.extname(pugSourcePath) === ".pug";
-    if (!isPugFile) {
-      throw new Error(`${pugSourcePath} is not a valid .pug file`);
-    }
-    const contentDirPath = path.join(process.cwd(), globalThis.styleguideConfiguration.contentDir);
-    const pugFilePath = path.join(contentDirPath, pugSourcePath);
-    const pugFn = pug.compileFile(pugFilePath, {
-      pretty: true
-    });
-    const pugOutput = pugFn(pugLocals);
-    markupOutput = markupOutput.replace(vitePugTag, pugOutput);
   });
   return markupOutput;
 }
@@ -463,7 +458,7 @@ function generateFullPageFile(data) {
     ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}" />`).join("\n")}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
-    ${replaceVitePugTags(globalThis.styleguideConfiguration.mode, data.html)}
+    ${compilePug(globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join("\n")}
 </body>
 </html>
@@ -630,7 +625,7 @@ function getMainContentRegular(section) {
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
-${replaceVitePugTags("production", section.markup)}
+${compilePug("production", section.markup)}
                   </template>
               </div>
             </div>
@@ -1057,7 +1052,7 @@ async function buildStyleguide(config) {
   };
   const assetsDirectoryPath = findAssetsDirectoryPath();
   const assetsDirectoryOutputPath = path.join(config.outDir, "assets");
-  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath);
+  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath) && fs.readdirSync(assetsDirectoryOutputPath).length > 0;
   if (!isAssetsDirectoryAlreadyCopied) {
     fs.copySync(assetsDirectoryPath, assetsDirectoryOutputPath);
   }
@@ -1065,7 +1060,7 @@ async function buildStyleguide(config) {
 async function watchStyleguide(config, onChange) {
   await buildStyleguide(config);
   const contentDirPath = config.contentDir.endsWith("/") ? config.contentDir : `${config.contentDir}/`;
-  await watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
+  watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
     (async () => {
       await buildStyleguide(config);
       if (onChange)

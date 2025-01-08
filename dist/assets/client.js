@@ -10,7 +10,7 @@ function F() {
     document.documentElement.style.setProperty("--header-height", `${e()}px`);
   });
 }
-function j() {
+function x() {
   const t = document.querySelector("aside");
   if (!t)
     throw new Error("No aside menu found");
@@ -21,14 +21,14 @@ function j() {
   function e() {
     const o = sessionStorage.getItem("asideScrollPercentage");
     if (o) {
-      const n = Number.parseFloat(o), i = (t.scrollHeight - t.clientHeight) * n / 100;
-      t.scrollTop = i;
+      const n = Number.parseFloat(o), r = (t.scrollHeight - t.clientHeight) * n / 100;
+      t.scrollTop = r;
     }
   }
   window.addEventListener("resize", e), e();
 }
 F();
-j();
+x();
 class O {
   // 10 seconds maximum wait time
   constructor(e = "preview-iframe", o = { minHeight: null, bufferHeight: 5 }) {
@@ -48,7 +48,7 @@ class O {
     });
   }
   init() {
-    console.log(`Initializing ${this.iframes.length} iframes`), this.iframes.forEach((e, o) => {
+    this.iframes.forEach((e, o) => {
       e.style.cssText = `
                 width: 100%;
                 overflow: hidden;
@@ -57,17 +57,16 @@ class O {
                 opacity: 0;
                 transition: opacity 0.2s ease-in-out;
             `;
-      const n = new Promise((i) => {
-        const s = Date.now(), r = async () => {
-          console.log(`Setting up iframe ${o}`);
+      const n = new Promise((r) => {
+        const s = Date.now(), i = async () => {
           try {
-            await this.setupIframe(e), e.style.opacity = "1", i();
+            await this.setupIframe(e), e.style.opacity = "1", r();
           } catch (d) {
-            console.warn(`Error setting up iframe ${o}:`, d), i();
+            console.warn(`Error setting up iframe ${o}:`, d), r();
           }
         }, a = () => {
           if (Date.now() - s > this.maxWaitTime) {
-            console.warn(`Iframe ${o} timed out waiting for load`), i();
+            console.warn(`Iframe ${o} timed out waiting for load`), r();
             return;
           }
           const d = e.contentWindow;
@@ -77,9 +76,9 @@ class O {
           }
           try {
             const c = d.document;
-            c && c.readyState === "complete" ? r() : c ? e.addEventListener("load", r, { once: !0 }) : setTimeout(a, this.readyStateCheckInterval);
+            c && c.readyState === "complete" ? i() : c ? e.addEventListener("load", i, { once: !0 }) : setTimeout(a, this.readyStateCheckInterval);
           } catch (c) {
-            console.warn(`Error accessing iframe ${o}:`, c), i();
+            console.warn(`Error accessing iframe ${o}:`, c), r();
           }
         };
         a(), e.addEventListener("load", () => {
@@ -87,8 +86,8 @@ class O {
         }, { once: !0 });
       });
       this.initialLoadPromises.push(n);
-    }), Promise.all(this.initialLoadPromises).then(() => new Promise((e) => setTimeout(e, 100))).then(() => (console.log("All iframes initialized, performing final height check"), Promise.all(this.iframes.map((e) => this.adjustHeight(e))))).then(() => {
-      console.log("Final height check complete, handling URL fragment and adding js-loaded class"), this.handleUrlFragment(), this.isInitialLoad = !1, document.body.classList.add("js-loaded");
+    }), Promise.all(this.initialLoadPromises).then(() => new Promise((e) => setTimeout(e, 100))).then(() => Promise.all(this.iframes.map((e) => this.adjustHeight(e)))).then(() => {
+      this.handleUrlFragment(), this.isInitialLoad = !1, document.body.classList.add("js-loaded");
     }).catch((e) => {
       console.error("Error during iframe initialization:", e), this.handleUrlFragment(), setTimeout(() => {
         this.isInitialLoad = !1, document.body.classList.add("js-loaded");
@@ -114,15 +113,15 @@ class O {
     const o = e.contentWindow;
     if (!o)
       return;
-    const n = o.document, i = n.createElement("style");
-    if (i.textContent = `
+    const n = o.document, r = n.createElement("style");
+    if (r.textContent = `
             html, body {
                 margin: 0;
                 padding: 0;
                 min-height: 0 !important;
             }
-        `, n.head.appendChild(i), await new Promise((s) => {
-      const r = () => {
+        `, n.head.appendChild(r), await new Promise((s) => {
+      const i = () => {
         const d = Array.from(n.getElementsByTagName("*")).filter(
           (g) => g instanceof HTMLImageElement && !g.complete
         ), c = Array.from(n.styleSheets).filter(
@@ -134,9 +133,9 @@ class O {
             }
           }
         );
-        d.length === 0 && c.length === 0 ? s() : setTimeout(r, this.readyStateCheckInterval);
+        d.length === 0 && c.length === 0 ? s() : setTimeout(i, this.readyStateCheckInterval);
       };
-      r();
+      i();
     }), !this.isInitialLoad) {
       const s = new ResizeObserver(() => {
         this.adjustHeight(e);
@@ -155,21 +154,21 @@ class O {
   adjustHeight(e) {
     return new Promise((o) => {
       requestAnimationFrame(() => {
-        var r;
-        const n = (r = e.contentWindow) == null ? void 0 : r.document;
+        var i;
+        const n = (i = e.contentWindow) == null ? void 0 : i.document;
         if (!n) {
           o();
           return;
         }
         e.style.height = "0px", e.offsetHeight;
-        const i = Math.max(
+        const r = Math.max(
           n.documentElement.scrollHeight,
           n.body.scrollHeight,
           n.documentElement.offsetHeight,
           n.body.offsetHeight,
           n.documentElement.clientHeight,
           n.body.clientHeight
-        ), s = this.options.minHeight ? Math.max(i, this.options.minHeight) : i;
+        ), s = this.options.minHeight ? Math.max(r, this.options.minHeight) : r;
         e.style.height = `${s + this.options.bufferHeight}px`, requestAnimationFrame(() => {
           o();
         });
@@ -190,7 +189,7 @@ const w = "in2theme", f = {
 }, h = document.querySelector(".theme-select");
 if (!h)
   throw new Error("No theme select found");
-const k = window.matchMedia("(prefers-color-scheme: dark)");
+const H = window.matchMedia("(prefers-color-scheme: dark)");
 function y() {
   const t = localStorage.getItem(w);
   return t || localStorage.setItem(w, "normal"), t;
@@ -198,19 +197,19 @@ function y() {
 function p() {
   const t = y();
   let e = f[t];
-  t === "normal" && k.matches && (e = f.dark);
+  t === "normal" && H.matches && (e = f.dark);
   const o = (s) => {
-    Object.values(f).forEach((r) => s.classList.remove(r)), s.classList.remove("dark");
+    Object.values(f).forEach((i) => s.classList.remove(i)), s.classList.remove("dark");
   }, n = (s) => {
     s.classList.add(e), e === f.dark && s.classList.add("dark");
   };
   o(h), n(h);
-  const i = document.querySelectorAll("iframe");
-  i && i.forEach((s) => {
+  const r = document.querySelectorAll("iframe");
+  r && r.forEach((s) => {
     o(s), n(s);
   }), o(document.body), n(document.body);
 }
-k.addEventListener("change", () => {
+H.addEventListener("change", () => {
   y() === "normal" && p();
 });
 p();
@@ -221,15 +220,15 @@ h.addEventListener("change", () => {
   const e = t.value;
   localStorage.setItem(w, e), p();
 });
-const x = y(), H = h.querySelector(`input[value="${x}"]`);
-if (!H)
+const j = y(), T = h.querySelector(`input[value="${j}"]`);
+if (!T)
   throw new Error("No current theme input found");
-H.checked = !0;
+T.checked = !0;
 const u = document.querySelector("#search-dialog");
 if (!u)
   throw new Error("No search dialog found");
-const T = document.querySelectorAll("[data-open-search]");
-if (T.length === 0)
+const k = document.querySelectorAll("[data-open-search]");
+if (k.length === 0)
   throw new Error("No open search buttons found");
 const m = document.querySelector("#search-input");
 if (!m)
@@ -240,27 +239,27 @@ if (!C)
 const q = document.querySelectorAll(".search-category__item--active");
 if (!q)
   throw new Error("No search results found");
-const A = document.querySelector("#search-no-results");
-if (!A)
+const P = document.querySelector("#search-no-results");
+if (!P)
   throw new Error("No search no results element found");
-function P() {
+function A() {
   const t = m.value.toLowerCase().trim();
   let e = !1;
   q.forEach((o) => {
-    var s, r;
+    var s, i;
     let n = !1;
-    const i = ((s = o.getAttribute("data-search-keywords")) == null ? void 0 : s.split(",")) || [];
-    if (i.length > 0)
-      n = i.some((a) => a.toLowerCase().includes(t));
+    const r = ((s = o.getAttribute("data-search-keywords")) == null ? void 0 : s.split(",")) || [];
+    if (r.length > 0)
+      n = r.some((a) => a.toLowerCase().includes(t));
     else {
-      const a = (r = o.innerText) == null ? void 0 : r.toLowerCase();
+      const a = (i = o.innerText) == null ? void 0 : i.toLowerCase();
       n = a == null ? void 0 : a.includes(t);
     }
     o.classList.toggle("search-category__item--active", n), n && (e = !0);
-  }), C.classList.toggle("hidden", !e), A.classList.toggle("hidden", e);
+  }), C.classList.toggle("hidden", !e), P.classList.toggle("hidden", e);
 }
-m.addEventListener("input", P);
-T.forEach((t) => {
+m.addEventListener("input", A);
+k.forEach((t) => {
   t.addEventListener("click", () => u.showModal());
 });
 function E(t) {
@@ -269,7 +268,7 @@ function E(t) {
 new MutationObserver(() => {
   u.open ? (window.matchMedia("(max-width: 768px)").matches && m.blur(), setTimeout(() => {
     document.addEventListener("click", E);
-  }, 0)) : (document.removeEventListener("click", E), m.value = "", P());
+  }, 0)) : (document.removeEventListener("click", E), m.value = "", A());
 }).observe(u, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (t) => {
   t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), u.showModal());
