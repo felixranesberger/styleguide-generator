@@ -1,7 +1,7 @@
-var N = Object.defineProperty;
-var R = (t, e, o) => e in t ? N(t, e, { enumerable: !0, configurable: !0, writable: !0, value: o }) : t[e] = o;
-var l = (t, e, o) => R(t, typeof e != "symbol" ? e + "" : e, o);
-function F() {
+var R = Object.defineProperty;
+var F = (t, e, o) => e in t ? R(t, e, { enumerable: !0, configurable: !0, writable: !0, value: o }) : t[e] = o;
+var l = (t, e, o) => F(t, typeof e != "symbol" ? e + "" : e, o);
+function O() {
   const t = document.querySelector("header");
   if (!t)
     throw new Error("No header found");
@@ -27,9 +27,9 @@ function x() {
   }
   window.addEventListener("resize", e), e();
 }
-F();
+O();
 x();
-class O {
+class E {
   // 10 seconds maximum wait time
   constructor(e = "preview-iframe", o = { minHeight: null, bufferHeight: 5 }) {
     l(this, "iframes");
@@ -181,7 +181,9 @@ class O {
     });
   }
 }
-new O("preview-iframe");
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => {
+  new E("preview-iframe");
+}) : new E("preview-iframe");
 const w = "in2theme", f = {
   normal: "theme-normal",
   light: "theme-light",
@@ -189,7 +191,7 @@ const w = "in2theme", f = {
 }, h = document.querySelector(".theme-select");
 if (!h)
   throw new Error("No theme select found");
-const H = window.matchMedia("(prefers-color-scheme: dark)");
+const T = window.matchMedia("(prefers-color-scheme: dark)");
 function y() {
   const t = localStorage.getItem(w);
   return t || localStorage.setItem(w, "normal"), t;
@@ -197,7 +199,7 @@ function y() {
 function p() {
   const t = y();
   let e = f[t];
-  t === "normal" && H.matches && (e = f.dark);
+  t === "normal" && T.matches && (e = f.dark);
   const o = (s) => {
     Object.values(f).forEach((i) => s.classList.remove(i)), s.classList.remove("dark");
   }, n = (s) => {
@@ -209,7 +211,7 @@ function p() {
     o(s), n(s);
   }), o(document.body), n(document.body);
 }
-H.addEventListener("change", () => {
+T.addEventListener("change", () => {
   y() === "normal" && p();
 });
 p();
@@ -220,24 +222,24 @@ h.addEventListener("change", () => {
   const e = t.value;
   localStorage.setItem(w, e), p();
 });
-const j = y(), T = h.querySelector(`input[value="${j}"]`);
-if (!T)
+const j = y(), k = h.querySelector(`input[value="${j}"]`);
+if (!k)
   throw new Error("No current theme input found");
-T.checked = !0;
+k.checked = !0;
 const u = document.querySelector("#search-dialog");
 if (!u)
   throw new Error("No search dialog found");
-const k = document.querySelectorAll("[data-open-search]");
-if (k.length === 0)
+const C = document.querySelectorAll("[data-open-search]");
+if (C.length === 0)
   throw new Error("No open search buttons found");
 const m = document.querySelector("#search-input");
 if (!m)
   throw new Error("No search input found");
-const C = document.querySelector("#search-list");
-if (!C)
-  throw new Error("No search list found");
-const q = document.querySelectorAll(".search-category__item--active");
+const q = document.querySelector("#search-list");
 if (!q)
+  throw new Error("No search list found");
+const M = document.querySelectorAll(".search-category__item--active");
+if (!M)
   throw new Error("No search results found");
 const P = document.querySelector("#search-no-results");
 if (!P)
@@ -245,7 +247,7 @@ if (!P)
 function A() {
   const t = m.value.toLowerCase().trim();
   let e = !1;
-  q.forEach((o) => {
+  M.forEach((o) => {
     var s, i;
     let n = !1;
     const r = ((s = o.getAttribute("data-search-keywords")) == null ? void 0 : s.split(",")) || [];
@@ -256,26 +258,26 @@ function A() {
       n = a == null ? void 0 : a.includes(t);
     }
     o.classList.toggle("search-category__item--active", n), n && (e = !0);
-  }), C.classList.toggle("hidden", !e), P.classList.toggle("hidden", e);
+  }), q.classList.toggle("hidden", !e), P.classList.toggle("hidden", e);
 }
 m.addEventListener("input", A);
-k.forEach((t) => {
+C.forEach((t) => {
   t.addEventListener("click", () => u.showModal());
 });
-function E(t) {
+function L(t) {
   t.target.closest("dialog") !== null || u.close();
 }
 new MutationObserver(() => {
   u.open ? (window.matchMedia("(max-width: 768px)").matches && m.blur(), setTimeout(() => {
-    document.addEventListener("click", E);
-  }, 0)) : (document.removeEventListener("click", E), m.value = "", A());
+    document.addEventListener("click", L);
+  }, 0)) : (document.removeEventListener("click", L), m.value = "", A());
 }).observe(u, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (t) => {
   t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), u.showModal());
 });
-const L = document.querySelectorAll(".code-highlight");
-L.length > 0 && import("./code-CcnfoGUE.js").then(({ default: t }) => t(L)).catch(console.error);
-const S = document.querySelector("#icon-search-input"), b = document.querySelector("#icon-search-input-reset"), v = document.querySelector("#icon-search-list");
-S && v && b && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(S, v, b)).catch(console.error);
-const M = "data-clipboard-value", I = document.querySelectorAll(`button[${M}]`);
-I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(I, M)).catch(console.error);
+const S = document.querySelectorAll(".code-highlight");
+S.length > 0 && import("./code-CcnfoGUE.js").then(({ default: t }) => t(S)).catch(console.error);
+const b = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), I = document.querySelector("#icon-search-list");
+b && I && v && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(b, I, v)).catch(console.error);
+const N = "data-clipboard-value", H = document.querySelectorAll(`button[${N}]`);
+H.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(H, N)).catch(console.error);
