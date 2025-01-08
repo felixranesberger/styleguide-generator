@@ -46,8 +46,6 @@ class IframeManager {
   }
 
   private init(): void {
-    console.log(`Initializing ${this.iframes.length} iframes`)
-
     this.iframes.forEach((iframe, index) => {
       iframe.style.cssText = `
                 width: 100%;
@@ -62,7 +60,6 @@ class IframeManager {
         const startTime = Date.now()
 
         const handleLoad = async () => {
-          console.log(`Setting up iframe ${index}`)
           try {
             await this.setupIframe(iframe)
             iframe.style.opacity = '1'
@@ -119,11 +116,9 @@ class IframeManager {
     Promise.all(this.initialLoadPromises)
       .then(() => new Promise(resolve => setTimeout(resolve, 100)))
       .then(() => {
-        console.log('All iframes initialized, performing final height check')
         return Promise.all(this.iframes.map(iframe => this.adjustHeight(iframe)))
       })
       .then(() => {
-        console.log('Final height check complete, handling URL fragment and adding js-loaded class')
         this.handleUrlFragment()
         this.isInitialLoad = false
         document.body.classList.add('js-loaded')
