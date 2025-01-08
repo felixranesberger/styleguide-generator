@@ -457,7 +457,7 @@ export function generatePreviewFile(data: {
     <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
     <script type="module" src="/assets/client.js"></script>
 </head>
-<body class="relative min-h-screen antialiased text-styleguide">
+<body class="relative min-h-screen antialiased text-styleguide overflow-x-hidden">
     ${data.html.header}
     
     <main class="relative -mx-[2px] flex h-full min-h-screen border-x min-[1220px]:mx-auto max-w-[1220px] border-styleguide-border">
