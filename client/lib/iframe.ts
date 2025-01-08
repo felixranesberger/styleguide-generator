@@ -265,4 +265,13 @@ class IframeManager {
   }
 }
 
-new IframeManager('preview-iframe')
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // eslint-disable-next-line no-new
+    new IframeManager('preview-iframe')
+  })
+}
+else {
+  // eslint-disable-next-line no-new
+  new IframeManager('preview-iframe')
+}
