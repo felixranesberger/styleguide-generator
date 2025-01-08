@@ -11,19 +11,21 @@ if (codeHighlights.length > 0) {
     if (!triggerButton)
       throw new Error('No trigger button found')
 
-    triggerButton.addEventListener('click', () => {
-      import('./lib/code.ts')
-        .then(({ highlightCode }) => highlightCode(codeHighlight))
-        .catch(console.error)
+    triggerButton.addEventListener('click', async () => {
+      const { highlightCode } = await import('./lib/code.ts')
+      await highlightCode(codeHighlight)
     })
   })
 
-  // create code highlighter after 10s to avoid delays on first use after some time
+  // highlight code in when browser is not busy and some time has passed
   setTimeout(() => {
-    import('./lib/code.ts')
-      .then(({ prewarmCodeHighlighter }) => prewarmCodeHighlighter())
-      .catch(console.error)
-  })
+    codeHighlights.forEach((codeHighlight) => {
+      requestIdleCallback(async () => {
+        const { highlightCode } = await import('./lib/code.ts')
+        await highlightCode(codeHighlight)
+      })
+    })
+  }, 5000)
 }
 
 const iconFilterInput = document.querySelector<HTMLInputElement>('#icon-search-input')

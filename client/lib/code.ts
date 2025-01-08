@@ -1,30 +1,28 @@
 import type { HighlighterCore } from 'shiki'
-import { createHighlighterCore, createOnigurumaEngine } from 'shiki'
+
+const CODE_HIGHLIGHTED_ATTRIBUTE = 'data-highlighted'
 
 let highlighter: HighlighterCore
 
-/**
- * Code highlighter is pre-warmed to avoid delays on first use after some time by main.js
- */
-export async function prewarmCodeHighlighter() {
-  if (highlighter)
+export async function highlightCode(element: HTMLDetailsElement, modifierClass?: string) {
+  const isAlreadyHighlighted = element.getAttribute(CODE_HIGHLIGHTED_ATTRIBUTE) === 'true'
+  if (isAlreadyHighlighted)
     return
 
-  highlighter = await createHighlighterCore({
-    themes: [
-      import('@shikijs/themes/aurora-x'),
-      import('@shikijs/themes/github-light-default'),
-    ],
-    langs: [
-      import('@shikijs/langs/html'),
-    ],
-    engine: createOnigurumaEngine(import('shiki/wasm')),
-  })
-}
+  if (!highlighter) {
+    const { createHighlighterCore, createOnigurumaEngine } = await import('shiki')
 
-export async function highlightCode(element: HTMLDetailsElement, modifierClass?: string) {
-  // make sure code highlighter is ready
-  await prewarmCodeHighlighter()
+    highlighter = await createHighlighterCore({
+      themes: [
+        import('@shikijs/themes/aurora-x'),
+        import('@shikijs/themes/github-light-default'),
+      ],
+      langs: [
+        import('@shikijs/langs/html'),
+      ],
+      engine: createOnigurumaEngine(import('shiki/wasm')),
+    })
+  }
 
   const sourceElement = element.querySelector<HTMLTemplateElement>('[data-type="code"]')
   if (!sourceElement)
@@ -51,4 +49,7 @@ export async function highlightCode(element: HTMLDetailsElement, modifierClass?:
 
   // add code to the element
   element.insertAdjacentHTML('beforeend', code)
+
+  // mark as highlighted
+  element.setAttribute(CODE_HIGHLIGHTED_ATTRIBUTE, 'true')
 }
