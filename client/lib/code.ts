@@ -1,7 +1,16 @@
+import type { HighlighterCore } from 'shiki'
 import { createHighlighterCore, createOnigurumaEngine } from 'shiki'
 
-export default async (elements: NodeListOf<HTMLElement>, modifierClass?: string) => {
-  const highlighter = await createHighlighterCore({
+let highlighter: HighlighterCore
+
+/**
+ * Code highlighter is pre-warmed to avoid delays on first use after some time by main.js
+ */
+export async function prewarmCodeHighlighter() {
+  if (highlighter)
+    return
+
+  highlighter = await createHighlighterCore({
     themes: [
       import('@shikijs/themes/aurora-x'),
       import('@shikijs/themes/github-light-default'),
@@ -11,32 +20,35 @@ export default async (elements: NodeListOf<HTMLElement>, modifierClass?: string)
     ],
     engine: createOnigurumaEngine(import('shiki/wasm')),
   })
+}
 
-  elements.forEach((element) => {
-    const sourceElement = element.querySelector<HTMLTemplateElement>('[data-type="code"]')
-    if (!sourceElement)
-      throw new Error('No source element found')
+export async function highlightCode(element: HTMLDetailsElement, modifierClass?: string) {
+  // make sure code highlighter is ready
+  await prewarmCodeHighlighter()
 
-    let source = sourceElement.innerHTML.trim()
+  const sourceElement = element.querySelector<HTMLTemplateElement>('[data-type="code"]')
+  if (!sourceElement)
+    throw new Error('No source element found')
 
-    // if modifier is provided, replace the modifier class
-    if (modifierClass) {
-      source = source.replaceAll('{{modifier_class}}', modifierClass)
-    }
+  let source = sourceElement.innerHTML.trim()
 
-    const code = highlighter.codeToHtml(source, {
-      lang: 'html',
-      themes: {
-        light: 'github-light-default',
-        dark: 'aurora-x',
-      },
-    })
+  // if modifier is provided, replace the modifier class
+  if (modifierClass) {
+    source = source.replaceAll('{{modifier_class}}', modifierClass)
+  }
 
-    // remove might pre-existing code
-    const preElements = element.querySelectorAll('pre')
-    preElements.forEach(pre => pre.remove())
-
-    // add code to the element
-    element.insertAdjacentHTML('beforeend', code)
+  const code = highlighter.codeToHtml(source, {
+    lang: 'html',
+    themes: {
+      light: 'github-light-default',
+      dark: 'aurora-x',
+    },
   })
+
+  // remove might pre-existing code
+  const preElements = element.querySelectorAll('pre')
+  preElements.forEach(pre => pre.remove())
+
+  // add code to the element
+  element.insertAdjacentHTML('beforeend', code)
 }

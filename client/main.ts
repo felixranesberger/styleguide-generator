@@ -4,12 +4,26 @@ import './lib/iframe.ts'
 import './lib/theme-select.ts'
 import './lib/search.ts'
 
-// import dynamically because of the large size of the code
-const codeHighlights = document.querySelectorAll<HTMLElement>('.code-highlight')
+const codeHighlights = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
 if (codeHighlights.length > 0) {
-  import('./lib/code.ts')
-    .then(({ default: init }) => init(codeHighlights))
-    .catch(console.error)
+  codeHighlights.forEach((codeHighlight) => {
+    const triggerButton = codeHighlight.querySelector<HTMLButtonElement>('summary')
+    if (!triggerButton)
+      throw new Error('No trigger button found')
+
+    triggerButton.addEventListener('click', () => {
+      import('./lib/code.ts')
+        .then(({ highlightCode }) => highlightCode(codeHighlight))
+        .catch(console.error)
+    })
+  })
+
+  // create code highlighter after 10s to avoid delays on first use after some time
+  setTimeout(() => {
+    import('./lib/code.ts')
+      .then(({ prewarmCodeHighlighter }) => prewarmCodeHighlighter())
+      .catch(console.error)
+  })
 }
 
 const iconFilterInput = document.querySelector<HTMLInputElement>('#icon-search-input')
