@@ -56,6 +56,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  view-transition-name: none;
+}
+
 :root {
   color-scheme: light dark;
 
