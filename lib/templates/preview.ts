@@ -1,6 +1,6 @@
 import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import { logicalWriteFile } from '../utils.ts'
-import { replaceVitePugTags } from '../vite-pug.ts'
+import { compilePug } from '../vite-pug.ts'
 
 export function getHeaderHtml(data: { projectTitle: string }) {
   return `
@@ -183,7 +183,7 @@ function getMainContentRegular(section: in2Section): string {
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
-${replaceVitePugTags('production', section.markup)}
+${compilePug('production', section.markup)}
                   </template>
               </div>
             </div>

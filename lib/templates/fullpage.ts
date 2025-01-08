@@ -1,5 +1,5 @@
 import { logicalWriteFile } from '../utils.ts'
-import { replaceVitePugTags } from '../vite-pug.ts'
+import { compilePug } from '../vite-pug.ts'
 
 export function generateFullPageFile(data: {
   filePath: string
@@ -35,7 +35,7 @@ export function generateFullPageFile(data: {
     ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
-    ${replaceVitePugTags(globalThis.styleguideConfiguration.mode, data.html)}
+    ${compilePug(globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join('\n')}
 </body>
 </html>
