@@ -931,8 +931,9 @@ async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
   const styleguideContent = (await glob(`${config.contentDir}/**/*.{css,scss}`)).map((file) => fs.readFileSync(file, "utf-8")).join("\n");
   const parsedContent = parse(styleguideContent);
-  if (config.mode === "production") {
-    fs.emptyDirSync(config.outDir);
+  if (config.mode === "production" && fs.existsSync(config.outDir)) {
+    const files = await glob(`${config.outDir}/**/*.html`);
+    await Promise.all(files.map((file) => fs.unlink(file)));
   }
   const baseDirectory = path.relative(process.cwd(), config.outDir);
   const getFullPageFilePath = (fileName) => path.join(baseDirectory, fileName);
