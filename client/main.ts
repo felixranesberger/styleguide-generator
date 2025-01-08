@@ -4,25 +4,33 @@ import './lib/iframe.ts'
 import './lib/theme-select.ts'
 import './lib/search.ts'
 
-const codeHighlights = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
-if (codeHighlights.length > 0) {
-  codeHighlights.forEach((codeHighlight) => {
-    const triggerButton = codeHighlight.querySelector<HTMLButtonElement>('summary')
+const codeDetails = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
+if (codeDetails.length > 0) {
+  codeDetails.forEach((detail) => {
+    const codeElement = detail.querySelector<HTMLElement>('.code-highlight')
+    if (!codeElement)
+      throw new Error('No code element found')
+
+    const triggerButton = detail.querySelector<HTMLButtonElement>('summary')
     if (!triggerButton)
       throw new Error('No trigger button found')
 
     triggerButton.addEventListener('click', async () => {
       const { highlightCode } = await import('./lib/code.ts')
-      await highlightCode(codeHighlight)
+      await highlightCode(codeElement)
     })
   })
 
   // highlight code in when browser is not busy and some time has passed
   setTimeout(() => {
-    codeHighlights.forEach((codeHighlight) => {
+    codeDetails.forEach((detail) => {
+      const codeElement = detail.querySelector<HTMLElement>('.code-highlight')
+      if (!codeElement)
+        throw new Error('No code element found')
+
       requestIdleCallback(async () => {
         const { highlightCode } = await import('./lib/code.ts')
-        await highlightCode(codeHighlight)
+        await highlightCode(codeElement)
       })
     })
   }, 5000)

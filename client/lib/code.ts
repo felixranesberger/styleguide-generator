@@ -4,7 +4,7 @@ const CODE_HIGHLIGHTED_ATTRIBUTE = 'data-highlighted'
 
 let highlighter: HighlighterCore
 
-export async function highlightCode(element: HTMLDetailsElement, modifierClass?: string) {
+export async function highlightCode(element: HTMLElement, modifierClass?: string) {
   const isAlreadyHighlighted = element.getAttribute(CODE_HIGHLIGHTED_ATTRIBUTE) === 'true'
   if (isAlreadyHighlighted)
     return
