@@ -150,7 +150,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
         `
           : ''}
     </div>
-    ${section.description ? `<p class="mt-2 font-mono text-xl">${section.description}</p>` : ''}
+    ${section.description ? `<p class="mt-2 font-mono${section.sectionLevel === 'second' ? ' text-xl' : ''}">${section.description}</p>` : ''}
 ${html ?? ''}
 </section>
   `
