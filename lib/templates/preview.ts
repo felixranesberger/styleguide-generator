@@ -4,8 +4,8 @@ import { compilePug } from '../vite-pug.ts'
 
 export function getHeaderHtml(data: { projectTitle: string }) {
   return `
-<header class="sticky top-0 z-10 mx-auto -mx-px flex w-full border-b pr-6 max-w-[1220px] border-styleguide-border bg-styleguide-bg-highlight">
-    <a class="mr-4 block flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] xl:border-l" href="/">
+<header class="sticky top-0 z-10 mx-auto flex w-full border-x border-b pr-6 max-w-[1220px] border-styleguide-border bg-styleguide-bg-highlight">
+    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px]" href="/">
         <p class="font-semibold tracking-tight text-styleguide-highlight">
             ${data.projectTitle}
         </p>
@@ -457,22 +457,27 @@ export function generatePreviewFile(data: {
     <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
     <script type="module" src="/assets/client.js"></script>
 </head>
-<body class="relative min-h-screen antialiased text-styleguide overflow-x-hidden">
-    ${data.html.header}
-    
-    <main class="relative -mx-[2px] flex h-full min-h-screen border-x min-[1220px]:mx-auto max-w-[1220px] border-styleguide-border">
-      <aside
-          class="sticky order-1 -mx-px hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
-          style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
-      >
-        ${data.html.sidebarMenu}
-      </aside>
-      
-      <div class="order-2 w-full xl:w-[calc(100%-260px)]">
-        ${data.html.mainContent}
-        ${data.html.nextPageControls}
-      </div>
-    </main>
+<body class="relative w-screen min-h-screen antialiased text-styleguide overflow-x-hidden">
+    <div class="overflow-x-hidden">
+        <div class="-ml-px w-[calc(100%+2px)]">
+            ${data.html.header}
+        
+            <main class="relative flex h-full min-h-screen border-x min-[1220px]:mx-auto max-w-[1220px] border-styleguide-border">
+            <aside
+                class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
+                style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
+            >
+              ${data.html.sidebarMenu}
+            </aside>
+            
+            <div class="order-2 w-full xl:w-[calc(100%-260px)]">
+              ${data.html.mainContent}
+              ${data.html.nextPageControls}
+            </div>
+          </main>
+        </div>
+    </div> 
+   
     ${data.html.search}
 </body>
 </html>
