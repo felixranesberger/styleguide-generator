@@ -31,6 +31,7 @@ export function generateFullPageFile(data: {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="generator" content="styleguide">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"></script>
     ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
 </head>
