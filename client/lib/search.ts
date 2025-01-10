@@ -73,10 +73,6 @@ new MutationObserver(() => {
     handleSearchFilter()
   }
   else {
-    const isMobileView = window.matchMedia('(max-width: 768px)').matches
-    if (isMobileView)
-      searchInput.blur()
-
     // Small delay to prevent immediate closing
     setTimeout(() => {
       document.addEventListener('click', closeDialogOnOutsideClick)
