@@ -10,7 +10,7 @@ function O() {
     document.documentElement.style.setProperty("--header-height", `${e()}px`);
   });
 }
-function x() {
+function D() {
   const t = document.querySelector("aside");
   if (!t)
     throw new Error("No aside menu found");
@@ -28,7 +28,7 @@ function x() {
   window.addEventListener("resize", e), e();
 }
 O();
-x();
+D();
 class L {
   // 10 seconds maximum wait time
   constructor(e = "preview-iframe", o = { minHeight: null, bufferHeight: 5 }) {
@@ -123,11 +123,11 @@ class L {
         `, n.head.appendChild(s), await new Promise((r) => {
       const i = () => {
         const d = Array.from(n.getElementsByTagName("*")).filter(
-          (g) => g instanceof HTMLImageElement && !g.complete
+          (m) => m instanceof HTMLImageElement && !m.complete
         ), c = Array.from(n.styleSheets).filter(
-          (g) => {
+          (m) => {
             try {
-              return g.cssRules === null;
+              return m.cssRules === null;
             } catch {
               return !0;
             }
@@ -184,7 +184,7 @@ class L {
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => {
   new L("preview-iframe");
 }) : new L("preview-iframe");
-const y = "in2theme", f = {
+const y = "in2theme", g = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
@@ -198,12 +198,12 @@ function p() {
 }
 function E() {
   const t = p();
-  let e = f[t];
-  t === "normal" && k.matches && (e = f.dark);
+  let e = g[t];
+  t === "normal" && k.matches && (e = g.dark);
   const o = (r) => {
-    Object.values(f).forEach((i) => r.classList.remove(i)), r.classList.remove("dark");
+    Object.values(g).forEach((i) => r.classList.remove(i)), r.classList.remove("dark");
   }, n = (r) => {
-    r.classList.add(e), e === f.dark && r.classList.add("dark");
+    r.classList.add(e), e === g.dark && r.classList.add("dark");
   };
   o(h), n(h);
   const s = document.querySelectorAll("iframe");
@@ -222,7 +222,7 @@ h.addEventListener("change", () => {
   const e = t.value;
   localStorage.setItem(y, e), E();
 });
-const D = p(), H = h.querySelector(`input[value="${D}"]`);
+const j = p(), H = h.querySelector(`input[value="${j}"]`);
 if (!H)
   throw new Error("No current theme input found");
 H.checked = !0;
@@ -232,22 +232,22 @@ if (!u)
 const C = document.querySelectorAll("[data-open-search]");
 if (C.length === 0)
   throw new Error("No open search buttons found");
-const m = document.querySelector("#search-input");
-if (!m)
+const f = document.querySelector("#search-input");
+if (!f)
   throw new Error("No search input found");
 const q = document.querySelector("#search-list");
 if (!q)
   throw new Error("No search list found");
-const M = document.querySelectorAll(".search-category__item--active");
-if (!M)
-  throw new Error("No search results found");
-const N = document.querySelector("#search-no-results");
+const N = document.querySelectorAll(".search-category__item--active");
 if (!N)
+  throw new Error("No search results found");
+const P = document.querySelector("#search-no-results");
+if (!P)
   throw new Error("No search no results element found");
-function P() {
-  const t = m.value.toLowerCase().trim();
+function A() {
+  const t = f.value.toLowerCase().trim();
   let e = !1;
-  M.forEach((o) => {
+  N.forEach((o) => {
     var r, i;
     let n = !1;
     const s = ((r = o.getAttribute("data-search-keywords")) == null ? void 0 : r.split(",")) || [];
@@ -258,9 +258,9 @@ function P() {
       n = a == null ? void 0 : a.includes(t);
     }
     o.classList.toggle("search-category__item--active", n), n && (e = !0);
-  }), q.classList.toggle("hidden", !e), N.classList.toggle("hidden", e);
+  }), q.classList.toggle("hidden", !e), P.classList.toggle("hidden", e);
 }
-m.addEventListener("input", P);
+f.addEventListener("input", A);
 C.forEach((t) => {
   t.addEventListener("click", () => u.showModal());
 });
@@ -268,9 +268,9 @@ function S(t) {
   t.target.closest("dialog") !== null || u.close();
 }
 new MutationObserver(() => {
-  u.open ? (window.matchMedia("(max-width: 768px)").matches && m.blur(), setTimeout(() => {
+  u.open ? setTimeout(() => {
     document.addEventListener("click", S);
-  }, 0)) : (document.removeEventListener("click", S), m.value = "", P());
+  }, 0) : (document.removeEventListener("click", S), f.value = "", A());
 }).observe(u, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (t) => {
   t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), u.showModal());
@@ -298,7 +298,7 @@ w.length > 0 && (w.forEach((t) => {
     });
   });
 }, 5e3));
-const b = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), I = document.querySelector("#icon-search-list");
-b && I && v && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(b, I, v)).catch(console.error);
-const A = "data-clipboard-value", T = document.querySelectorAll(`button[${A}]`);
-T.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(T, A)).catch(console.error);
+const v = document.querySelector("#icon-search-input"), b = document.querySelector("#icon-search-input-reset"), I = document.querySelector("#icon-search-list");
+v && I && b && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(v, I, b)).catch(console.error);
+const M = "data-clipboard-value", T = document.querySelectorAll(`button[${M}]`);
+T.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(T, M)).catch(console.error);
