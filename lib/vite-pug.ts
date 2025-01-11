@@ -1,6 +1,5 @@
 import type { StyleguideConfiguration } from './index'
 import path from 'node:path'
-import { prettify } from 'htmlfy'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -41,9 +40,9 @@ export function compilePug(mode: StyleguideConfiguration['mode'], html: string) 
         throw new Error(`${pugSourcePath} is not a valid .pug file`)
       }
 
-      const pugFn = pug.compileFile(pugFilePath)
+      const pugFn = pug.compileFile(pugFilePath, { pretty: true })
       const pugOutput = pugFn(pugLocals)
-      markupOutput = prettify(markupOutput.replace(vitePugTag, pugOutput))
+      markupOutput = markupOutput.replace(vitePugTag, pugOutput)
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
     else {

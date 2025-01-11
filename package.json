@@ -1,9 +1,7 @@
 {
   "name": "styleguide",
   "type": "module",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "main": "./dist/node/lib/index.mjs",
   "types": "./dist/node/lib/index.d.ts",
   "scripts": {
@@ -17,7 +15,6 @@
     "chokidar": "^3",
     "fs-extra": "^11.2.0",
     "glob": "^11.0.0",
-    "htmlfy": "^0.5.1",
     "pug": "^3.0.3"
   },
   "devDependencies": {
