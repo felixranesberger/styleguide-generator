@@ -3,7 +3,6 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
 import { glob } from 'glob';
-import { prettify } from 'htmlfy';
 import pug from 'pug';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
@@ -430,9 +429,9 @@ function compilePug(mode, html) {
       if (!isPugFile) {
         throw new Error(`${pugSourcePath} is not a valid .pug file`);
       }
-      const pugFn = pug.compileFile(pugFilePath);
+      const pugFn = pug.compileFile(pugFilePath, { pretty: true });
       const pugOutput = pugFn(pugLocals);
-      markupOutput = prettify(markupOutput.replace(vitePugTag, pugOutput));
+      markupOutput = markupOutput.replace(vitePugTag, pugOutput);
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
