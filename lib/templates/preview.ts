@@ -468,7 +468,9 @@ export function generatePreviewFile(data: {
           class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
           style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
       >
-        ${data.html.sidebarMenu}
+        <nav>
+            ${data.html.sidebarMenu}
+        </nav>
       </aside>
       
       <div class="order-2 w-full xl:w-[calc(100%-260px)]">
