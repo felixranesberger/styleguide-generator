@@ -11,7 +11,6 @@ import { buildStyleguide } from './lib';
     outDir: './styleguide-export',
     contentDir: './test/',
     projectTitle: 'Project name',
-    deactivateDarkMode: true,
     html: {
       lang: 'de',
       assets: {
