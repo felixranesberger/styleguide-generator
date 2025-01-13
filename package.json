@@ -1,7 +1,9 @@
 {
   "name": "styleguide",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/node/lib/index.mjs",
   "types": "./dist/node/lib/index.d.ts",
   "scripts": {
@@ -14,8 +16,8 @@
   "dependencies": {
     "chokidar": "^3",
     "fs-extra": "^11.2.0",
-    "glob": "^11.0.0",
-    "pug": "^3.0.3"
+    "pug": "^3.0.3",
+    "tinyglobby": "^0.2.10"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.12.0",

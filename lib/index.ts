@@ -2,7 +2,7 @@ import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { glob } from 'glob'
+import { glob } from 'tinyglobby'
 import { type in2Section, parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
