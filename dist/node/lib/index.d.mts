@@ -6,6 +6,7 @@ interface StyleguideConfiguration {
     outDir: string;
     contentDir: `${string}/`;
     projectTitle: string;
+    deactivateDarkMode?: boolean;
     html: {
         lang: string;
         assets: {

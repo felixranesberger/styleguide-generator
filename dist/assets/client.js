@@ -1,6 +1,45 @@
-var R = Object.defineProperty;
-var F = (t, e, o) => e in t ? R(t, e, { enumerable: !0, configurable: !0, writable: !0, value: o }) : t[e] = o;
-var l = (t, e, o) => F(t, typeof e != "symbol" ? e + "" : e, o);
+var N = Object.defineProperty;
+var M = (t, e, o) => e in t ? N(t, e, { enumerable: !0, configurable: !0, writable: !0, value: o }) : t[e] = o;
+var u = (t, e, o) => M(t, typeof e != "symbol" ? e + "" : e, o);
+const w = "in2theme", g = {
+  normal: "theme-normal",
+  light: "theme-light",
+  dark: "theme-dark"
+}, R = (t) => {
+  const e = window.matchMedia("(prefers-color-scheme: dark)");
+  function o() {
+    const r = localStorage.getItem(w);
+    return r || localStorage.setItem(w, "normal"), r;
+  }
+  function n() {
+    const r = o();
+    let i = g[r];
+    r === "normal" && e.matches && (i = g.dark);
+    const l = (d) => {
+      Object.values(g).forEach((A) => d.classList.remove(A)), d.classList.remove("dark");
+    }, c = (d) => {
+      d.classList.add(i), i === g.dark && d.classList.add("dark");
+    };
+    l(t), c(t);
+    const h = document.querySelectorAll("iframe");
+    h && h.forEach((d) => {
+      l(d), c(d);
+    }), l(document.body), c(document.body);
+  }
+  e.addEventListener("change", () => {
+    o() === "normal" && n();
+  }), n(), t.addEventListener("change", () => {
+    const r = t.querySelector('input[name="theme"]:checked');
+    if (!r)
+      throw new Error("No selected theme found");
+    const i = r.value;
+    localStorage.setItem(w, i), n();
+  });
+  const s = o(), a = t.querySelector(`input[value="${s}"]`);
+  if (!a)
+    throw new Error("No current theme input found");
+  a.checked = !0;
+};
 function O() {
   const t = document.querySelector("header");
   if (!t)
@@ -29,16 +68,16 @@ function D() {
 }
 O();
 D();
-class L {
+class p {
   // 10 seconds maximum wait time
   constructor(e = "preview-iframe", o = { minHeight: null, bufferHeight: 5 }) {
-    l(this, "iframes");
-    l(this, "options");
-    l(this, "initialLoadPromises");
-    l(this, "isInitialLoad", !0);
-    l(this, "readyStateCheckInterval", 50);
+    u(this, "iframes");
+    u(this, "options");
+    u(this, "initialLoadPromises");
+    u(this, "isInitialLoad", !0);
+    u(this, "readyStateCheckInterval", 50);
     // ms to check readyState
-    l(this, "maxWaitTime", 1e4);
+    u(this, "maxWaitTime", 1e4);
     this.iframes = Array.from(
       document.getElementsByClassName(e)
     ), this.options = o, this.initialLoadPromises = [], setTimeout(() => {
@@ -58,31 +97,31 @@ class L {
                 transition: opacity 0.2s ease-in-out;
             `;
       const n = new Promise((s) => {
-        const r = Date.now(), i = async () => {
+        const a = Date.now(), r = async () => {
           try {
             await this.setupIframe(e), e.style.opacity = "1", s();
-          } catch (d) {
-            console.warn(`Error setting up iframe ${o}:`, d), s();
+          } catch (l) {
+            console.warn(`Error setting up iframe ${o}:`, l), s();
           }
-        }, a = () => {
-          if (Date.now() - r > this.maxWaitTime) {
+        }, i = () => {
+          if (Date.now() - a > this.maxWaitTime) {
             console.warn(`Iframe ${o} timed out waiting for load`), s();
             return;
           }
-          const d = e.contentWindow;
-          if (!d) {
-            setTimeout(a, this.readyStateCheckInterval);
+          const l = e.contentWindow;
+          if (!l) {
+            setTimeout(i, this.readyStateCheckInterval);
             return;
           }
           try {
-            const c = d.document;
-            c && c.readyState === "complete" ? i() : c ? e.addEventListener("load", i, { once: !0 }) : setTimeout(a, this.readyStateCheckInterval);
+            const c = l.document;
+            c && c.readyState === "complete" ? r() : c ? e.addEventListener("load", r, { once: !0 }) : setTimeout(i, this.readyStateCheckInterval);
           } catch (c) {
             console.warn(`Error accessing iframe ${o}:`, c), s();
           }
         };
-        a(), e.addEventListener("load", () => {
-          a();
+        i(), e.addEventListener("load", () => {
+          i();
         }, { once: !0 });
       });
       this.initialLoadPromises.push(n);
@@ -120,27 +159,27 @@ class L {
                 padding: 0;
                 min-height: 0 !important;
             }
-        `, n.head.appendChild(s), await new Promise((r) => {
-      const i = () => {
-        const d = Array.from(n.getElementsByTagName("*")).filter(
-          (m) => m instanceof HTMLImageElement && !m.complete
+        `, n.head.appendChild(s), await new Promise((a) => {
+      const r = () => {
+        const l = Array.from(n.getElementsByTagName("*")).filter(
+          (h) => h instanceof HTMLImageElement && !h.complete
         ), c = Array.from(n.styleSheets).filter(
-          (m) => {
+          (h) => {
             try {
-              return m.cssRules === null;
+              return h.cssRules === null;
             } catch {
               return !0;
             }
           }
         );
-        d.length === 0 && c.length === 0 ? r() : setTimeout(i, this.readyStateCheckInterval);
+        l.length === 0 && c.length === 0 ? a() : setTimeout(r, this.readyStateCheckInterval);
       };
-      i();
+      r();
     }), !this.isInitialLoad) {
-      const r = new ResizeObserver(() => {
+      const a = new ResizeObserver(() => {
         this.adjustHeight(e);
       });
-      r.observe(n.documentElement), r.observe(n.body), new MutationObserver(() => {
+      a.observe(n.documentElement), a.observe(n.body), new MutationObserver(() => {
         this.adjustHeight(e);
       }).observe(n.body, {
         childList: !0,
@@ -154,8 +193,8 @@ class L {
   adjustHeight(e) {
     return new Promise((o) => {
       requestAnimationFrame(() => {
-        var i;
-        const n = (i = e.contentWindow) == null ? void 0 : i.document;
+        var r;
+        const n = (r = e.contentWindow) == null ? void 0 : r.document;
         if (!n) {
           o();
           return;
@@ -168,8 +207,8 @@ class L {
           n.body.offsetHeight,
           n.documentElement.clientHeight,
           n.body.clientHeight
-        ), r = this.options.minHeight ? Math.max(s, this.options.minHeight) : s;
-        e.style.height = `${r + this.options.bufferHeight}px`, requestAnimationFrame(() => {
+        ), a = this.options.minHeight ? Math.max(s, this.options.minHeight) : s;
+        e.style.height = `${a + this.options.bufferHeight}px`, requestAnimationFrame(() => {
           o();
         });
       });
@@ -182,101 +221,61 @@ class L {
   }
 }
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => {
-  new L("preview-iframe");
-}) : new L("preview-iframe");
-const y = "in2theme", g = {
-  normal: "theme-normal",
-  light: "theme-light",
-  dark: "theme-dark"
-}, h = document.querySelector(".theme-select");
-if (!h)
-  throw new Error("No theme select found");
-const k = window.matchMedia("(prefers-color-scheme: dark)");
-function p() {
-  const t = localStorage.getItem(y);
-  return t || localStorage.setItem(y, "normal"), t;
-}
-function E() {
-  const t = p();
-  let e = g[t];
-  t === "normal" && k.matches && (e = g.dark);
-  const o = (r) => {
-    Object.values(g).forEach((i) => r.classList.remove(i)), r.classList.remove("dark");
-  }, n = (r) => {
-    r.classList.add(e), e === g.dark && r.classList.add("dark");
-  };
-  o(h), n(h);
-  const s = document.querySelectorAll("iframe");
-  s && s.forEach((r) => {
-    o(r), n(r);
-  }), o(document.body), n(document.body);
-}
-k.addEventListener("change", () => {
-  p() === "normal" && E();
-});
-E();
-h.addEventListener("change", () => {
-  const t = h.querySelector('input[name="theme"]:checked');
-  if (!t)
-    throw new Error("No selected theme found");
-  const e = t.value;
-  localStorage.setItem(y, e), E();
-});
-const j = p(), H = h.querySelector(`input[value="${j}"]`);
-if (!H)
-  throw new Error("No current theme input found");
-H.checked = !0;
-const u = document.querySelector("#search-dialog");
-if (!u)
+  new p("preview-iframe");
+}) : new p("preview-iframe");
+const m = document.querySelector("#search-dialog");
+if (!m)
   throw new Error("No search dialog found");
-const C = document.querySelectorAll("[data-open-search]");
-if (C.length === 0)
+const T = document.querySelectorAll("[data-open-search]");
+if (T.length === 0)
   throw new Error("No open search buttons found");
 const f = document.querySelector("#search-input");
 if (!f)
   throw new Error("No search input found");
-const q = document.querySelector("#search-list");
-if (!q)
+const k = document.querySelector("#search-list");
+if (!k)
   throw new Error("No search list found");
-const N = document.querySelectorAll(".search-category__item--active");
-if (!N)
+const H = document.querySelectorAll(".search-category__item--active");
+if (!H)
   throw new Error("No search results found");
-const P = document.querySelector("#search-no-results");
-if (!P)
+const C = document.querySelector("#search-no-results");
+if (!C)
   throw new Error("No search no results element found");
-function A() {
+function q() {
   const t = f.value.toLowerCase().trim();
   let e = !1;
-  N.forEach((o) => {
-    var r, i;
+  H.forEach((o) => {
+    var a, r;
     let n = !1;
-    const s = ((r = o.getAttribute("data-search-keywords")) == null ? void 0 : r.split(",")) || [];
+    const s = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
     if (s.length > 0)
-      n = s.some((a) => a.toLowerCase().includes(t));
+      n = s.some((i) => i.toLowerCase().includes(t));
     else {
-      const a = (i = o.innerText) == null ? void 0 : i.toLowerCase();
-      n = a == null ? void 0 : a.includes(t);
+      const i = (r = o.innerText) == null ? void 0 : r.toLowerCase();
+      n = i == null ? void 0 : i.includes(t);
     }
     o.classList.toggle("search-category__item--active", n), n && (e = !0);
-  }), q.classList.toggle("hidden", !e), P.classList.toggle("hidden", e);
+  }), k.classList.toggle("hidden", !e), C.classList.toggle("hidden", e);
 }
-f.addEventListener("input", A);
-C.forEach((t) => {
-  t.addEventListener("click", () => u.showModal());
+f.addEventListener("input", q);
+T.forEach((t) => {
+  t.addEventListener("click", () => m.showModal());
 });
-function S(t) {
-  t.target.closest("dialog") !== null || u.close();
+function E(t) {
+  t.target.closest("dialog") !== null || m.close();
 }
 new MutationObserver(() => {
-  u.open ? setTimeout(() => {
-    document.addEventListener("click", S);
-  }, 0) : (document.removeEventListener("click", S), f.value = "", A());
-}).observe(u, { attributes: !0, attributeFilter: ["open"] });
+  m.open ? setTimeout(() => {
+    document.addEventListener("click", E);
+  }, 0) : (document.removeEventListener("click", E), f.value = "", q());
+}).observe(m, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (t) => {
-  t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), u.showModal());
+  t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), m.showModal());
 });
-const w = document.querySelectorAll("details:has(.code-highlight)");
-w.length > 0 && (w.forEach((t) => {
+const L = document.querySelector(".theme-select");
+L && R(L);
+const y = document.querySelectorAll("details:has(.code-highlight)");
+y.length > 0 && (y.forEach((t) => {
   const e = t.querySelector(".code-highlight");
   if (!e)
     throw new Error("No code element found");
@@ -284,21 +283,21 @@ w.length > 0 && (w.forEach((t) => {
   if (!o)
     throw new Error("No trigger button found");
   o.addEventListener("click", async () => {
-    const { highlightCode: n } = await import("./code-BWmfpHtp.js");
+    const { highlightCode: n } = await import("./code-Df72DCne.js");
     await n(e);
   });
 }), setTimeout(() => {
-  w.forEach((t) => {
+  y.forEach((t) => {
     const e = t.querySelector(".code-highlight");
     if (!e)
       throw new Error("No code element found");
     requestIdleCallback(async () => {
-      const { highlightCode: o } = await import("./code-BWmfpHtp.js");
+      const { highlightCode: o } = await import("./code-Df72DCne.js");
       await o(e);
     });
   });
 }, 5e3));
-const v = document.querySelector("#icon-search-input"), b = document.querySelector("#icon-search-input-reset"), I = document.querySelector("#icon-search-list");
-v && I && b && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(v, I, b)).catch(console.error);
-const M = "data-clipboard-value", T = document.querySelectorAll(`button[${M}]`);
-T.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(T, M)).catch(console.error);
+const S = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), b = document.querySelector("#icon-search-list");
+S && b && v && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(S, b, v)).catch(console.error);
+const P = "data-clipboard-value", I = document.querySelectorAll(`button[${P}]`);
+I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(I, P)).catch(console.error);

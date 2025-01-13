@@ -11,7 +11,7 @@ async function s(e, o) {
         import("./github-light-default-D99KPAby.js")
       ],
       langs: [
-        import("./html-B50lQ6OF.js")
+        import("./html-Dd70BfAO.js")
       ],
       engine: h(import("./wasm-DQxwEHae.js"))
     });
