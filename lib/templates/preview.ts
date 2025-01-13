@@ -2,13 +2,11 @@ import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import { logicalWriteFile } from '../utils.ts'
 import { compilePug } from '../vite-pug.ts'
 
-export function getHeaderHtml(data: { projectTitle: string }) {
+export function getHeaderHtml() {
   return `
 <header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1220px] border-styleguide-border bg-styleguide-bg-highlight">
-    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px]" href="/">
-        <p class="font-semibold tracking-tight text-styleguide-highlight">
-            ${data.projectTitle}
-        </p>
+    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-highlight" href="/">
+        ${globalThis.styleguideConfiguration.projectTitle}
     </a>
 
     <div class="flex grow items-center justify-end py-4 md:justify-between">
