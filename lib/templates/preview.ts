@@ -476,6 +476,17 @@ export function generatePreviewFile(data: {
     </main>
    
     ${data.html.search}
+    
+    <script type="speculationrules">
+    {
+      "prerender": [{
+        "where": {
+          "href_matches": "/*"
+        },
+        "eagerness": "moderate"
+      }]
+    }
+    </script>
 </body>
 </html>
 `.trim()
