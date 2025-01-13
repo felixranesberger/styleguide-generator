@@ -1,8 +1,13 @@
+import initThemeSelect from './lib/theme-select.ts'
 import './style.css'
 import './lib/menu.ts'
 import './lib/iframe.ts'
-import './lib/theme-select.ts'
 import './lib/search.ts'
+
+const themeSelectForm = document.querySelector<HTMLFormElement>('.theme-select')
+if (themeSelectForm) {
+  initThemeSelect(themeSelectForm)
+}
 
 const codeDetails = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
 if (codeDetails.length > 0) {

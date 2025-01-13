@@ -6,86 +6,84 @@ const THEME_CLASSES = {
   dark: 'theme-dark',
 } as const
 
-const themeSelectForm = document.querySelector<HTMLFormElement>('.theme-select')
-if (!themeSelectForm)
-  throw new Error('No theme select found')
+export default (themeSelectForm: HTMLFormElement) => {
+  // Media query for system dark mode preference
+  const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
 
-// Media query for system dark mode preference
-const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
-
-function getThemeFromLocalStorage(): keyof typeof THEME_CLASSES {
-  const theme = localStorage.getItem(LOCAL_STORAGE_KEY)
-  if (!theme) {
-    localStorage.setItem(LOCAL_STORAGE_KEY, 'normal')
-  }
-
-  return theme as keyof typeof THEME_CLASSES
-}
-
-function handleThemeSwitch() {
-  const currentTheme = getThemeFromLocalStorage()
-  let themeClass = THEME_CLASSES[currentTheme]
-
-  // If normal theme is selected, check system preference
-  if (currentTheme === 'normal' && systemDarkMode.matches) {
-    themeClass = THEME_CLASSES.dark
-  }
-
-  const removeClasses = <T extends HTMLElement>(element: T) => {
-    Object.values(THEME_CLASSES).forEach(theme => element.classList.remove(theme))
-    element.classList.remove('dark') // Remove Tailwind's dark class
-  }
-
-  const addClasses = <T extends HTMLElement>(element: T) => {
-    element.classList.add(themeClass)
-    // Add Tailwind's dark class if dark theme
-    if (themeClass === THEME_CLASSES.dark) {
-      element.classList.add('dark')
+  function getThemeFromLocalStorage(): keyof typeof THEME_CLASSES {
+    const theme = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (!theme) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, 'normal')
     }
+
+    return theme as keyof typeof THEME_CLASSES
   }
 
-  // Update form classes
-  removeClasses(themeSelectForm!)
-  addClasses(themeSelectForm!)
+  function handleThemeSwitch() {
+    const currentTheme = getThemeFromLocalStorage()
+    let themeClass = THEME_CLASSES[currentTheme]
 
-  // Update iframes
-  const iframes = document.querySelectorAll('iframe')
-  if (iframes) {
-    iframes.forEach((iframe) => {
-      removeClasses(iframe)
-      addClasses(iframe)
-    })
+    // If normal theme is selected, check system preference
+    if (currentTheme === 'normal' && systemDarkMode.matches) {
+      themeClass = THEME_CLASSES.dark
+    }
+
+    const removeClasses = <T extends HTMLElement>(element: T) => {
+      Object.values(THEME_CLASSES).forEach(theme => element.classList.remove(theme))
+      element.classList.remove('dark') // Remove Tailwind's dark class
+    }
+
+    const addClasses = <T extends HTMLElement>(element: T) => {
+      element.classList.add(themeClass)
+      // Add Tailwind's dark class if dark theme
+      if (themeClass === THEME_CLASSES.dark) {
+        element.classList.add('dark')
+      }
+    }
+
+    // Update form classes
+    removeClasses(themeSelectForm!)
+    addClasses(themeSelectForm!)
+
+    // Update iframes
+    const iframes = document.querySelectorAll('iframe')
+    if (iframes) {
+      iframes.forEach((iframe) => {
+        removeClasses(iframe)
+        addClasses(iframe)
+      })
+    }
+
+    // Update body classes
+    removeClasses(document.body)
+    addClasses(document.body)
   }
 
-  // Update body classes
-  removeClasses(document.body)
-  addClasses(document.body)
-}
-
-// Handle system theme changes when normal theme is selected
-systemDarkMode.addEventListener('change', () => {
-  const currentTheme = getThemeFromLocalStorage()
-  if (currentTheme === 'normal') {
-    handleThemeSwitch()
-  }
-})
-
-handleThemeSwitch()
-
-themeSelectForm.addEventListener('change', () => {
-  const selectedThemeInput = themeSelectForm.querySelector<HTMLInputElement>('input[name="theme"]:checked')
-  if (!selectedThemeInput)
-    throw new Error('No selected theme found')
-
-  const theme = selectedThemeInput.value
-  localStorage.setItem(LOCAL_STORAGE_KEY, theme)
+  // Handle system theme changes when normal theme is selected
+  systemDarkMode.addEventListener('change', () => {
+    const currentTheme = getThemeFromLocalStorage()
+    if (currentTheme === 'normal') {
+      handleThemeSwitch()
+    }
+  })
 
   handleThemeSwitch()
-})
 
-// pre active checkbox with correct theme
-const currentTheme = getThemeFromLocalStorage()
-const currentThemeInput = themeSelectForm.querySelector<HTMLInputElement>(`input[value="${currentTheme}"]`)
-if (!currentThemeInput)
-  throw new Error('No current theme input found')
-currentThemeInput.checked = true
+  themeSelectForm.addEventListener('change', () => {
+    const selectedThemeInput = themeSelectForm.querySelector<HTMLInputElement>('input[name="theme"]:checked')
+    if (!selectedThemeInput)
+      throw new Error('No selected theme found')
+
+    const theme = selectedThemeInput.value
+    localStorage.setItem(LOCAL_STORAGE_KEY, theme)
+
+    handleThemeSwitch()
+  })
+
+  // pre active checkbox with correct theme
+  const currentTheme = getThemeFromLocalStorage()
+  const currentThemeInput = themeSelectForm.querySelector<HTMLInputElement>(`input[value="${currentTheme}"]`)
+  if (!currentThemeInput)
+    throw new Error('No current theme input found')
+  currentThemeInput.checked = true
+}

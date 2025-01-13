@@ -25,6 +25,7 @@ export interface StyleguideConfiguration {
   outDir: string
   contentDir: `${string}/`
   projectTitle: string
+  deactivateDarkMode?: boolean
   html: {
     lang: string
     assets: {
@@ -150,7 +151,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   })
 
   // generate all preview pages
-  const headerHtml = getHeaderHtml({ projectTitle: config.projectTitle })
+  const headerHtml = getHeaderHtml()
   const searchHtml = getSearchHtml(searchSectionMapping)
   parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
     firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
