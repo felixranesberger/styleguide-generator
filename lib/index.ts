@@ -2,7 +2,6 @@ import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { prettify } from 'htmlfy'
 import { glob } from 'tinyglobby'
 import { type in2Section, parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
@@ -87,7 +86,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: prettify(htmlMarkup),
+      html: htmlMarkup,
     })
   }
 

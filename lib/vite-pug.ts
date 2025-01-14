@@ -1,5 +1,6 @@
 import type { StyleguideConfiguration } from './index'
 import path from 'node:path'
+import { prettify } from 'htmlfy'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -58,5 +59,5 @@ export function compilePug(mode: StyleguideConfiguration['mode'], html: string) 
     }
   })
 
-  return markupOutput
+  return prettify(markupOutput)
 }
