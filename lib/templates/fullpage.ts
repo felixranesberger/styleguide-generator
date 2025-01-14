@@ -1,7 +1,7 @@
 import { logicalWriteFile } from '../utils.ts'
 import { compilePug } from '../vite-pug.ts'
 
-export function generateFullPageFile(data: {
+export async function generateFullPageFile(data: {
   filePath: string
   page: {
     title: string
@@ -42,5 +42,5 @@ export function generateFullPageFile(data: {
 </html>
 `.trim()
 
-  logicalWriteFile(data.filePath, content)
+  await logicalWriteFile(data.filePath, content)
 }

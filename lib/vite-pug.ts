@@ -40,7 +40,11 @@ export function compilePug(mode: StyleguideConfiguration['mode'], html: string) 
         throw new Error(`${pugSourcePath} is not a valid .pug file`)
       }
 
-      const pugFn = pug.compileFile(pugFilePath, { pretty: true })
+      const pugFn = pug.compileFile(pugFilePath, {
+        pretty: false,
+        cache: true,
+      })
+
       const pugOutput = pugFn(pugLocals)
       markupOutput = markupOutput.replace(vitePugTag, pugOutput)
     }

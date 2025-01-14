@@ -4,18 +4,18 @@ import fs from 'fs-extra'
 /**
  * Write a file only if the content has changed
  */
-export function logicalWriteFile(filepath: string, content: string) {
+export async function logicalWriteFile(filepath: string, content: string) {
   // ensure directory exists
   const dir = path.dirname(filepath)
-  fs.ensureDirSync(dir)
+  await fs.ensureDir(dir)
 
-  const isFileExisting = fs.existsSync(filepath)
+  const isFileExisting = await fs.exists(filepath)
   if (isFileExisting) {
-    const oldContent = fs.readFileSync(filepath, 'utf-8')
+    const oldContent = await fs.readFile(filepath, 'utf-8')
     if (oldContent === content) {
       return
     }
   }
 
-  fs.writeFileSync(filepath, content)
+  await fs.writeFile(filepath, content)
 }

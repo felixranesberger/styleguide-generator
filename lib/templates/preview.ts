@@ -427,7 +427,7 @@ export function getSearchHtml(sections: {
 `.trim()
 }
 
-export function generatePreviewFile(data: {
+export async function generatePreviewFile(data: {
   filePath: string
   page: {
     title: string
@@ -495,5 +495,5 @@ export function generatePreviewFile(data: {
 </html>
 `.trim()
 
-  logicalWriteFile(data.filePath, content)
+  await logicalWriteFile(data.filePath, content)
 }

@@ -16,6 +16,7 @@
   "dependencies": {
     "chokidar": "^3",
     "fs-extra": "^11.2.0",
+    "htmlfy": "^0.5.1",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },

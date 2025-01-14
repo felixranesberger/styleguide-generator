@@ -2,6 +2,7 @@ import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
+import { prettify } from 'htmlfy'
 import { glob } from 'tinyglobby'
 import { type in2Section, parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
@@ -47,14 +48,13 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 
   // find all files in the content directory that have .css or .scss extension recursive
   // and also contain the styleguide comment
-  const styleguideContent = (await glob(`${config.contentDir}/**/*.{css,scss}`))
-    .map(file => fs.readFileSync(file, 'utf-8'))
-    .join('\n')
+  const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
+  const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
 
   const parsedContent = parse(styleguideContent)
 
   // ensure clean output directory and delete all html files
-  if (config.mode === 'production' && fs.existsSync(config.outDir)) {
+  if (config.mode === 'production' && await fs.exists(config.outDir)) {
     const files = await glob(`${config.outDir}/**/*.html`)
     await Promise.all(files.map(file => fs.unlink(file)))
   }
@@ -67,7 +67,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       : path.join(baseDirectory, fileName)
   }
 
-  const handleGenerateFullpage = (data: in2Section) => {
+  const handleGenerateFullpage = async (data: in2Section) => {
     if (data.markup === undefined || data.markup.length === 0)
       return
 
@@ -76,7 +76,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       htmlMarkup = data.wrapper.replace('<wrapper-content/>', htmlMarkup)
     }
 
-    generateFullPageFile({
+    await generateFullPageFile({
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
@@ -87,7 +87,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: htmlMarkup,
+      html: prettify(htmlMarkup),
     })
   }
 
@@ -106,7 +106,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }[] = []
 
   // generate all full-pages and collect data for preview generation
-  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
+  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
     searchSectionMapping[indexFirstLevel] = {
       title: firstLevelSection.header,
       items: [],
@@ -117,7 +117,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       items: [],
     }
 
-    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
+    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
       const menuHref = indexFirstLevel === 0 && indexSecondLevel === 0 ? '/index.html' : `/${secondLevelSection.previewFileName}`
 
       searchSectionMapping[indexFirstLevel].items.push({
@@ -141,20 +141,20 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       })
 
       if (secondLevelSection.markup) {
-        handleGenerateFullpage(secondLevelSection)
+        await handleGenerateFullpage(secondLevelSection)
       }
 
-      secondLevelSection.sections.forEach((thirdLevelSection) => {
-        handleGenerateFullpage(thirdLevelSection)
-      })
-    })
-  })
+      await Promise.all(secondLevelSection.sections.map(async (thirdLevelSection) => {
+        await handleGenerateFullpage(thirdLevelSection)
+      }))
+    }))
+  }))
 
   // generate all preview pages
   const headerHtml = getHeaderHtml()
   const searchHtml = getSearchHtml(searchSectionMapping)
-  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
-    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
+  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
+    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
       let sectionBefore = firstLevelSection.sections[indexSecondLevel - 1]
       if (!sectionBefore && !(indexFirstLevel === 0)) {
         sectionBefore = parsedContent[indexFirstLevel - 1].sections.at(-1)!
@@ -192,7 +192,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
         }
       }
 
-      generatePreviewFile({
+      await generatePreviewFile({
         filePath: getPreviewPageFilePath(secondLevelSection.previewFileName, indexFirstLevel === 0 && indexSecondLevel === 0),
         page: {
           title: secondLevelSection.header,
@@ -212,8 +212,8 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
           search: searchHtml,
         },
       })
-    })
-  })
+    }))
+  }))
 
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
@@ -229,9 +229,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 
   const assetsDirectoryPath = findAssetsDirectoryPath()
   const assetsDirectoryOutputPath = path.join(config.outDir, 'assets')
-  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath) && fs.readdirSync(assetsDirectoryOutputPath).length > 0
+  const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0
   if (!isAssetsDirectoryAlreadyCopied) {
-    fs.copySync(assetsDirectoryPath, assetsDirectoryOutputPath)
+    await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath)
   }
 }
 

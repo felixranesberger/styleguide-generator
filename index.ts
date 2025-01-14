@@ -31,7 +31,6 @@ import { buildStyleguide } from './lib';
   const server = await createServer({
     root: './styleguide-export',
     server: {
-      port: 3000,
       host: true,
     },
   })
