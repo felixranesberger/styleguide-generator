@@ -406,7 +406,15 @@ async function logicalWriteFile(filepath, content) {
 }
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
-function compilePug(mode, html) {
+const productionCache = /* @__PURE__ */ new Map();
+function compilePug(id, mode, html) {
+  if (mode === "production") {
+    const cachedVersion = productionCache.get(id);
+    if (cachedVersion) {
+      console.log(1736847174201, `got version cacehd for ${id}`);
+      return cachedVersion;
+    }
+  }
   const vitePugTags = html.match(regexModifierLine);
   if (!vitePugTags) {
     return html;
@@ -441,7 +449,11 @@ function compilePug(mode, html) {
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
     }
   });
-  return prettify(markupOutput);
+  const prettifiedOutput = prettify(markupOutput);
+  if (mode === "production") {
+    productionCache.set(id, prettifiedOutput);
+  }
+  return prettifiedOutput;
 }
 
 async function generateFullPageFile(data) {
@@ -463,7 +475,7 @@ async function generateFullPageFile(data) {
     ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}" />`).join("\n")}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
-    ${compilePug(globalThis.styleguideConfiguration.mode, data.html)}
+    ${compilePug(data.id, globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join("\n")}
 </body>
 </html>
@@ -630,7 +642,7 @@ function getMainContentRegular(section) {
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
-${compilePug(globalThis.styleguideConfiguration.mode, section.markup)}
+${compilePug(section.id, globalThis.styleguideConfiguration.mode, section.markup)}
                   </template>
               </div>
             </div>
@@ -969,6 +981,7 @@ async function buildStyleguide(config) {
       htmlMarkup = data.wrapper.replace("<wrapper-content/>", htmlMarkup);
     }
     await generateFullPageFile({
+      id: data.id,
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
