@@ -2,6 +2,7 @@ import { logicalWriteFile } from '../utils.ts'
 import { compilePug } from '../vite-pug.ts'
 
 export async function generateFullPageFile(data: {
+  id: string
   filePath: string
   page: {
     title: string
@@ -36,7 +37,7 @@ export async function generateFullPageFile(data: {
     ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
-    ${compilePug(globalThis.styleguideConfiguration.mode, data.html)}
+    ${compilePug(data.id, globalThis.styleguideConfiguration.mode, data.html)}
     ${computedScriptTags.join('\n')}
 </body>
 </html>

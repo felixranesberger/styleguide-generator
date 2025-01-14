@@ -6,11 +6,20 @@ import pug from 'pug'
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g
 
+const productionCache = new Map<string, string>()
+
 /**
  * Replaces all <insert-vite-pug src="path/to/file.pug" modifierClass="modifier"> tags with the pug file content
  * depending on the mode provided
  */
-export function compilePug(mode: StyleguideConfiguration['mode'], html: string) {
+export function compilePug(id: string, mode: StyleguideConfiguration['mode'], html: string) {
+  if (mode === 'production') {
+    const cachedVersion = productionCache.get(id)
+    if (cachedVersion) {
+      return cachedVersion
+    }
+  }
+
   const vitePugTags = html.match(regexModifierLine)
   if (!vitePugTags) {
     return html
@@ -59,5 +68,10 @@ export function compilePug(mode: StyleguideConfiguration['mode'], html: string) 
     }
   })
 
-  return prettify(markupOutput)
+  const prettifiedOutput = prettify(markupOutput)
+  if (mode === 'production') {
+    productionCache.set(id, prettifiedOutput)
+  }
+
+  return prettifiedOutput
 }

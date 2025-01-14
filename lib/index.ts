@@ -76,6 +76,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
     }
 
     await generateFullPageFile({
+      id: data.id,
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
