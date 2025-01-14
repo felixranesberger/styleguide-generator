@@ -2,8 +2,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
-import { prettify } from 'htmlfy';
 import { glob } from 'tinyglobby';
+import { prettify } from 'htmlfy';
 import pug from 'pug';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
@@ -441,7 +441,7 @@ function compilePug(mode, html) {
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
     }
   });
-  return markupOutput;
+  return prettify(markupOutput);
 }
 
 async function generateFullPageFile(data) {
@@ -630,7 +630,7 @@ function getMainContentRegular(section) {
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
-${compilePug("production", section.markup)}
+${compilePug(globalThis.styleguideConfiguration.mode, section.markup)}
                   </template>
               </div>
             </div>
@@ -979,7 +979,7 @@ async function buildStyleguide(config) {
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: prettify(htmlMarkup)
+      html: htmlMarkup
     });
   };
   const searchSectionMapping = [];
