@@ -2,6 +2,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
+import { prettify } from 'htmlfy';
 import { glob } from 'tinyglobby';
 import pug from 'pug';
 import { readFileSync } from 'node:fs';
@@ -391,17 +392,17 @@ function parse(text) {
   return output;
 }
 
-function logicalWriteFile(filepath, content) {
+async function logicalWriteFile(filepath, content) {
   const dir = path.dirname(filepath);
-  fs.ensureDirSync(dir);
-  const isFileExisting = fs.existsSync(filepath);
+  await fs.ensureDir(dir);
+  const isFileExisting = await fs.exists(filepath);
   if (isFileExisting) {
-    const oldContent = fs.readFileSync(filepath, "utf-8");
+    const oldContent = await fs.readFile(filepath, "utf-8");
     if (oldContent === content) {
       return;
     }
   }
-  fs.writeFileSync(filepath, content);
+  await fs.writeFile(filepath, content);
 }
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
@@ -429,7 +430,10 @@ function compilePug(mode, html) {
       if (!isPugFile) {
         throw new Error(`${pugSourcePath} is not a valid .pug file`);
       }
-      const pugFn = pug.compileFile(pugFilePath, { pretty: true });
+      const pugFn = pug.compileFile(pugFilePath, {
+        pretty: false,
+        cache: true
+      });
       const pugOutput = pugFn(pugLocals);
       markupOutput = markupOutput.replace(vitePugTag, pugOutput);
     } else {
@@ -440,7 +444,7 @@ function compilePug(mode, html) {
   return markupOutput;
 }
 
-function generateFullPageFile(data) {
+async function generateFullPageFile(data) {
   const computedScriptTags = data.js.map((js) => {
     const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(" ") : "";
     return `<script src="${js.src}" ${additionalAttributes}><\/script>`;
@@ -452,7 +456,7 @@ function generateFullPageFile(data) {
     <title>${data.page.title}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"><\/script>
@@ -464,7 +468,7 @@ function generateFullPageFile(data) {
 </body>
 </html>
 `.trim();
-  logicalWriteFile(data.filePath, content);
+  await logicalWriteFile(data.filePath, content);
 }
 
 function getHeaderHtml() {
@@ -845,7 +849,7 @@ function getSearchHtml(sections) {
 </dialog>
 `.trim();
 }
-function generatePreviewFile(data) {
+async function generatePreviewFile(data) {
   const content = `
 <!doctype html>
 <html lang="${data.page.lang}">
@@ -853,7 +857,7 @@ function generatePreviewFile(data) {
     <title>${data.page.title}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/preview.svg">
     <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
@@ -867,7 +871,9 @@ function generatePreviewFile(data) {
           class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
           style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
       >
-        ${data.html.sidebarMenu}
+        <nav>
+            ${data.html.sidebarMenu}
+        </nav>
       </aside>
       
       <div class="order-2 w-full xl:w-[calc(100%-260px)]">
@@ -891,7 +897,7 @@ function generatePreviewFile(data) {
 </body>
 </html>
 `.trim();
-  logicalWriteFile(data.filePath, content);
+  await logicalWriteFile(data.filePath, content);
 }
 
 function watchForFileContentChanges(path, regex, callback) {
@@ -943,9 +949,10 @@ function watchStyleguideForChanges(path, callback) {
 
 async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
-  const styleguideContent = (await glob(`${config.contentDir}/**/*.{css,scss}`)).map((file) => fs.readFileSync(file, "utf-8")).join("\n");
+  const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`);
+  const styleguideContent = (await Promise.all(styleguideContentPaths.map((file) => fs.readFile(file, "utf-8")))).join("\n");
   const parsedContent = parse(styleguideContent);
-  if (config.mode === "production" && fs.existsSync(config.outDir)) {
+  if (config.mode === "production" && await fs.exists(config.outDir)) {
     const files = await glob(`${config.outDir}/**/*.html`);
     await Promise.all(files.map((file) => fs.unlink(file)));
   }
@@ -954,14 +961,14 @@ async function buildStyleguide(config) {
   const getPreviewPageFilePath = (fileName, isHtmlIndexPage = false) => {
     return isHtmlIndexPage ? path.join(baseDirectory, "index.html") : path.join(baseDirectory, fileName);
   };
-  const handleGenerateFullpage = (data) => {
+  const handleGenerateFullpage = async (data) => {
     if (data.markup === undefined || data.markup.length === 0)
       return;
     let htmlMarkup = data.markup;
     if (data.wrapper) {
       htmlMarkup = data.wrapper.replace("<wrapper-content/>", htmlMarkup);
     }
-    generateFullPageFile({
+    await generateFullPageFile({
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
@@ -972,12 +979,12 @@ async function buildStyleguide(config) {
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: htmlMarkup
+      html: prettify(htmlMarkup)
     });
   };
   const searchSectionMapping = [];
   const menuSectionMapping = [];
-  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
+  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
     searchSectionMapping[indexFirstLevel] = {
       title: firstLevelSection.header,
       items: []
@@ -986,7 +993,7 @@ async function buildStyleguide(config) {
       title: firstLevelSection.header,
       items: []
     };
-    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
+    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
       const menuHref = indexFirstLevel === 0 && indexSecondLevel === 0 ? "/index.html" : `/${secondLevelSection.previewFileName}`;
       searchSectionMapping[indexFirstLevel].items.push({
         label: secondLevelSection.header,
@@ -1002,17 +1009,17 @@ async function buildStyleguide(config) {
         href: menuHref
       });
       if (secondLevelSection.markup) {
-        handleGenerateFullpage(secondLevelSection);
+        await handleGenerateFullpage(secondLevelSection);
       }
-      secondLevelSection.sections.forEach((thirdLevelSection) => {
-        handleGenerateFullpage(thirdLevelSection);
-      });
-    });
-  });
+      await Promise.all(secondLevelSection.sections.map(async (thirdLevelSection) => {
+        await handleGenerateFullpage(thirdLevelSection);
+      }));
+    }));
+  }));
   const headerHtml = getHeaderHtml();
   const searchHtml = getSearchHtml(searchSectionMapping);
-  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
-    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
+  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
+    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
       let sectionBefore = firstLevelSection.sections[indexSecondLevel - 1];
       if (!sectionBefore && !(indexFirstLevel === 0)) {
         sectionBefore = parsedContent[indexFirstLevel - 1].sections.at(-1);
@@ -1035,7 +1042,7 @@ async function buildStyleguide(config) {
           href: sectionAfter.previewFileName
         };
       }
-      generatePreviewFile({
+      await generatePreviewFile({
         filePath: getPreviewPageFilePath(secondLevelSection.previewFileName, indexFirstLevel === 0 && indexSecondLevel === 0),
         page: {
           title: secondLevelSection.header,
@@ -1055,8 +1062,8 @@ async function buildStyleguide(config) {
           search: searchHtml
         }
       });
-    });
-  });
+    }));
+  }));
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const findAssetsDirectoryPath = () => {
@@ -1067,9 +1074,9 @@ async function buildStyleguide(config) {
   };
   const assetsDirectoryPath = findAssetsDirectoryPath();
   const assetsDirectoryOutputPath = path.join(config.outDir, "assets");
-  const isAssetsDirectoryAlreadyCopied = fs.existsSync(assetsDirectoryOutputPath) && fs.readdirSync(assetsDirectoryOutputPath).length > 0;
+  const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0;
   if (!isAssetsDirectoryAlreadyCopied) {
-    fs.copySync(assetsDirectoryPath, assetsDirectoryOutputPath);
+    await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath);
   }
 }
 async function watchStyleguide(config, onChange) {
