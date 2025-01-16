@@ -865,6 +865,7 @@ const productionCache = /* @__PURE__ */ new Map();
 let globalPool = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const workerFilePath = path.resolve(__dirname, "./vite-pug/worker.ts");
 class PugWorkerPool {
   workers = [];
   queue = [];
@@ -872,7 +873,7 @@ class PugWorkerPool {
   availableWorkers = [];
   constructor(size = os.cpus().length) {
     for (let i = 0; i < size; i++) {
-      const worker = new Worker(path.resolve(__dirname, "./worker.js"), {
+      const worker = new Worker(workerFilePath, {
         name: `pug-worker-${i + 1}`
       });
       worker.on("message", (result) => this.handleWorkerMessage(worker, result));
@@ -904,7 +905,7 @@ class PugWorkerPool {
     const availableIndex = this.availableWorkers.indexOf(worker);
     if (workerIndex !== -1) {
       worker.terminate().catch(console.error);
-      const newWorker = new Worker(path.resolve(__dirname, "./worker.js"), {
+      const newWorker = new Worker(workerFilePath, {
         name: `pug-worker-${workerIndex + 1}-replacement`
       });
       newWorker.on("message", (result) => this.handleWorkerMessage(newWorker, result));
