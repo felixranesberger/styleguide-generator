@@ -3,8 +3,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
 import { glob } from 'tinyglobby';
-import { prettify } from 'htmlfy';
-import pug from 'pug';
+import os from 'node:os';
+import { Worker } from 'node:worker_threads';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
 
@@ -405,56 +405,6 @@ async function logicalWriteFile(filepath, content) {
   await fs.writeFile(filepath, content);
 }
 
-const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
-const productionCache = /* @__PURE__ */ new Map();
-function compilePug(id, mode, html) {
-  if (mode === "production") {
-    const cachedVersion = productionCache.get(id);
-    if (cachedVersion) {
-      return cachedVersion;
-    }
-  }
-  const vitePugTags = html.match(regexModifierLine);
-  if (!vitePugTags) {
-    return html;
-  }
-  let markupOutput = html;
-  vitePugTags.forEach((vitePugTag) => {
-    const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1];
-    if (!pugSourcePath) {
-      return;
-    }
-    const pugModifierClass = vitePugTag.match(/modifierClass="(.+?)"/);
-    let pugLocals = {};
-    if (pugModifierClass && pugModifierClass[1]) {
-      pugLocals = {
-        modifierClass: pugModifierClass[1]
-      };
-    }
-    const pugFilePath = path.join(globalThis.styleguideConfiguration.contentDir, pugSourcePath);
-    if (mode === "production") {
-      const isPugFile = path.extname(pugSourcePath) === ".pug";
-      if (!isPugFile) {
-        throw new Error(`${pugSourcePath} is not a valid .pug file`);
-      }
-      const pugFn = pug.compileFile(pugFilePath, {
-        pretty: false,
-        cache: true
-      });
-      const pugOutput = pugFn(pugLocals);
-      markupOutput = markupOutput.replace(vitePugTag, pugOutput);
-    } else {
-      const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
-      markupOutput = markupOutput.replace(vitePugTag, pugTag);
-    }
-  });
-  const prettifiedOutput = prettify(markupOutput);
-  if (mode === "production") {
-    productionCache.set(id, prettifiedOutput);
-  }
-  return prettifiedOutput;
-}
-
 async function generateFullPageFile(data) {
   const computedScriptTags = data.js.map((js) => {
     const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(" ") : "";
@@ -474,7 +424,7 @@ async function generateFullPageFile(data) {
     ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}" />`).join("\n")}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
-    ${compilePug(data.id, globalThis.styleguideConfiguration.mode, data.html)}
+    ${data.html}
     ${computedScriptTags.join("\n")}
 </body>
 </html>
@@ -641,7 +591,7 @@ function getMainContentRegular(section) {
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
-${compilePug(section.id, globalThis.styleguideConfiguration.mode, section.markup)}
+${section.markup}
                   </template>
               </div>
             </div>
@@ -911,6 +861,126 @@ async function generatePreviewFile(data) {
   await logicalWriteFile(data.filePath, content);
 }
 
+const productionCache = /* @__PURE__ */ new Map();
+let globalPool = null;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+class PugWorkerPool {
+  workers = [];
+  queue = [];
+  isProcessing = false;
+  availableWorkers = [];
+  constructor(size = os.cpus().length) {
+    for (let i = 0; i < size; i++) {
+      const worker = new Worker(path.resolve(__dirname, "./worker.js"), {
+        name: `pug-worker-${i + 1}`
+      });
+      worker.on("message", (result) => this.handleWorkerMessage(worker, result));
+      worker.on("error", (error) => this.handleWorkerError(worker, error));
+      this.workers.push(worker);
+      this.availableWorkers.push(worker);
+    }
+  }
+  handleWorkerMessage(worker, result) {
+    this.availableWorkers.push(worker);
+    const currentTask = this.queue[0];
+    if (!currentTask)
+      return;
+    this.queue.shift();
+    if ("error" in result) {
+      currentTask.reject(new Error(result.error));
+    } else {
+      currentTask.resolve(result.html);
+    }
+    this.processNextTask().catch(console.error);
+  }
+  handleWorkerError(worker, error) {
+    const currentTask = this.queue[0];
+    if (currentTask) {
+      currentTask.reject(error);
+      this.queue.shift();
+    }
+    const workerIndex = this.workers.indexOf(worker);
+    const availableIndex = this.availableWorkers.indexOf(worker);
+    if (workerIndex !== -1) {
+      worker.terminate().catch(console.error);
+      const newWorker = new Worker(path.resolve(__dirname, "./worker.js"), {
+        name: `pug-worker-${workerIndex + 1}-replacement`
+      });
+      newWorker.on("message", (result) => this.handleWorkerMessage(newWorker, result));
+      newWorker.on("error", (error2) => this.handleWorkerError(newWorker, error2));
+      this.workers[workerIndex] = newWorker;
+      if (availableIndex !== -1) {
+        this.availableWorkers[availableIndex] = newWorker;
+      } else {
+        this.availableWorkers.push(newWorker);
+      }
+    }
+    this.processNextTask().catch(console.error);
+  }
+  async processNextTask() {
+    if (this.isProcessing || this.queue.length === 0 || this.availableWorkers.length === 0) {
+      return;
+    }
+    this.isProcessing = true;
+    const worker = this.availableWorkers.pop();
+    const task = this.queue[0];
+    worker.postMessage(task.task);
+    this.isProcessing = false;
+  }
+  async compile(id, mode, html, contentDir) {
+    return new Promise((resolve, reject) => {
+      const task = { id, mode, html, contentDir };
+      this.queue.push({ task, resolve, reject });
+      this.processNextTask();
+    });
+  }
+  async terminate() {
+    await Promise.all(this.workers.map((w) => w.terminate()));
+    this.workers = [];
+    this.queue = [];
+    this.availableWorkers = [];
+    this.isProcessing = false;
+    globalPool = null;
+  }
+}
+function getPool() {
+  if (!globalPool) {
+    globalPool = new PugWorkerPool();
+  }
+  return globalPool;
+}
+["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
+  process.on(signal, async () => {
+    if (globalPool) {
+      await globalPool.terminate();
+    }
+  });
+});
+async function compilePugMarkup(id, mode, html) {
+  const needsProcessing = html.includes("<insert-vite-pug");
+  if (!needsProcessing) {
+    return html;
+  }
+  const pool = getPool();
+  if (mode === "production") {
+    const cachedVersion = productionCache.get(id);
+    if (cachedVersion) {
+      return cachedVersion;
+    }
+  }
+  const compiledHtml = await pool.compile(
+    id,
+    mode,
+    html,
+    globalThis.styleguideConfiguration.contentDir
+  );
+  if (mode === "production") {
+    productionCache.set(id, compiledHtml);
+  }
+  return compiledHtml;
+}
+
 function watchForFileContentChanges(path, regex, callback) {
   if (typeof callback !== "function") {
     throw new TypeError("styleguide watch requires a callback function");
@@ -958,6 +1028,7 @@ function watchStyleguideForChanges(path, callback) {
   );
 }
 
+globalThis.isWatchMode = false;
 async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`);
@@ -1022,11 +1093,25 @@ async function buildStyleguide(config) {
         href: menuHref
       });
       if (secondLevelSection.markup) {
-        fileWriteTasks.push(handleGenerateFullPage(secondLevelSection));
+        fileWriteTasks.push(new Promise((resolve) => {
+          (async () => {
+            secondLevelSection.markup = await compilePugMarkup(secondLevelSection.id, config.mode, secondLevelSection.markup);
+            await handleGenerateFullPage(secondLevelSection);
+            resolve();
+          })();
+        }));
       }
-      secondLevelSection.sections.forEach(
-        (thirdLevelSection) => fileWriteTasks.push(handleGenerateFullPage(thirdLevelSection))
-      );
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (!thirdLevelSection.markup)
+          return;
+        fileWriteTasks.push(new Promise((resolve) => {
+          (async () => {
+            thirdLevelSection.markup = await compilePugMarkup(thirdLevelSection.id, config.mode, thirdLevelSection.markup);
+            await handleGenerateFullPage(thirdLevelSection);
+            resolve();
+          })();
+        }));
+      });
     });
   });
   const headerHtml = getHeaderHtml();
@@ -1094,8 +1179,12 @@ async function buildStyleguide(config) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath);
   }
   await Promise.all(fileWriteTasks);
+  if (globalThis.isWatchMode === false) {
+    await getPool().terminate();
+  }
 }
 async function watchStyleguide(config, onChange) {
+  globalThis.isWatchMode = true;
   await buildStyleguide(config);
   const contentDirPath = config.contentDir.endsWith("/") ? config.contentDir : `${config.contentDir}/`;
   watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {

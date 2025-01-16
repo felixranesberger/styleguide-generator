@@ -1,4 +1,5 @@
 declare global {
+    var isWatchMode: boolean;
     var styleguideConfiguration: StyleguideConfiguration;
 }
 interface StyleguideConfiguration {
