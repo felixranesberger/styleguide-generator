@@ -13,12 +13,17 @@ import {
   getSearchHtml,
   getSidebarMenuHtml,
 } from './templates/preview.ts'
+import { compilePugMarkup, getPool } from './vite-pug'
 import { watchStyleguideForChanges } from './watcher.ts'
 
 declare global {
   // eslint-disable-next-line no-var,vars-on-top
+  var isWatchMode: boolean
+  // eslint-disable-next-line no-var,vars-on-top
   var styleguideConfiguration: StyleguideConfiguration
 }
+
+globalThis.isWatchMode = false
 
 export interface StyleguideConfiguration {
   mode: 'development' | 'production'
@@ -143,12 +148,27 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       })
 
       if (secondLevelSection.markup) {
-        fileWriteTasks.push(handleGenerateFullPage(secondLevelSection))
+        fileWriteTasks.push(new Promise((resolve) => {
+          (async () => {
+            secondLevelSection.markup = await compilePugMarkup(secondLevelSection.id, config.mode, secondLevelSection.markup)
+            await handleGenerateFullPage(secondLevelSection)
+            resolve()
+          })()
+        }))
       }
 
-      secondLevelSection.sections.forEach(
-        thirdLevelSection => fileWriteTasks.push(handleGenerateFullPage(thirdLevelSection)),
-      )
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (!thirdLevelSection.markup)
+          return
+
+        fileWriteTasks.push(new Promise((resolve) => {
+          (async () => {
+            thirdLevelSection.markup = await compilePugMarkup(thirdLevelSection.id, config.mode, thirdLevelSection.markup)
+            await handleGenerateFullPage(thirdLevelSection)
+            resolve()
+          })()
+        }))
+      })
     })
   })
 
@@ -240,6 +260,10 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 
   // make sure all files have been written before resolving
   await Promise.all(fileWriteTasks)
+
+  if (globalThis.isWatchMode === false) {
+    await getPool().terminate()
+  }
 }
 
 /**
@@ -247,6 +271,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
  * @param config - The configuration for the styleguide
  */
 export async function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void) {
+  globalThis.isWatchMode = true
   await buildStyleguide(config)
 
   // marke sure content dir ends with /

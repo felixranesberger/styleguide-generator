@@ -1,14 +1,14 @@
 import fs from 'fs-extra'
 import { createServer } from 'vite'
-import { buildStyleguide } from './lib';
+import { watchStyleguide } from './lib';
 
 (async () => {
   // clear the output directory
   await fs.remove('./styleguide-export')
 
   const buildStyleguideStart = Date.now()
-  await buildStyleguide({
-    mode: 'production',
+  await watchStyleguide({
+    mode: 'development',
     outDir: './styleguide-export',
     contentDir: './test/',
     projectTitle: 'Project name',
