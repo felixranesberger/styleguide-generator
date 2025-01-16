@@ -1,5 +1,4 @@
 import fs from 'fs-extra'
-import { createServer } from 'vite'
 import { watchStyleguide } from './lib';
 
 (async () => {
@@ -30,13 +29,13 @@ import { watchStyleguide } from './lib';
   })
   console.log(`Built styleguide in ${Date.now() - buildStyleguideStart}ms`)
 
-  const server = await createServer({
-    root: './styleguide-export',
-    server: {
-      host: true,
-    },
-  })
-  await server.listen()
-  server.printUrls()
-  server.bindCLIShortcuts({ print: true })
+  // const server = await createServer({
+  //   root: './styleguide-export',
+  //   server: {
+  //     host: true,
+  //   },
+  // })
+  // await server.listen()
+  // server.printUrls()
+  // server.bindCLIShortcuts({ print: true })
 })()
