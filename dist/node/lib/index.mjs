@@ -865,7 +865,8 @@ const productionCache = /* @__PURE__ */ new Map();
 let globalPool = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const workerFilePath = path.resolve(__dirname, "./vite-pug/worker.ts");
+const workerFileName = __dirname.includes("dist/") ? "worker.mjs" : "worker.ts";
+const workerFilePath = path.resolve(__dirname, workerFileName);
 class PugWorkerPool {
   workers = [];
   queue = [];
