@@ -1,8 +1,16 @@
+import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
 import initThemeSelect from './lib/theme-select.ts'
 import './style.css'
 import './lib/menu.ts'
-import './lib/iframe.ts'
 import './lib/search.ts'
+
+const previewIframes = document.querySelectorAll<HTMLIFrameElement>('.preview-iframe')
+if (previewIframes.length > 0) {
+  initPreviewIframes(previewIframes).catch(console.error)
+}
+else {
+  removeDocumentLoadingClass()
+}
 
 const themeSelectForm = document.querySelector<HTMLFormElement>('.theme-select')
 if (themeSelectForm) {
