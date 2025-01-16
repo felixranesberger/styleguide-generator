@@ -66,7 +66,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       : path.join(baseDirectory, fileName)
   }
 
-  const handleGenerateFullpage = async (data: in2Section) => {
+  const handleGenerateFullPage = async (data: in2Section) => {
     if (data.markup === undefined || data.markup.length === 0)
       return
 
@@ -105,8 +105,10 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
     items: { label: string, href: string }[]
   }[] = []
 
+  const fileWriteTasks: Promise<void>[] = []
+
   // generate all full-pages and collect data for preview generation
-  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
+  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
     searchSectionMapping[indexFirstLevel] = {
       title: firstLevelSection.header,
       items: [],
@@ -117,7 +119,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       items: [],
     }
 
-    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
+    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
       const menuHref = indexFirstLevel === 0 && indexSecondLevel === 0 ? '/index.html' : `/${secondLevelSection.previewFileName}`
 
       searchSectionMapping[indexFirstLevel].items.push({
@@ -141,20 +143,20 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       })
 
       if (secondLevelSection.markup) {
-        await handleGenerateFullpage(secondLevelSection)
+        fileWriteTasks.push(handleGenerateFullPage(secondLevelSection))
       }
 
-      await Promise.all(secondLevelSection.sections.map(async (thirdLevelSection) => {
-        await handleGenerateFullpage(thirdLevelSection)
-      }))
-    }))
-  }))
+      secondLevelSection.sections.forEach(
+        thirdLevelSection => fileWriteTasks.push(handleGenerateFullPage(thirdLevelSection)),
+      )
+    })
+  })
 
   // generate all preview pages
   const headerHtml = getHeaderHtml()
   const searchHtml = getSearchHtml(searchSectionMapping)
-  await Promise.all(parsedContent.map(async (firstLevelSection, indexFirstLevel) => {
-    await Promise.all(firstLevelSection.sections.map(async (secondLevelSection, indexSecondLevel) => {
+  parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
+    firstLevelSection.sections.forEach((secondLevelSection, indexSecondLevel) => {
       let sectionBefore = firstLevelSection.sections[indexSecondLevel - 1]
       if (!sectionBefore && !(indexFirstLevel === 0)) {
         sectionBefore = parsedContent[indexFirstLevel - 1].sections.at(-1)!
@@ -192,28 +194,30 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
         }
       }
 
-      await generatePreviewFile({
-        filePath: getPreviewPageFilePath(secondLevelSection.previewFileName, indexFirstLevel === 0 && indexSecondLevel === 0),
-        page: {
-          title: secondLevelSection.header,
-          description: secondLevelSection.description,
-          lang: config.html.lang,
-        },
-        css: config.html.assets.css,
-        js: config.html.assets.js,
-        html: {
-          header: headerHtml,
-          sidebarMenu: getSidebarMenuHtml(
-            menuSectionMapping,
-            secondLevelSection.previewFileName,
-          ),
-          mainContent: getMainContentHtml(secondLevelSection),
-          nextPageControls: getNextPageControlsHtml(nextPageControlsData),
-          search: searchHtml,
-        },
-      })
-    }))
-  }))
+      fileWriteTasks.push(
+        generatePreviewFile({
+          filePath: getPreviewPageFilePath(secondLevelSection.previewFileName, indexFirstLevel === 0 && indexSecondLevel === 0),
+          page: {
+            title: secondLevelSection.header,
+            description: secondLevelSection.description,
+            lang: config.html.lang,
+          },
+          css: config.html.assets.css,
+          js: config.html.assets.js,
+          html: {
+            header: headerHtml,
+            sidebarMenu: getSidebarMenuHtml(
+              menuSectionMapping,
+              secondLevelSection.previewFileName,
+            ),
+            mainContent: getMainContentHtml(secondLevelSection),
+            nextPageControls: getNextPageControlsHtml(nextPageControlsData),
+            search: searchHtml,
+          },
+        }),
+      )
+    })
+  })
 
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
@@ -233,6 +237,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath)
   }
+
+  // make sure all files have been written before resolving
+  await Promise.all(fileWriteTasks)
 }
 
 /**
