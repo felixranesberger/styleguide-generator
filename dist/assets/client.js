@@ -1,303 +1,188 @@
-var N = Object.defineProperty;
-var M = (t, e, o) => e in t ? N(t, e, { enumerable: !0, configurable: !0, writable: !0, value: o }) : t[e] = o;
-var u = (t, e, o) => M(t, typeof e != "symbol" ? e + "" : e, o);
-const w = "in2theme", g = {
+async function N(e) {
+  const t = (o) => {
+    var r;
+    return ((r = o.contentWindow) == null ? void 0 : r.document.readyState) === "complete";
+  };
+  await Promise.allSettled(
+    Array.from(e).map((o) => (console.log(1737014770188, o), new Promise((r) => {
+      const n = () => setTimeout(r, 25);
+      if (t(o)) {
+        n();
+        return;
+      }
+      o.addEventListener("load", n, { once: !0 }), setTimeout(r, 5e3);
+    })))
+  );
+}
+async function C(e) {
+  var n;
+  const t = (n = e.contentWindow) == null ? void 0 : n.document;
+  if (!t)
+    throw new Error("iFrame was not fully loaded yet");
+  e.style.height = "0px", e.offsetHeight;
+  const o = Math.max(
+    t.documentElement.scrollHeight,
+    t.body.scrollHeight,
+    t.documentElement.offsetHeight,
+    t.body.offsetHeight,
+    t.documentElement.clientHeight,
+    t.body.clientHeight
+  ), r = Math.max(o, 50);
+  e.style.height = `${r + 5}px`;
+}
+function T() {
+  document.body.classList.add("js-loaded");
+}
+const R = async (e) => {
+  await N(e);
+  const t = new ResizeObserver(
+    (o) => o.forEach((r) => C(r.target))
+  );
+  e.forEach((o) => t.observe(o)), T();
+}, g = "in2theme", d = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
-}, R = (t) => {
-  const e = window.matchMedia("(prefers-color-scheme: dark)");
+}, F = (e) => {
+  const t = window.matchMedia("(prefers-color-scheme: dark)");
   function o() {
-    const r = localStorage.getItem(w);
-    return r || localStorage.setItem(w, "normal"), r;
+    const c = localStorage.getItem(g);
+    return c || localStorage.setItem(g, "normal"), c;
   }
-  function n() {
-    const r = o();
-    let i = g[r];
-    r === "normal" && e.matches && (i = g.dark);
-    const l = (d) => {
-      Object.values(g).forEach((A) => d.classList.remove(A)), d.classList.remove("dark");
-    }, c = (d) => {
-      d.classList.add(i), i === g.dark && d.classList.add("dark");
+  function r() {
+    const c = o();
+    let s = d[c];
+    c === "normal" && t.matches && (s = d.dark);
+    const u = (i) => {
+      Object.values(d).forEach((_) => i.classList.remove(_)), i.classList.remove("dark");
+    }, m = (i) => {
+      i.classList.add(s), s === d.dark && i.classList.add("dark");
     };
-    l(t), c(t);
-    const h = document.querySelectorAll("iframe");
-    h && h.forEach((d) => {
-      l(d), c(d);
-    }), l(document.body), c(document.body);
+    u(e), m(e);
+    const E = document.querySelectorAll("iframe");
+    E && E.forEach((i) => {
+      u(i), m(i);
+    }), u(document.body), m(document.body);
   }
-  e.addEventListener("change", () => {
-    o() === "normal" && n();
-  }), n(), t.addEventListener("change", () => {
-    const r = t.querySelector('input[name="theme"]:checked');
-    if (!r)
+  t.addEventListener("change", () => {
+    o() === "normal" && r();
+  }), r(), e.addEventListener("change", () => {
+    const c = e.querySelector('input[name="theme"]:checked');
+    if (!c)
       throw new Error("No selected theme found");
-    const i = r.value;
-    localStorage.setItem(w, i), n();
+    const s = c.value;
+    localStorage.setItem(g, s), r();
   });
-  const s = o(), a = t.querySelector(`input[value="${s}"]`);
+  const n = o(), a = e.querySelector(`input[value="${n}"]`);
   if (!a)
     throw new Error("No current theme input found");
   a.checked = !0;
 };
-function O() {
-  const t = document.querySelector("header");
-  if (!t)
+function P() {
+  const e = document.querySelector("header");
+  if (!e)
     throw new Error("No header found");
-  const e = () => t.getBoundingClientRect().height;
-  document.documentElement.style.setProperty("--header-height", `${e()}px`), window.addEventListener("resize", () => {
-    document.documentElement.style.setProperty("--header-height", `${e()}px`);
+  const t = () => e.getBoundingClientRect().height;
+  document.documentElement.style.setProperty("--header-height", `${t()}px`), window.addEventListener("resize", () => {
+    document.documentElement.style.setProperty("--header-height", `${t()}px`);
   });
 }
-function D() {
-  const t = document.querySelector("aside");
-  if (!t)
+function O() {
+  const e = document.querySelector("aside");
+  if (!e)
     throw new Error("No aside menu found");
-  t.addEventListener("scroll", () => {
-    const o = t.scrollTop / (t.scrollHeight - t.clientHeight) * 100;
+  e.addEventListener("scroll", () => {
+    const o = e.scrollTop / (e.scrollHeight - e.clientHeight) * 100;
     sessionStorage.setItem("asideScrollPercentage", o.toString());
   });
-  function e() {
+  function t() {
     const o = sessionStorage.getItem("asideScrollPercentage");
     if (o) {
-      const n = Number.parseFloat(o), s = (t.scrollHeight - t.clientHeight) * n / 100;
-      t.scrollTop = s;
+      const r = Number.parseFloat(o), n = (e.scrollHeight - e.clientHeight) * r / 100;
+      e.scrollTop = n;
     }
   }
-  window.addEventListener("resize", e), e();
+  window.addEventListener("resize", t), t();
 }
+P();
 O();
-D();
-class p {
-  // 10 seconds maximum wait time
-  constructor(e = "preview-iframe", o = { minHeight: null, bufferHeight: 5 }) {
-    u(this, "iframes");
-    u(this, "options");
-    u(this, "initialLoadPromises");
-    u(this, "isInitialLoad", !0);
-    u(this, "readyStateCheckInterval", 50);
-    // ms to check readyState
-    u(this, "maxWaitTime", 1e4);
-    this.iframes = Array.from(
-      document.getElementsByClassName(e)
-    ), this.options = o, this.initialLoadPromises = [], setTimeout(() => {
-      document.body.classList.contains("js-loaded") || (console.warn("Safety timeout triggered - forcing page to show"), this.handleUrlFragment(), this.isInitialLoad = !1, document.body.classList.add("js-loaded"));
-    }, this.maxWaitTime), document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => this.init()) : this.init(), window.addEventListener("resize", () => {
-      this.isInitialLoad || this.updateAllIframes();
-    });
-  }
-  init() {
-    this.iframes.forEach((e, o) => {
-      e.style.cssText = `
-                width: 100%;
-                overflow: hidden;
-                min-height: 0;
-                border: none;
-                opacity: 0;
-                transition: opacity 0.2s ease-in-out;
-            `;
-      const n = new Promise((s) => {
-        const a = Date.now(), r = async () => {
-          try {
-            await this.setupIframe(e), e.style.opacity = "1", s();
-          } catch (l) {
-            console.warn(`Error setting up iframe ${o}:`, l), s();
-          }
-        }, i = () => {
-          if (Date.now() - a > this.maxWaitTime) {
-            console.warn(`Iframe ${o} timed out waiting for load`), s();
-            return;
-          }
-          const l = e.contentWindow;
-          if (!l) {
-            setTimeout(i, this.readyStateCheckInterval);
-            return;
-          }
-          try {
-            const c = l.document;
-            c && c.readyState === "complete" ? r() : c ? e.addEventListener("load", r, { once: !0 }) : setTimeout(i, this.readyStateCheckInterval);
-          } catch (c) {
-            console.warn(`Error accessing iframe ${o}:`, c), s();
-          }
-        };
-        i(), e.addEventListener("load", () => {
-          i();
-        }, { once: !0 });
-      });
-      this.initialLoadPromises.push(n);
-    }), Promise.all(this.initialLoadPromises).then(() => new Promise((e) => setTimeout(e, 100))).then(() => Promise.all(this.iframes.map((e) => this.adjustHeight(e)))).then(() => {
-      this.handleUrlFragment(), this.isInitialLoad = !1, document.body.classList.add("js-loaded");
-    }).catch((e) => {
-      console.error("Error during iframe initialization:", e), this.handleUrlFragment(), setTimeout(() => {
-        this.isInitialLoad = !1, document.body.classList.add("js-loaded");
-      }, this.maxWaitTime);
-    });
-  }
-  handleUrlFragment() {
-    const e = window.location.hash;
-    if (e)
-      try {
-        const o = document.querySelector(e);
-        o && window.scrollTo({
-          top: window.scrollY + o.getBoundingClientRect().top,
-          left: 0,
-          behavior: "instant"
-          // Force instant scroll
-        });
-      } catch (o) {
-        console.warn("Error handling URL fragment:", o);
-      }
-  }
-  async setupIframe(e) {
-    const o = e.contentWindow;
-    if (!o)
-      return;
-    const n = o.document, s = n.createElement("style");
-    if (s.textContent = `
-            html, body {
-                margin: 0;
-                padding: 0;
-                min-height: 0 !important;
-            }
-        `, n.head.appendChild(s), await new Promise((a) => {
-      const r = () => {
-        const l = Array.from(n.getElementsByTagName("*")).filter(
-          (h) => h instanceof HTMLImageElement && !h.complete
-        ), c = Array.from(n.styleSheets).filter(
-          (h) => {
-            try {
-              return h.cssRules === null;
-            } catch {
-              return !0;
-            }
-          }
-        );
-        l.length === 0 && c.length === 0 ? a() : setTimeout(r, this.readyStateCheckInterval);
-      };
-      r();
-    }), !this.isInitialLoad) {
-      const a = new ResizeObserver(() => {
-        this.adjustHeight(e);
-      });
-      a.observe(n.documentElement), a.observe(n.body), new MutationObserver(() => {
-        this.adjustHeight(e);
-      }).observe(n.body, {
-        childList: !0,
-        subtree: !0,
-        attributes: !0,
-        characterData: !0
-      });
-    }
-    await this.adjustHeight(e);
-  }
-  adjustHeight(e) {
-    return new Promise((o) => {
-      requestAnimationFrame(() => {
-        var r;
-        const n = (r = e.contentWindow) == null ? void 0 : r.document;
-        if (!n) {
-          o();
-          return;
-        }
-        e.style.height = "0px", e.offsetHeight;
-        const s = Math.max(
-          n.documentElement.scrollHeight,
-          n.body.scrollHeight,
-          n.documentElement.offsetHeight,
-          n.body.offsetHeight,
-          n.documentElement.clientHeight,
-          n.body.clientHeight
-        ), a = this.options.minHeight ? Math.max(s, this.options.minHeight) : s;
-        e.style.height = `${a + this.options.bufferHeight}px`, requestAnimationFrame(() => {
-          o();
-        });
-      });
-    });
-  }
-  updateAllIframes() {
-    this.isInitialLoad || this.iframes.forEach((e) => {
-      this.adjustHeight(e);
-    });
-  }
-}
-document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => {
-  new p("preview-iframe");
-}) : new p("preview-iframe");
-const m = document.querySelector("#search-dialog");
-if (!m)
+const l = document.querySelector("#search-dialog");
+if (!l)
   throw new Error("No search dialog found");
-const T = document.querySelectorAll("[data-open-search]");
-if (T.length === 0)
+const H = document.querySelectorAll("[data-open-search]");
+if (H.length === 0)
   throw new Error("No open search buttons found");
-const f = document.querySelector("#search-input");
-if (!f)
+const h = document.querySelector("#search-input");
+if (!h)
   throw new Error("No search input found");
 const k = document.querySelector("#search-list");
 if (!k)
   throw new Error("No search list found");
-const H = document.querySelectorAll(".search-category__item--active");
-if (!H)
+const b = document.querySelectorAll(".search-category__item--active");
+if (!b)
   throw new Error("No search results found");
-const C = document.querySelector("#search-no-results");
-if (!C)
+const q = document.querySelector("#search-no-results");
+if (!q)
   throw new Error("No search no results element found");
-function q() {
-  const t = f.value.toLowerCase().trim();
-  let e = !1;
-  H.forEach((o) => {
-    var a, r;
-    let n = !1;
-    const s = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
-    if (s.length > 0)
-      n = s.some((i) => i.toLowerCase().includes(t));
+function A() {
+  const e = h.value.toLowerCase().trim();
+  let t = !1;
+  b.forEach((o) => {
+    var a, c;
+    let r = !1;
+    const n = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
+    if (n.length > 0)
+      r = n.some((s) => s.toLowerCase().includes(e));
     else {
-      const i = (r = o.innerText) == null ? void 0 : r.toLowerCase();
-      n = i == null ? void 0 : i.includes(t);
+      const s = (c = o.innerText) == null ? void 0 : c.toLowerCase();
+      r = s == null ? void 0 : s.includes(e);
     }
-    o.classList.toggle("search-category__item--active", n), n && (e = !0);
-  }), k.classList.toggle("hidden", !e), C.classList.toggle("hidden", e);
+    o.classList.toggle("search-category__item--active", r), r && (t = !0);
+  }), k.classList.toggle("hidden", !t), q.classList.toggle("hidden", t);
 }
-f.addEventListener("input", q);
-T.forEach((t) => {
-  t.addEventListener("click", () => m.showModal());
+h.addEventListener("input", A);
+H.forEach((e) => {
+  e.addEventListener("click", () => l.showModal());
 });
-function E(t) {
-  t.target.closest("dialog") !== null || m.close();
+function w(e) {
+  e.target.closest("dialog") !== null || l.close();
 }
 new MutationObserver(() => {
-  m.open ? setTimeout(() => {
-    document.addEventListener("click", E);
-  }, 0) : (document.removeEventListener("click", E), f.value = "", q());
-}).observe(m, { attributes: !0, attributeFilter: ["open"] });
-document.addEventListener("keydown", (t) => {
-  t.key === "k" && (t.metaKey || t.ctrlKey) && (t.preventDefault(), m.showModal());
+  l.open ? setTimeout(() => {
+    document.addEventListener("click", w);
+  }, 0) : (document.removeEventListener("click", w), h.value = "", A());
+}).observe(l, { attributes: !0, attributeFilter: ["open"] });
+document.addEventListener("keydown", (e) => {
+  e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), l.showModal());
 });
-const L = document.querySelector(".theme-select");
-L && R(L);
-const y = document.querySelectorAll("details:has(.code-highlight)");
-y.length > 0 && (y.forEach((t) => {
-  const e = t.querySelector(".code-highlight");
-  if (!e)
+const y = document.querySelectorAll(".preview-iframe");
+y.length > 0 ? R(y).catch(console.error) : T();
+const p = document.querySelector(".theme-select");
+p && F(p);
+const f = document.querySelectorAll("details:has(.code-highlight)");
+f.length > 0 && (f.forEach((e) => {
+  const t = e.querySelector(".code-highlight");
+  if (!t)
     throw new Error("No code element found");
-  const o = t.querySelector("summary");
+  const o = e.querySelector("summary");
   if (!o)
     throw new Error("No trigger button found");
   o.addEventListener("click", async () => {
-    const { highlightCode: n } = await import("./code-Df72DCne.js");
-    await n(e);
+    const { highlightCode: r } = await import("./code-Df72DCne.js");
+    await r(t);
   });
 }), setTimeout(() => {
-  y.forEach((t) => {
-    const e = t.querySelector(".code-highlight");
-    if (!e)
+  f.forEach((e) => {
+    const t = e.querySelector(".code-highlight");
+    if (!t)
       throw new Error("No code element found");
     requestIdleCallback(async () => {
       const { highlightCode: o } = await import("./code-Df72DCne.js");
-      await o(e);
+      await o(t);
     });
   });
 }, 5e3));
-const S = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), b = document.querySelector("#icon-search-list");
-S && b && v && import("./icons-DKt1vG1z.js").then(({ default: t }) => t(S, b, v)).catch(console.error);
-const P = "data-clipboard-value", I = document.querySelectorAll(`button[${P}]`);
-I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: t }) => t(I, P)).catch(console.error);
+const S = document.querySelector("#icon-search-input"), I = document.querySelector("#icon-search-input-reset"), L = document.querySelector("#icon-search-list");
+S && L && I && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(S, L, I)).catch(console.error);
+const M = "data-clipboard-value", v = document.querySelectorAll(`button[${M}]`);
+v.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(v, M)).catch(console.error);
