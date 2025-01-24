@@ -1,7 +1,8 @@
 import type { StyleguideConfiguration } from '../index'
 import path from 'node:path'
 import { parentPort } from 'node:worker_threads'
-import { prettify } from 'htmlfy'
+// @ts-expect-error - ignore
+import toDiffableHtml from 'diffable-html'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -60,18 +61,17 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
     }
   })
 
-  const prettifiedOutput = prettify(markupOutput)
-
-  return prettifiedOutput
+  return toDiffableHtml(markupOutput, { tag_wrap: true })
 }
 
 export interface PugWorkerInput {
+  id: string
   mode: StyleguideConfiguration['mode']
   contentDir: `${string}/`
   html: string
 }
 
-interface PugWorkerSuccess { html: string }
+interface PugWorkerSuccess { id: string, html: string }
 interface PugWorkerError { error: string }
 export type PugWorkerOutput = PugWorkerSuccess | PugWorkerError
 
@@ -80,11 +80,11 @@ if (!parentPort) {
 }
 
 parentPort.on('message', (data: PugWorkerInput) => {
-  const { mode, html, contentDir } = data
+  const { id, mode, html, contentDir } = data
 
   try {
     const result = compilePug(contentDir, mode, html)
-    parentPort!.postMessage({ html: result } satisfies PugWorkerOutput)
+    parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
   }
   catch (error) {
     parentPort!.postMessage({

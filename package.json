@@ -8,15 +8,15 @@
   "types": "./dist/node/lib/index.d.ts",
   "scripts": {
     "build": "vite build && unbuild",
-    "watch": "bun run build && bun run index.ts"
+    "watch": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "chokidar": "^3",
+    "diffable-html": "^5.0.0",
     "fs-extra": "^11.2.0",
-    "htmlfy": "^0.5.1",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },

@@ -1,173 +1,122 @@
-import type { StyleguideConfiguration } from '../index'
-import type { PugWorkerInput, PugWorkerOutput } from './worker'
-
+import type { PugWorkerOutput } from './worker.ts'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { Worker } from 'node:worker_threads'
 
-const productionCache = new Map<string, string>()
-let globalPool: PugWorkerPool | null = null
+const MAX_POOL_SIZE = os.cpus().length
 
+let workerPool: {
+  worker: Worker
+  busy: boolean
+  currentTaskId?: string
+}[] = []
+
+async function terminateAllWorkers() {
+  await Promise.all(workerPool.map(({ worker }) => worker.terminate))
+}
+
+const processCache = new Map<string, string>()
+
+// resolve worker paths
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const workerFilePath = __dirname.includes('dist/') ? './vite-pug/worker.mjs' : './worker.ts'
 const workerFilePathResolved = path.resolve(__dirname, workerFilePath)
 
-class PugWorkerPool {
-  private workers: Worker[] = []
-  private queue: Array<{
-    task: PugWorkerInput
-    resolve: (html: string) => void
-    reject: (error: Error) => void
-  }> = []
+// terminate workers automatically on terminal exit
+const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'] as const
+signals.forEach(signal => process.on(signal, async () => await terminateAllWorkers()))
 
-  private isProcessing = false
-  private availableWorkers: Worker[] = []
+export async function compilePugMarkup(
+  mode: 'production' | 'development',
+  contentDir: `${string}/`,
+  repository: Map<string, { markup: string }>,
+) {
+  const startTime = Date.now()
+  const clonedRepository = structuredClone(repository)
 
-  constructor(size = os.cpus().length) {
-    for (let i = 0; i < size; i++) {
-      const worker = new Worker(workerFilePathResolved, {
-        name: `pug-worker-${i + 1}`,
-      })
-      worker.on('message', result => this.handleWorkerMessage(worker, result))
-      worker.on('error', error => this.handleWorkerError(worker, error))
-      this.workers.push(worker)
-      this.availableWorkers.push(worker)
-    }
-  }
+  // find all entries that have markup with <insert-vite-pug
+  const needsProcessingIds = Array.from(clonedRepository.entries())
+    .filter(([, { markup }]) => markup.includes('<insert-vite-pug'))
+    .map(([id]) => id)
 
-  private handleWorkerMessage(worker: Worker, result: PugWorkerOutput) {
-    // Add worker back to available pool
-    this.availableWorkers.push(worker)
+  if (needsProcessingIds.length === 0)
+    return clonedRepository
 
-    const currentTask = this.queue[0]
-    if (!currentTask)
-      return
+  // find maybe cached files
+  if (mode === 'production') {
+    needsProcessingIds.forEach((id) => {
+      const cachedMarkup = processCache.get(id)
+      if (!cachedMarkup)
+        return
 
-    // Remove the completed task
-    this.queue.shift()
-
-    if ('error' in result) {
-      currentTask.reject(new Error(result.error))
-    }
-    else {
-      currentTask.resolve(result.html)
-    }
-
-    // Process next task if any
-    this.processNextTask().catch(console.error)
-  }
-
-  private handleWorkerError(worker: Worker, error: Error) {
-    const currentTask = this.queue[0]
-    if (currentTask) {
-      currentTask.reject(error)
-      this.queue.shift()
-    }
-
-    // Replace the crashed worker
-    const workerIndex = this.workers.indexOf(worker)
-    const availableIndex = this.availableWorkers.indexOf(worker)
-
-    if (workerIndex !== -1) {
-      worker.terminate().catch(console.error)
-      const newWorker = new Worker(workerFilePathResolved, {
-        name: `pug-worker-${workerIndex + 1}-replacement`,
-      })
-      newWorker.on('message', result => this.handleWorkerMessage(newWorker, result))
-      newWorker.on('error', error => this.handleWorkerError(newWorker, error))
-
-      this.workers[workerIndex] = newWorker
-      if (availableIndex !== -1) {
-        this.availableWorkers[availableIndex] = newWorker
-      }
-      else {
-        this.availableWorkers.push(newWorker)
-      }
-    }
-
-    // Try to process next task
-    this.processNextTask().catch(console.error)
-  }
-
-  private async processNextTask() {
-    if (this.isProcessing || this.queue.length === 0 || this.availableWorkers.length === 0) {
-      return
-    }
-
-    this.isProcessing = true
-    const worker = this.availableWorkers.pop()!
-    const task = this.queue[0]
-
-    worker.postMessage(task.task)
-    this.isProcessing = false
-  }
-
-  async compile(id: string, mode: 'production' | 'development', html: string, contentDir: `${string}/`): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const task = { id, mode, html, contentDir }
-      this.queue.push({ task, resolve, reject })
-      this.processNextTask()
+      clonedRepository.set(id, { markup: cachedMarkup })
+      needsProcessingIds.splice(needsProcessingIds.indexOf(id), 1)
     })
   }
 
-  async terminate() {
-    await Promise.all(this.workers.map(w => w.terminate()))
-    this.workers = []
-    this.queue = []
-    this.availableWorkers = []
-    this.isProcessing = false
-    globalPool = null
-  }
-}
+  // spawn workers based on files which need processing and max number of cpu cores
+  workerPool = Array.from({ length: Math.min(needsProcessingIds.length, MAX_POOL_SIZE) }, (_, index) => ({
+    worker: new Worker(workerFilePathResolved, {
+      name: `pug-worker-${index}`,
+    }),
+    busy: false,
+    currentTaskId: undefined as string | undefined,
+  }))
 
-export function getPool(): PugWorkerPool {
-  if (!globalPool) {
-    globalPool = new PugWorkerPool()
-  }
-  return globalPool
-}
+  // handle worker messages
+  workerPool.forEach((workerNode) => {
+    workerNode.worker.on('message', (result: PugWorkerOutput) => {
+      if ('error' in result) {
+        console.error(result.error)
+        workerNode.busy = false
+        return
+      }
 
-// Setup cleanup handlers for graceful shutdown of worker threads
-['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) => {
-  process.on(signal, async () => {
-    if (globalPool) {
-      await globalPool.terminate()
-    }
+      const { id, html } = result
+      clonedRepository.set(id, { markup: html })
+
+      workerNode.busy = false
+    })
   })
-})
 
-export async function compilePugMarkup(
-  id: string,
-  mode: StyleguideConfiguration['mode'],
-  html: string,
-) {
-  const needsProcessing = html.includes('<insert-vite-pug')
-  if (!needsProcessing) {
-    return html
-  }
+  // process all files in the queue
+  // while we have items or some worker is still busy
+  while (needsProcessingIds.length > 0 || workerPool.some(worker => worker.busy)) {
+    if (needsProcessingIds.length === 0 && workerPool.some(worker => worker.busy)) {
+      await new Promise(resolve => setTimeout(resolve, 25))
+      continue
+    }
 
-  const pool = getPool()
+    // Find available worker
+    const availableWorker = workerPool.find(worker => !worker.busy)
+    if (availableWorker) {
+      const id = needsProcessingIds.pop()!
+      const { markup } = clonedRepository.get(id)!
 
-  if (mode === 'production') {
-    const cachedVersion = productionCache.get(id)
-    if (cachedVersion) {
-      return cachedVersion
+      availableWorker.busy = true
+      availableWorker.currentTaskId = id
+
+      availableWorker.worker.postMessage({
+        id,
+        mode,
+        html: markup,
+        contentDir,
+      })
+    }
+    else {
+      // No worker available or no tasks - wait a bit
+      await new Promise(resolve => setTimeout(resolve, 25))
     }
   }
 
-  const compiledHtml = await pool.compile(
-    id,
-    mode,
-    html,
-    globalThis.styleguideConfiguration.contentDir,
-  )
+  console.log(1737737536312, `Compiling took ${Date.now() - startTime}ms`)
 
-  if (mode === 'production') {
-    productionCache.set(id, compiledHtml)
-  }
+  await terminateAllWorkers()
 
-  return compiledHtml
+  console.log(1737737536312, `Everything took ${Date.now() - startTime}ms`)
+
+  return clonedRepository
 }

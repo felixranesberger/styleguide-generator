@@ -13,7 +13,7 @@ import {
   getSearchHtml,
   getSidebarMenuHtml,
 } from './templates/preview.ts'
-import { compilePugMarkup, getPool } from './vite-pug'
+import { compilePugMarkup } from './vite-pug'
 import { watchStyleguideForChanges } from './watcher.ts'
 
 declare global {
@@ -111,6 +111,20 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }[] = []
 
   const fileWriteTasks: Promise<void>[] = []
+  let markupRepository = new Map<string, { markup: string }>()
+  parsedContent.forEach((firstLevelSection) => {
+    firstLevelSection.sections.forEach((secondLevelSection) => {
+      if (secondLevelSection.markup)
+        markupRepository.set(secondLevelSection.id, { markup: secondLevelSection.markup })
+
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (thirdLevelSection.markup)
+          markupRepository.set(thirdLevelSection.id, { markup: thirdLevelSection.markup })
+      })
+    })
+  })
+  // compile all pug markup inside repository
+  markupRepository = await compilePugMarkup(config.mode, config.contentDir, markupRepository)
 
   // generate all full-pages and collect data for preview generation
   parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
@@ -148,26 +162,34 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       })
 
       if (secondLevelSection.markup) {
-        fileWriteTasks.push(new Promise((resolve) => {
+        fileWriteTasks.push(
           (async () => {
-            secondLevelSection.markup = await compilePugMarkup(secondLevelSection.id, config.mode, secondLevelSection.markup)
-            await handleGenerateFullPage(secondLevelSection)
-            resolve()
-          })()
-        }))
+            try {
+              secondLevelSection.markup = markupRepository.get(secondLevelSection.id)!.markup
+              await handleGenerateFullPage(secondLevelSection)
+            }
+            catch (error) {
+              console.error(`Error processing section ${secondLevelSection.id}:`, error)
+            }
+          })(),
+        )
       }
 
       secondLevelSection.sections.forEach((thirdLevelSection) => {
         if (!thirdLevelSection.markup)
           return
 
-        fileWriteTasks.push(new Promise((resolve) => {
+        fileWriteTasks.push(
           (async () => {
-            thirdLevelSection.markup = await compilePugMarkup(thirdLevelSection.id, config.mode, thirdLevelSection.markup)
-            await handleGenerateFullPage(thirdLevelSection)
-            resolve()
-          })()
-        }))
+            try {
+              thirdLevelSection.markup = markupRepository.get(thirdLevelSection.id)!.markup
+              await handleGenerateFullPage(thirdLevelSection)
+            }
+            catch (error) {
+              console.error(`Error processing section ${thirdLevelSection.id}:`, error)
+            }
+          })(),
+        )
       })
     })
   })
@@ -238,7 +260,6 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       )
     })
   })
-
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
 
@@ -260,10 +281,6 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 
   // make sure all files have been written before resolving
   await Promise.all(fileWriteTasks)
-
-  if (globalThis.isWatchMode === false) {
-    await getPool().terminate()
-  }
 }
 
 /**
