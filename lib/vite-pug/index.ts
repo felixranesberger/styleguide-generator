@@ -112,11 +112,7 @@ export async function compilePugMarkup(
     }
   }
 
-  console.log(1737737536312, `Compiling took ${Date.now() - startTime}ms`)
-
   await terminateAllWorkers()
-
-  console.log(1737737536312, `Everything took ${Date.now() - startTime}ms`)
 
   return clonedRepository
 }
