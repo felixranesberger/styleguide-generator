@@ -4,14 +4,14 @@ async function N(e) {
     return ((r = o.contentWindow) == null ? void 0 : r.document.readyState) === "complete";
   };
   await Promise.allSettled(
-    Array.from(e).map((o) => (console.log(1737014770188, o), new Promise((r) => {
-      const n = () => setTimeout(r, 25);
+    Array.from(e).map((o) => new Promise((r) => {
+      const n = () => setTimeout(r, 100);
       if (t(o)) {
         n();
         return;
       }
       o.addEventListener("load", n, { once: !0 }), setTimeout(r, 5e3);
-    })))
+    }))
   );
 }
 async function C(e) {
@@ -27,7 +27,7 @@ async function C(e) {
     t.body.offsetHeight,
     t.documentElement.clientHeight,
     t.body.clientHeight
-  ), r = Math.max(o, 50);
+  ), r = Math.max(o, 10);
   e.style.height = `${r + 5}px`;
 }
 function T() {

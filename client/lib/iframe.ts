@@ -1,5 +1,5 @@
 const MAX_WAIT_TIME = 5000
-const IFRAME_MIN_HEIGHT = 50
+const IFRAME_MIN_HEIGHT = 10
 const IFRAME_BUFFER_HEIGHT = 5
 
 async function waitForIframes(iframes: NodeListOf<HTMLIFrameElement>) {
@@ -7,9 +7,8 @@ async function waitForIframes(iframes: NodeListOf<HTMLIFrameElement>) {
 
   await Promise.allSettled(
     Array.from(iframes).map((iframe) => {
-      console.log(1737014770188, iframe)
       return new Promise((resolve) => {
-        const resolveWithTimeout = () => setTimeout(resolve, 25)
+        const resolveWithTimeout = () => setTimeout(resolve, 100)
 
         const isIframeAlreadyLoaded = getIsIframeLoaded(iframe)
         if (isIframeAlreadyLoaded) {

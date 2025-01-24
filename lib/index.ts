@@ -13,12 +13,17 @@ import {
   getSearchHtml,
   getSidebarMenuHtml,
 } from './templates/preview.ts'
+import { compilePugMarkup } from './vite-pug'
 import { watchStyleguideForChanges } from './watcher.ts'
 
 declare global {
   // eslint-disable-next-line no-var,vars-on-top
+  var isWatchMode: boolean
+  // eslint-disable-next-line no-var,vars-on-top
   var styleguideConfiguration: StyleguideConfiguration
 }
+
+globalThis.isWatchMode = false
 
 export interface StyleguideConfiguration {
   mode: 'development' | 'production'
@@ -106,6 +111,20 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }[] = []
 
   const fileWriteTasks: Promise<void>[] = []
+  let markupRepository = new Map<string, { markup: string }>()
+  parsedContent.forEach((firstLevelSection) => {
+    firstLevelSection.sections.forEach((secondLevelSection) => {
+      if (secondLevelSection.markup)
+        markupRepository.set(secondLevelSection.id, { markup: secondLevelSection.markup })
+
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (thirdLevelSection.markup)
+          markupRepository.set(thirdLevelSection.id, { markup: thirdLevelSection.markup })
+      })
+    })
+  })
+  // compile all pug markup inside repository
+  markupRepository = await compilePugMarkup(config.mode, config.contentDir, markupRepository)
 
   // generate all full-pages and collect data for preview generation
   parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
@@ -143,12 +162,35 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       })
 
       if (secondLevelSection.markup) {
-        fileWriteTasks.push(handleGenerateFullPage(secondLevelSection))
+        fileWriteTasks.push(
+          (async () => {
+            try {
+              secondLevelSection.markup = markupRepository.get(secondLevelSection.id)!.markup
+              await handleGenerateFullPage(secondLevelSection)
+            }
+            catch (error) {
+              console.error(`Error processing section ${secondLevelSection.id}:`, error)
+            }
+          })(),
+        )
       }
 
-      secondLevelSection.sections.forEach(
-        thirdLevelSection => fileWriteTasks.push(handleGenerateFullPage(thirdLevelSection)),
-      )
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (!thirdLevelSection.markup)
+          return
+
+        fileWriteTasks.push(
+          (async () => {
+            try {
+              thirdLevelSection.markup = markupRepository.get(thirdLevelSection.id)!.markup
+              await handleGenerateFullPage(thirdLevelSection)
+            }
+            catch (error) {
+              console.error(`Error processing section ${thirdLevelSection.id}:`, error)
+            }
+          })(),
+        )
+      })
     })
   })
 
@@ -218,7 +260,6 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       )
     })
   })
-
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
 
@@ -247,6 +288,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
  * @param config - The configuration for the styleguide
  */
 export async function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void) {
+  globalThis.isWatchMode = true
   await buildStyleguide(config)
 
   // marke sure content dir ends with /

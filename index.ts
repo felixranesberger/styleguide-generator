@@ -1,6 +1,6 @@
 import fs from 'fs-extra'
 import { createServer } from 'vite'
-import { buildStyleguide } from './lib';
+import { buildStyleguide } from './lib/index';
 
 (async () => {
   // clear the output directory
@@ -35,6 +35,7 @@ import { buildStyleguide } from './lib';
     server: {
       host: true,
     },
+    logLevel: 'info',
   })
   await server.listen()
   server.printUrls()

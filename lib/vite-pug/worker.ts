@@ -1,25 +1,18 @@
-import type { StyleguideConfiguration } from './index'
+import type { StyleguideConfiguration } from '../index'
 import path from 'node:path'
-import { prettify } from 'htmlfy'
+import { parentPort } from 'node:worker_threads'
+// @ts-expect-error - ignore
+import toDiffableHtml from 'diffable-html'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g
 
-const productionCache = new Map<string, string>()
-
 /**
  * Replaces all <insert-vite-pug src="path/to/file.pug" modifierClass="modifier"> tags with the pug file content
  * depending on the mode provided
  */
-export function compilePug(id: string, mode: StyleguideConfiguration['mode'], html: string) {
-  if (mode === 'production') {
-    const cachedVersion = productionCache.get(id)
-    if (cachedVersion) {
-      return cachedVersion
-    }
-  }
-
+export function compilePug(contentDir: `${string}/`, mode: StyleguideConfiguration['mode'], html: string) {
   const vitePugTags = html.match(regexModifierLine)
   if (!vitePugTags) {
     return html
@@ -42,7 +35,7 @@ export function compilePug(id: string, mode: StyleguideConfiguration['mode'], ht
       }
     }
 
-    const pugFilePath = path.join(globalThis.styleguideConfiguration.contentDir, pugSourcePath)
+    const pugFilePath = path.join(contentDir, pugSourcePath)
 
     if (mode === 'production') {
       const isPugFile = path.extname(pugSourcePath) === '.pug'
@@ -56,6 +49,10 @@ export function compilePug(id: string, mode: StyleguideConfiguration['mode'], ht
       })
 
       const pugOutput = pugFn(pugLocals)
+
+      // prettify html output only in production mode,
+      // since the function breaks the vite <pug> tag detection
+      markupOutput = toDiffableHtml(markupOutput, { tag_wrap: true })
       markupOutput = markupOutput.replace(vitePugTag, pugOutput)
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
@@ -68,10 +65,34 @@ export function compilePug(id: string, mode: StyleguideConfiguration['mode'], ht
     }
   })
 
-  const prettifiedOutput = prettify(markupOutput)
-  if (mode === 'production') {
-    productionCache.set(id, prettifiedOutput)
-  }
-
-  return prettifiedOutput
+  return markupOutput
 }
+
+export interface PugWorkerInput {
+  id: string
+  mode: StyleguideConfiguration['mode']
+  contentDir: `${string}/`
+  html: string
+}
+
+interface PugWorkerSuccess { id: string, html: string }
+interface PugWorkerError { error: string }
+export type PugWorkerOutput = PugWorkerSuccess | PugWorkerError
+
+if (!parentPort) {
+  throw new Error('This file must be run as a worker thread')
+}
+
+parentPort.on('message', (data: PugWorkerInput) => {
+  const { id, mode, html, contentDir } = data
+
+  try {
+    const result = compilePug(contentDir, mode, html)
+    parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
+  }
+  catch (error) {
+    parentPort!.postMessage({
+      error: error instanceof Error ? error.message : 'Unknown error',
+    } satisfies PugWorkerOutput)
+  }
+})
