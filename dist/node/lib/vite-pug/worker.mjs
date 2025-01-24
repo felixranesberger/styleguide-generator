@@ -33,11 +33,11 @@ function compilePug(contentDir, mode, html) {
         cache: true
       });
       const pugOutput = pugFn(pugLocals);
+      markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
       markupOutput = toDiffableHtml(markupOutput, { tag_wrap: true });
-      markupOutput = markupOutput.replace(vitePugTag, pugOutput);
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
-      markupOutput = markupOutput.replace(vitePugTag, pugTag);
+      markupOutput = markupOutput.replaceAll(vitePugTag, pugTag);
     }
   });
   return markupOutput;
