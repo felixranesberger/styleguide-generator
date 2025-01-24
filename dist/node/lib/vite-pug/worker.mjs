@@ -33,13 +33,14 @@ function compilePug(contentDir, mode, html) {
         cache: true
       });
       const pugOutput = pugFn(pugLocals);
+      markupOutput = toDiffableHtml(markupOutput, { tag_wrap: true });
       markupOutput = markupOutput.replace(vitePugTag, pugOutput);
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
     }
   });
-  return toDiffableHtml(markupOutput, { tag_wrap: true });
+  return markupOutput;
 }
 if (!parentPort) {
   throw new Error("This file must be run as a worker thread");
