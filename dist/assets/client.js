@@ -1,22 +1,22 @@
-async function C(e) {
+async function P(e) {
   const t = (o) => {
     var r;
     return ((r = o.contentWindow) == null ? void 0 : r.document.readyState) === "complete";
   };
   await Promise.allSettled(
-    Array.from(e).map((o) => new Promise((r) => {
-      const n = () => setTimeout(r, 100);
+    e.map((o) => new Promise((r) => {
+      const s = () => setTimeout(r, 100);
       if (t(o)) {
-        n();
+        s();
         return;
       }
-      o.addEventListener("load", n, { once: !0 }), setTimeout(r, 5e3);
+      o.addEventListener("load", s, { once: !0 }), setTimeout(r, 5e3);
     }))
   );
 }
-async function E(e) {
-  var n;
-  const t = (n = e.contentWindow) == null ? void 0 : n.document;
+async function y(e) {
+  var r;
+  const t = (r = e.contentWindow) == null ? void 0 : r.document;
   if (!t)
     throw new Error("iFrame was not fully loaded yet");
   e.style.height = "0px", e.offsetHeight;
@@ -27,58 +27,56 @@ async function E(e) {
     t.body.offsetHeight,
     t.documentElement.clientHeight,
     t.body.clientHeight
-  ), r = Math.max(o, 10);
-  e.style.height = `${r + 5}px`;
+  );
+  e.style.height = `${o}px`;
 }
-function H() {
+function T() {
   document.body.classList.add("js-loaded");
 }
-const R = async (e) => {
-  await C(e), await Promise.allSettled(Array.from(e).map((o) => E(o)));
-  const t = new ResizeObserver(
-    (o) => o.forEach((r) => E(r.target))
-  );
-  e.forEach((o) => t.observe(o)), H();
+const _ = async (e) => {
+  await P(e), await Promise.allSettled(e.map((t) => y(t))), window.addEventListener("resize", () => {
+    e.forEach((t) => y(t));
+  }), T();
 }, g = "in2theme", d = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
-}, F = (e) => {
+}, D = (e) => {
   const t = window.matchMedia("(prefers-color-scheme: dark)");
   function o() {
-    const c = localStorage.getItem(g);
-    return c || localStorage.setItem(g, "normal"), c;
+    const n = localStorage.getItem(g);
+    return n || localStorage.setItem(g, "normal"), n;
   }
   function r() {
-    const c = o();
-    let s = d[c];
-    c === "normal" && t.matches && (s = d.dark);
-    const u = (i) => {
-      Object.values(d).forEach((N) => i.classList.remove(N)), i.classList.remove("dark");
+    const n = o();
+    let c = d[n];
+    n === "normal" && t.matches && (c = d.dark);
+    const h = (i) => {
+      Object.values(d).forEach((M) => i.classList.remove(M)), i.classList.remove("dark");
     }, m = (i) => {
-      i.classList.add(s), s === d.dark && i.classList.add("dark");
+      i.classList.add(c), c === d.dark && i.classList.add("dark");
     };
-    u(e), m(e);
+    h(e), m(e);
     const w = document.querySelectorAll("iframe");
     w && w.forEach((i) => {
-      u(i), m(i);
-    }), u(document.body), m(document.body);
+      h(i), m(i);
+    }), h(document.body), m(document.body);
   }
   t.addEventListener("change", () => {
     o() === "normal" && r();
   }), r(), e.addEventListener("change", () => {
-    const c = e.querySelector('input[name="theme"]:checked');
-    if (!c)
+    const n = e.querySelector('input[name="theme"]:checked');
+    if (!n)
       throw new Error("No selected theme found");
-    const s = c.value;
-    localStorage.setItem(g, s), r();
+    const c = n.value;
+    localStorage.setItem(g, c), r();
   });
-  const n = o(), a = e.querySelector(`input[value="${n}"]`);
+  const s = o(), a = e.querySelector(`input[value="${s}"]`);
   if (!a)
     throw new Error("No current theme input found");
   a.checked = !0;
 };
-function P() {
+function R() {
   const e = document.querySelector("header");
   if (!e)
     throw new Error("No header found");
@@ -98,22 +96,22 @@ function O() {
   function t() {
     const o = sessionStorage.getItem("asideScrollPercentage");
     if (o) {
-      const r = Number.parseFloat(o), n = (e.scrollHeight - e.clientHeight) * r / 100;
-      e.scrollTop = n;
+      const r = Number.parseFloat(o), s = (e.scrollHeight - e.clientHeight) * r / 100;
+      e.scrollTop = s;
     }
   }
   window.addEventListener("resize", t), t();
 }
-P();
+R();
 O();
 const l = document.querySelector("#search-dialog");
 if (!l)
   throw new Error("No search dialog found");
-const k = document.querySelectorAll("[data-open-search]");
-if (k.length === 0)
+const q = document.querySelectorAll("[data-open-search]");
+if (q.length === 0)
   throw new Error("No open search buttons found");
-const h = document.querySelector("#search-input");
-if (!h)
+const u = document.querySelector("#search-input");
+if (!u)
   throw new Error("No search input found");
 const b = document.querySelector("#search-list");
 if (!b)
@@ -121,44 +119,44 @@ if (!b)
 const A = document.querySelectorAll(".search-category__item--active");
 if (!A)
   throw new Error("No search results found");
-const q = document.querySelector("#search-no-results");
-if (!q)
+const H = document.querySelector("#search-no-results");
+if (!H)
   throw new Error("No search no results element found");
-function M() {
-  const e = h.value.toLowerCase().trim();
+function C() {
+  const e = u.value.toLowerCase().trim();
   let t = !1;
   A.forEach((o) => {
-    var a, c;
+    var a, n;
     let r = !1;
-    const n = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
-    if (n.length > 0)
-      r = n.some((s) => s.toLowerCase().includes(e));
+    const s = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
+    if (s.length > 0)
+      r = s.some((c) => c.toLowerCase().includes(e));
     else {
-      const s = (c = o.innerText) == null ? void 0 : c.toLowerCase();
-      r = s == null ? void 0 : s.includes(e);
+      const c = (n = o.innerText) == null ? void 0 : n.toLowerCase();
+      r = c == null ? void 0 : c.includes(e);
     }
     o.classList.toggle("search-category__item--active", r), r && (t = !0);
-  }), b.classList.toggle("hidden", !t), q.classList.toggle("hidden", t);
+  }), b.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
 }
-h.addEventListener("input", M);
-k.forEach((e) => {
+u.addEventListener("input", C);
+q.forEach((e) => {
   e.addEventListener("click", () => l.showModal());
 });
-function y(e) {
+function E(e) {
   e.target.closest("dialog") !== null || l.close();
 }
 new MutationObserver(() => {
   l.open ? setTimeout(() => {
-    document.addEventListener("click", y);
-  }, 0) : (document.removeEventListener("click", y), h.value = "", M());
+    document.addEventListener("click", E);
+  }, 0) : (document.removeEventListener("click", E), u.value = "", C());
 }).observe(l, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (e) => {
   e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), l.showModal());
 });
-const p = document.querySelectorAll(".preview-iframe");
-p.length > 0 ? R(p).catch(console.error) : H();
+const p = Array.from(document.querySelectorAll(".preview-iframe"));
+p.length > 0 ? _(p).catch(console.error) : T();
 const S = document.querySelector(".theme-select");
-S && F(S);
+S && D(S);
 const f = document.querySelectorAll("details:has(.code-highlight)");
 f.length > 0 && (f.forEach((e) => {
   const t = e.querySelector(".code-highlight");
@@ -182,7 +180,7 @@ f.length > 0 && (f.forEach((e) => {
     });
   });
 }, 5e3));
-const I = document.querySelector("#icon-search-input"), L = document.querySelector("#icon-search-input-reset"), v = document.querySelector("#icon-search-list");
-I && v && L && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(I, v, L)).catch(console.error);
-const _ = "data-clipboard-value", T = document.querySelectorAll(`button[${_}]`);
-T.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(T, _)).catch(console.error);
+const L = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), k = document.querySelector("#icon-search-list");
+L && k && v && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(L, k, v)).catch(console.error);
+const N = "data-clipboard-value", I = document.querySelectorAll(`button[${N}]`);
+I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(I, N)).catch(console.error);

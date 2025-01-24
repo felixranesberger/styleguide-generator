@@ -38,7 +38,6 @@ function compilePug(contentDir, mode, html) {
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replaceAll(vitePugTag, pugTag);
-      console.log(1737750717951, markupOutput);
     }
   });
   return markupOutput;
