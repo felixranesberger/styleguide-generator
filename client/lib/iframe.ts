@@ -1,12 +1,10 @@
 const MAX_WAIT_TIME = 5000
-const IFRAME_MIN_HEIGHT = 10
-const IFRAME_BUFFER_HEIGHT = 5
 
-async function waitForIframes(iframes: NodeListOf<HTMLIFrameElement>) {
+async function waitForIframes(iframes: HTMLIFrameElement[]) {
   const getIsIframeLoaded = (iframe: HTMLIFrameElement) => iframe.contentWindow?.document.readyState === 'complete'
 
   await Promise.allSettled(
-    Array.from(iframes).map((iframe) => {
+    iframes.map((iframe) => {
       return new Promise((resolve) => {
         const resolveWithTimeout = () => setTimeout(resolve, 100)
 
@@ -43,24 +41,21 @@ async function calculateIframeHeight(iframe: HTMLIFrameElement) {
     doc.body.clientHeight,
   )
 
-  const finalHeight = Math.max(contentHeight, IFRAME_MIN_HEIGHT)
-  iframe.style.height = `${finalHeight + IFRAME_BUFFER_HEIGHT}px`
+  iframe.style.height = `${contentHeight}px`
 }
 
 export function removeDocumentLoadingClass() {
   document.body.classList.add('js-loaded')
 }
 
-export default async (iframes: NodeListOf<HTMLIFrameElement>) => {
+export default async (iframes: HTMLIFrameElement[]) => {
   await waitForIframes(iframes)
 
-  await Promise.allSettled(Array.from(iframes).map(iframe => calculateIframeHeight(iframe)))
+  await Promise.allSettled(iframes.map(iframe => calculateIframeHeight(iframe)))
 
-  // calculate height for each iframe reactive
-  const iframeHeightResizeObserver = new ResizeObserver(
-    entries => entries.forEach(entry => calculateIframeHeight(entry.target as HTMLIFrameElement)),
-  )
-  iframes.forEach(iframe => iframeHeightResizeObserver.observe(iframe))
+  window.addEventListener('resize', () => {
+    iframes.forEach(iframe => calculateIframeHeight(iframe))
+  })
 
   removeDocumentLoadingClass()
 }

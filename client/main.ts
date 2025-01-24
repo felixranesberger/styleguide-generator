@@ -4,7 +4,7 @@ import './style.css'
 import './lib/menu.ts'
 import './lib/search.ts'
 
-const previewIframes = document.querySelectorAll<HTMLIFrameElement>('.preview-iframe')
+const previewIframes = Array.from(document.querySelectorAll<HTMLIFrameElement>('.preview-iframe'))
 if (previewIframes.length > 0) {
   initPreviewIframes(previewIframes).catch(console.error)
 }
