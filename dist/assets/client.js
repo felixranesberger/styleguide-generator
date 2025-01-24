@@ -1,4 +1,4 @@
-async function N(e) {
+async function C(e) {
   const t = (o) => {
     var r;
     return ((r = o.contentWindow) == null ? void 0 : r.document.readyState) === "complete";
@@ -14,7 +14,7 @@ async function N(e) {
     }))
   );
 }
-async function C(e) {
+async function E(e) {
   var n;
   const t = (n = e.contentWindow) == null ? void 0 : n.document;
   if (!t)
@@ -30,15 +30,15 @@ async function C(e) {
   ), r = Math.max(o, 10);
   e.style.height = `${r + 5}px`;
 }
-function T() {
+function H() {
   document.body.classList.add("js-loaded");
 }
 const R = async (e) => {
-  await N(e);
+  await C(e), await Promise.allSettled(Array.from(e).map((o) => E(o)));
   const t = new ResizeObserver(
-    (o) => o.forEach((r) => C(r.target))
+    (o) => o.forEach((r) => E(r.target))
   );
-  e.forEach((o) => t.observe(o)), T();
+  e.forEach((o) => t.observe(o)), H();
 }, g = "in2theme", d = {
   normal: "theme-normal",
   light: "theme-light",
@@ -54,13 +54,13 @@ const R = async (e) => {
     let s = d[c];
     c === "normal" && t.matches && (s = d.dark);
     const u = (i) => {
-      Object.values(d).forEach((_) => i.classList.remove(_)), i.classList.remove("dark");
+      Object.values(d).forEach((N) => i.classList.remove(N)), i.classList.remove("dark");
     }, m = (i) => {
       i.classList.add(s), s === d.dark && i.classList.add("dark");
     };
     u(e), m(e);
-    const E = document.querySelectorAll("iframe");
-    E && E.forEach((i) => {
+    const w = document.querySelectorAll("iframe");
+    w && w.forEach((i) => {
       u(i), m(i);
     }), u(document.body), m(document.body);
   }
@@ -109,25 +109,25 @@ O();
 const l = document.querySelector("#search-dialog");
 if (!l)
   throw new Error("No search dialog found");
-const H = document.querySelectorAll("[data-open-search]");
-if (H.length === 0)
+const k = document.querySelectorAll("[data-open-search]");
+if (k.length === 0)
   throw new Error("No open search buttons found");
 const h = document.querySelector("#search-input");
 if (!h)
   throw new Error("No search input found");
-const k = document.querySelector("#search-list");
-if (!k)
-  throw new Error("No search list found");
-const b = document.querySelectorAll(".search-category__item--active");
+const b = document.querySelector("#search-list");
 if (!b)
+  throw new Error("No search list found");
+const A = document.querySelectorAll(".search-category__item--active");
+if (!A)
   throw new Error("No search results found");
 const q = document.querySelector("#search-no-results");
 if (!q)
   throw new Error("No search no results element found");
-function A() {
+function M() {
   const e = h.value.toLowerCase().trim();
   let t = !1;
-  b.forEach((o) => {
+  A.forEach((o) => {
     var a, c;
     let r = !1;
     const n = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
@@ -138,27 +138,27 @@ function A() {
       r = s == null ? void 0 : s.includes(e);
     }
     o.classList.toggle("search-category__item--active", r), r && (t = !0);
-  }), k.classList.toggle("hidden", !t), q.classList.toggle("hidden", t);
+  }), b.classList.toggle("hidden", !t), q.classList.toggle("hidden", t);
 }
-h.addEventListener("input", A);
-H.forEach((e) => {
+h.addEventListener("input", M);
+k.forEach((e) => {
   e.addEventListener("click", () => l.showModal());
 });
-function w(e) {
+function y(e) {
   e.target.closest("dialog") !== null || l.close();
 }
 new MutationObserver(() => {
   l.open ? setTimeout(() => {
-    document.addEventListener("click", w);
-  }, 0) : (document.removeEventListener("click", w), h.value = "", A());
+    document.addEventListener("click", y);
+  }, 0) : (document.removeEventListener("click", y), h.value = "", M());
 }).observe(l, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (e) => {
   e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), l.showModal());
 });
-const y = document.querySelectorAll(".preview-iframe");
-y.length > 0 ? R(y).catch(console.error) : T();
-const p = document.querySelector(".theme-select");
-p && F(p);
+const p = document.querySelectorAll(".preview-iframe");
+p.length > 0 ? R(p).catch(console.error) : H();
+const S = document.querySelector(".theme-select");
+S && F(S);
 const f = document.querySelectorAll("details:has(.code-highlight)");
 f.length > 0 && (f.forEach((e) => {
   const t = e.querySelector(".code-highlight");
@@ -182,7 +182,7 @@ f.length > 0 && (f.forEach((e) => {
     });
   });
 }, 5e3));
-const S = document.querySelector("#icon-search-input"), I = document.querySelector("#icon-search-input-reset"), L = document.querySelector("#icon-search-list");
-S && L && I && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(S, L, I)).catch(console.error);
-const M = "data-clipboard-value", v = document.querySelectorAll(`button[${M}]`);
-v.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(v, M)).catch(console.error);
+const I = document.querySelector("#icon-search-input"), L = document.querySelector("#icon-search-input-reset"), v = document.querySelector("#icon-search-list");
+I && v && L && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(I, v, L)).catch(console.error);
+const _ = "data-clipboard-value", T = document.querySelectorAll(`button[${_}]`);
+T.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(T, _)).catch(console.error);
