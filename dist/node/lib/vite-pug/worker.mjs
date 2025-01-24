@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { parentPort } from 'node:worker_threads';
-import { prettify } from 'htmlfy';
+import toDiffableHtml from 'diffable-html';
 import pug from 'pug';
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
@@ -39,17 +39,16 @@ function compilePug(contentDir, mode, html) {
       markupOutput = markupOutput.replace(vitePugTag, pugTag);
     }
   });
-  const prettifiedOutput = prettify(markupOutput);
-  return prettifiedOutput;
+  return toDiffableHtml(markupOutput, { tag_wrap: true });
 }
 if (!parentPort) {
   throw new Error("This file must be run as a worker thread");
 }
 parentPort.on("message", (data) => {
-  const { mode, html, contentDir } = data;
+  const { id, mode, html, contentDir } = data;
   try {
     const result = compilePug(contentDir, mode, html);
-    parentPort.postMessage({ html: result });
+    parentPort.postMessage({ id, html: result });
   } catch (error) {
     parentPort.postMessage({
       error: error instanceof Error ? error.message : "Unknown error"

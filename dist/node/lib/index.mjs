@@ -861,126 +861,77 @@ async function generatePreviewFile(data) {
   await logicalWriteFile(data.filePath, content);
 }
 
-const productionCache = /* @__PURE__ */ new Map();
-let globalPool = null;
+const MAX_POOL_SIZE = os.cpus().length;
+let workerPool = [];
+async function terminateAllWorkers() {
+  await Promise.all(workerPool.map(({ worker }) => worker.terminate));
+}
+const processCache = /* @__PURE__ */ new Map();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workerFilePath = __dirname.includes("dist/") ? "./vite-pug/worker.mjs" : "./worker.ts";
 const workerFilePathResolved = path.resolve(__dirname, workerFilePath);
-class PugWorkerPool {
-  workers = [];
-  queue = [];
-  isProcessing = false;
-  availableWorkers = [];
-  constructor(size = os.cpus().length) {
-    for (let i = 0; i < size; i++) {
-      const worker = new Worker(workerFilePathResolved, {
-        name: `pug-worker-${i + 1}`
-      });
-      worker.on("message", (result) => this.handleWorkerMessage(worker, result));
-      worker.on("error", (error) => this.handleWorkerError(worker, error));
-      this.workers.push(worker);
-      this.availableWorkers.push(worker);
-    }
-  }
-  handleWorkerMessage(worker, result) {
-    this.availableWorkers.push(worker);
-    const currentTask = this.queue[0];
-    if (!currentTask)
-      return;
-    this.queue.shift();
-    if ("error" in result) {
-      currentTask.reject(new Error(result.error));
-    } else {
-      currentTask.resolve(result.html);
-    }
-    this.processNextTask().catch(console.error);
-  }
-  handleWorkerError(worker, error) {
-    const currentTask = this.queue[0];
-    if (currentTask) {
-      currentTask.reject(error);
-      this.queue.shift();
-    }
-    const workerIndex = this.workers.indexOf(worker);
-    const availableIndex = this.availableWorkers.indexOf(worker);
-    if (workerIndex !== -1) {
-      worker.terminate().catch(console.error);
-      const newWorker = new Worker(workerFilePathResolved, {
-        name: `pug-worker-${workerIndex + 1}-replacement`
-      });
-      newWorker.on("message", (result) => this.handleWorkerMessage(newWorker, result));
-      newWorker.on("error", (error2) => this.handleWorkerError(newWorker, error2));
-      this.workers[workerIndex] = newWorker;
-      if (availableIndex !== -1) {
-        this.availableWorkers[availableIndex] = newWorker;
-      } else {
-        this.availableWorkers.push(newWorker);
-      }
-    }
-    this.processNextTask().catch(console.error);
-  }
-  async processNextTask() {
-    if (this.isProcessing || this.queue.length === 0 || this.availableWorkers.length === 0) {
-      return;
-    }
-    this.isProcessing = true;
-    const worker = this.availableWorkers.pop();
-    const task = this.queue[0];
-    worker.postMessage(task.task);
-    this.isProcessing = false;
-  }
-  async compile(id, mode, html, contentDir) {
-    return new Promise((resolve, reject) => {
-      const task = { id, mode, html, contentDir };
-      this.queue.push({ task, resolve, reject });
-      this.processNextTask();
+const signals = ["SIGINT", "SIGTERM", "SIGQUIT"];
+signals.forEach((signal) => process.on(signal, async () => await terminateAllWorkers()));
+async function compilePugMarkup(mode, contentDir, repository) {
+  const startTime = Date.now();
+  const clonedRepository = structuredClone(repository);
+  const needsProcessingIds = Array.from(clonedRepository.entries()).filter(([, { markup }]) => markup.includes("<insert-vite-pug")).map(([id]) => id);
+  if (needsProcessingIds.length === 0)
+    return clonedRepository;
+  if (mode === "production") {
+    needsProcessingIds.forEach((id) => {
+      const cachedMarkup = processCache.get(id);
+      if (!cachedMarkup)
+        return;
+      clonedRepository.set(id, { markup: cachedMarkup });
+      needsProcessingIds.splice(needsProcessingIds.indexOf(id), 1);
     });
   }
-  async terminate() {
-    await Promise.all(this.workers.map((w) => w.terminate()));
-    this.workers = [];
-    this.queue = [];
-    this.availableWorkers = [];
-    this.isProcessing = false;
-    globalPool = null;
-  }
-}
-function getPool() {
-  if (!globalPool) {
-    globalPool = new PugWorkerPool();
-  }
-  return globalPool;
-}
-["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
-  process.on(signal, async () => {
-    if (globalPool) {
-      await globalPool.terminate();
-    }
+  workerPool = Array.from({ length: Math.min(needsProcessingIds.length, MAX_POOL_SIZE) }, (_, index) => ({
+    worker: new Worker(workerFilePathResolved, {
+      name: `pug-worker-${index}`
+    }),
+    busy: false,
+    currentTaskId: undefined
+  }));
+  workerPool.forEach((workerNode) => {
+    workerNode.worker.on("message", (result) => {
+      if ("error" in result) {
+        console.error(result.error);
+        workerNode.busy = false;
+        return;
+      }
+      const { id, html } = result;
+      clonedRepository.set(id, { markup: html });
+      workerNode.busy = false;
+    });
   });
-});
-async function compilePugMarkup(id, mode, html) {
-  const needsProcessing = html.includes("<insert-vite-pug");
-  if (!needsProcessing) {
-    return html;
-  }
-  const pool = getPool();
-  if (mode === "production") {
-    const cachedVersion = productionCache.get(id);
-    if (cachedVersion) {
-      return cachedVersion;
+  while (needsProcessingIds.length > 0 || workerPool.some((worker) => worker.busy)) {
+    if (needsProcessingIds.length === 0 && workerPool.some((worker) => worker.busy)) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      continue;
+    }
+    const availableWorker = workerPool.find((worker) => !worker.busy);
+    if (availableWorker) {
+      const id = needsProcessingIds.pop();
+      const { markup } = clonedRepository.get(id);
+      availableWorker.busy = true;
+      availableWorker.currentTaskId = id;
+      availableWorker.worker.postMessage({
+        id,
+        mode,
+        html: markup,
+        contentDir
+      });
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 25));
     }
   }
-  const compiledHtml = await pool.compile(
-    id,
-    mode,
-    html,
-    globalThis.styleguideConfiguration.contentDir
-  );
-  if (mode === "production") {
-    productionCache.set(id, compiledHtml);
-  }
-  return compiledHtml;
+  console.log(1737737536312, `Compiling took ${Date.now() - startTime}ms`);
+  await terminateAllWorkers();
+  console.log(1737737536312, `Everything took ${Date.now() - startTime}ms`);
+  return clonedRepository;
 }
 
 function watchForFileContentChanges(path, regex, callback) {
@@ -1070,6 +1021,18 @@ async function buildStyleguide(config) {
   const searchSectionMapping = [];
   const menuSectionMapping = [];
   const fileWriteTasks = [];
+  let markupRepository = /* @__PURE__ */ new Map();
+  parsedContent.forEach((firstLevelSection) => {
+    firstLevelSection.sections.forEach((secondLevelSection) => {
+      if (secondLevelSection.markup)
+        markupRepository.set(secondLevelSection.id, { markup: secondLevelSection.markup });
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (thirdLevelSection.markup)
+          markupRepository.set(thirdLevelSection.id, { markup: thirdLevelSection.markup });
+      });
+    });
+  });
+  markupRepository = await compilePugMarkup(config.mode, config.contentDir, markupRepository);
   parsedContent.forEach((firstLevelSection, indexFirstLevel) => {
     searchSectionMapping[indexFirstLevel] = {
       title: firstLevelSection.header,
@@ -1095,24 +1058,30 @@ async function buildStyleguide(config) {
         href: menuHref
       });
       if (secondLevelSection.markup) {
-        fileWriteTasks.push(new Promise((resolve) => {
+        fileWriteTasks.push(
           (async () => {
-            secondLevelSection.markup = await compilePugMarkup(secondLevelSection.id, config.mode, secondLevelSection.markup);
-            await handleGenerateFullPage(secondLevelSection);
-            resolve();
-          })();
-        }));
+            try {
+              secondLevelSection.markup = markupRepository.get(secondLevelSection.id).markup;
+              await handleGenerateFullPage(secondLevelSection);
+            } catch (error) {
+              console.error(`Error processing section ${secondLevelSection.id}:`, error);
+            }
+          })()
+        );
       }
       secondLevelSection.sections.forEach((thirdLevelSection) => {
         if (!thirdLevelSection.markup)
           return;
-        fileWriteTasks.push(new Promise((resolve) => {
+        fileWriteTasks.push(
           (async () => {
-            thirdLevelSection.markup = await compilePugMarkup(thirdLevelSection.id, config.mode, thirdLevelSection.markup);
-            await handleGenerateFullPage(thirdLevelSection);
-            resolve();
-          })();
-        }));
+            try {
+              thirdLevelSection.markup = markupRepository.get(thirdLevelSection.id).markup;
+              await handleGenerateFullPage(thirdLevelSection);
+            } catch (error) {
+              console.error(`Error processing section ${thirdLevelSection.id}:`, error);
+            }
+          })()
+        );
       });
     });
   });
@@ -1181,9 +1150,6 @@ async function buildStyleguide(config) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath);
   }
   await Promise.all(fileWriteTasks);
-  if (globalThis.isWatchMode === false) {
-    await getPool().terminate();
-  }
 }
 async function watchStyleguide(config, onChange) {
   globalThis.isWatchMode = true;
