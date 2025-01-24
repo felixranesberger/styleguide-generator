@@ -49,11 +49,11 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
       })
 
       const pugOutput = pugFn(pugLocals)
+      markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput)
 
       // prettify html output only in production mode,
       // since the function breaks the vite <pug> tag detection
       markupOutput = toDiffableHtml(markupOutput, { tag_wrap: true })
-      markupOutput = markupOutput.replace(vitePugTag, pugOutput)
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
     else {
@@ -61,7 +61,7 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
         ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>`
         : `<pug src="${pugFilePath}"></pug>`
 
-      markupOutput = markupOutput.replace(vitePugTag, pugTag)
+      markupOutput = markupOutput.replaceAll(vitePugTag, pugTag)
     }
   })
 
