@@ -874,7 +874,6 @@ const workerFilePathResolved = path.resolve(__dirname, workerFilePath);
 const signals = ["SIGINT", "SIGTERM", "SIGQUIT"];
 signals.forEach((signal) => process.on(signal, async () => await terminateAllWorkers()));
 async function compilePugMarkup(mode, contentDir, repository) {
-  const startTime = Date.now();
   const clonedRepository = structuredClone(repository);
   const needsProcessingIds = Array.from(clonedRepository.entries()).filter(([, { markup }]) => markup.includes("<insert-vite-pug")).map(([id]) => id);
   if (needsProcessingIds.length === 0)
@@ -928,9 +927,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
       await new Promise((resolve) => setTimeout(resolve, 25));
     }
   }
-  console.log(1737737536312, `Compiling took ${Date.now() - startTime}ms`);
   await terminateAllWorkers();
-  console.log(1737737536312, `Everything took ${Date.now() - startTime}ms`);
   return clonedRepository;
 }
 
