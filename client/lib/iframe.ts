@@ -54,6 +54,8 @@ export function removeDocumentLoadingClass() {
 export default async (iframes: NodeListOf<HTMLIFrameElement>) => {
   await waitForIframes(iframes)
 
+  await Promise.allSettled(Array.from(iframes).map(iframe => calculateIframeHeight(iframe)))
+
   // calculate height for each iframe reactive
   const iframeHeightResizeObserver = new ResizeObserver(
     entries => entries.forEach(entry => calculateIframeHeight(entry.target as HTMLIFrameElement)),

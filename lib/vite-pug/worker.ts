@@ -53,7 +53,7 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
 
       // prettify html output only in production mode,
       // since the function breaks the vite <pug> tag detection
-      markupOutput = toDiffableHtml(markupOutput, { tag_wrap: true })
+      markupOutput = toDiffableHtml(markupOutput)
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
     else {

@@ -34,7 +34,6 @@ export async function compilePugMarkup(
   contentDir: `${string}/`,
   repository: Map<string, { markup: string }>,
 ) {
-  const startTime = Date.now()
   const clonedRepository = structuredClone(repository)
 
   // find all entries that have markup with <insert-vite-pug
