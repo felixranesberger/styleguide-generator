@@ -67,6 +67,12 @@ function closeDialogOnOutsideClick(event) {
 
 // Register changes to the dialog open state
 new MutationObserver(() => {
+  openSearchTriggers.forEach(
+    trigger => trigger.ariaExpanded = dialog.open.toString(),
+  )
+
+  searchInput.ariaExpanded = dialog.open.toString()
+
   if (!dialog.open) {
     document.removeEventListener('click', closeDialogOnOutsideClick)
     searchInput.value = ''

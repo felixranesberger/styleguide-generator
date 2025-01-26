@@ -12,6 +12,7 @@ export function getHeaderHtml() {
         <button
             class="inline-flex items-center justify-between gap-2 rounded-full border p-2 text-sm transition border-styleguide-border hover:text-styleguide-highlight focus:text-styleguide-highlight md:min-w-[150px] md:py-1.5 md:rounded-md md:px-2"
             aria-controls="search-dialog"
+            aria-expanded="false"
             data-open-search=""
         >
             <span class="sr-only md:not-sr-only">Search page</span>
@@ -390,6 +391,7 @@ export function getSearchHtml(sections: {
             spellcheck="false"
             type="text"
             value=""
+            aria-expanded="false"
         >
     </div>
 
