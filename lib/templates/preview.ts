@@ -167,6 +167,7 @@ function getMainContentRegular(section: in2Section): string {
                   src="/${section.fullpageFileName}"
                   class="preview-iframe"
                   title="${section.header} Preview"
+                  scrolling="no"
             ></iframe>
         </div>
 
@@ -230,6 +231,7 @@ ${section.markup}
                           src="/${section.fullpageFileName}?modifier=${modifier.value}"
                           class="preview-iframe mt-2"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
+                          scrolling="no"
                     ></iframe>
                 </div>
             </li>
