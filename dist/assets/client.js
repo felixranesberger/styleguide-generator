@@ -1,4 +1,4 @@
-async function P(e) {
+async function _(e) {
   const t = (o) => {
     var r;
     return ((r = o.contentWindow) == null ? void 0 : r.document.readyState) === "complete";
@@ -14,7 +14,7 @@ async function P(e) {
     }))
   );
 }
-async function y(e) {
+function g(e) {
   var r;
   const t = (r = e.contentWindow) == null ? void 0 : r.document;
   if (!t)
@@ -30,22 +30,28 @@ async function y(e) {
   );
   e.style.height = `${o}px`;
 }
-function T() {
+function I() {
   document.body.classList.add("js-loaded");
 }
-const _ = async (e) => {
-  await P(e), await Promise.allSettled(e.map((t) => y(t))), window.addEventListener("resize", () => {
-    e.forEach((t) => y(t));
-  }), T();
-}, g = "in2theme", d = {
+const P = async (e) => {
+  await _(e), e.forEach(g), window.addEventListener("resize", () => {
+    e.forEach((t) => g(t));
+  }), e.forEach((t) => {
+    const o = t.contentWindow;
+    if (!o)
+      return;
+    const r = new ResizeObserver(() => g(t));
+    r.observe(o.document.documentElement), r.observe(o.document.body);
+  }), I();
+}, f = "in2theme", d = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
-}, D = (e) => {
+}, R = (e) => {
   const t = window.matchMedia("(prefers-color-scheme: dark)");
   function o() {
-    const n = localStorage.getItem(g);
-    return n || localStorage.setItem(g, "normal"), n;
+    const n = localStorage.getItem(f);
+    return n || localStorage.setItem(f, "normal"), n;
   }
   function r() {
     const n = o();
@@ -57,8 +63,8 @@ const _ = async (e) => {
       i.classList.add(c), c === d.dark && i.classList.add("dark");
     };
     h(e), m(e);
-    const w = document.querySelectorAll("iframe");
-    w && w.forEach((i) => {
+    const y = document.querySelectorAll("iframe");
+    y && y.forEach((i) => {
       h(i), m(i);
     }), h(document.body), m(document.body);
   }
@@ -69,14 +75,14 @@ const _ = async (e) => {
     if (!n)
       throw new Error("No selected theme found");
     const c = n.value;
-    localStorage.setItem(g, c), r();
+    localStorage.setItem(f, c), r();
   });
   const s = o(), a = e.querySelector(`input[value="${s}"]`);
   if (!a)
     throw new Error("No current theme input found");
   a.checked = !0;
 };
-function R() {
+function D() {
   const e = document.querySelector("header");
   if (!e)
     throw new Error("No header found");
@@ -102,19 +108,19 @@ function O() {
   }
   window.addEventListener("resize", t), t();
 }
-R();
+D();
 O();
 const l = document.querySelector("#search-dialog");
 if (!l)
   throw new Error("No search dialog found");
-const q = document.querySelectorAll("[data-open-search]");
-if (q.length === 0)
+const T = document.querySelectorAll("[data-open-search]");
+if (T.length === 0)
   throw new Error("No open search buttons found");
 const u = document.querySelector("#search-input");
 if (!u)
   throw new Error("No search input found");
-const b = document.querySelector("#search-list");
-if (!b)
+const q = document.querySelector("#search-list");
+if (!q)
   throw new Error("No search list found");
 const A = document.querySelectorAll(".search-category__item--active");
 if (!A)
@@ -136,10 +142,10 @@ function C() {
       r = c == null ? void 0 : c.includes(e);
     }
     o.classList.toggle("search-category__item--active", r), r && (t = !0);
-  }), b.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
+  }), q.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
 }
 u.addEventListener("input", C);
-q.forEach((e) => {
+T.forEach((e) => {
   e.addEventListener("click", () => l.showModal());
 });
 function E(e) {
@@ -154,11 +160,11 @@ document.addEventListener("keydown", (e) => {
   e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), l.showModal());
 });
 const p = Array.from(document.querySelectorAll(".preview-iframe"));
-p.length > 0 ? _(p).catch(console.error) : T();
+p.length > 0 ? P(p).catch(console.error) : I();
 const S = document.querySelector(".theme-select");
-S && D(S);
-const f = document.querySelectorAll("details:has(.code-highlight)");
-f.length > 0 && (f.forEach((e) => {
+S && R(S);
+const w = document.querySelectorAll("details:has(.code-highlight)");
+w.length > 0 && (w.forEach((e) => {
   const t = e.querySelector(".code-highlight");
   if (!t)
     throw new Error("No code element found");
@@ -170,7 +176,7 @@ f.length > 0 && (f.forEach((e) => {
     await r(t);
   });
 }), setTimeout(() => {
-  f.forEach((e) => {
+  w.forEach((e) => {
     const t = e.querySelector(".code-highlight");
     if (!t)
       throw new Error("No code element found");
@@ -180,7 +186,7 @@ f.length > 0 && (f.forEach((e) => {
     });
   });
 }, 5e3));
-const L = document.querySelector("#icon-search-input"), v = document.querySelector("#icon-search-input-reset"), k = document.querySelector("#icon-search-list");
-L && k && v && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(L, k, v)).catch(console.error);
-const N = "data-clipboard-value", I = document.querySelectorAll(`button[${N}]`);
-I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(I, N)).catch(console.error);
+const v = document.querySelector("#icon-search-input"), L = document.querySelector("#icon-search-input-reset"), b = document.querySelector("#icon-search-list");
+v && b && L && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(v, b, L)).catch(console.error);
+const N = "data-clipboard-value", k = document.querySelectorAll(`button[${N}]`);
+k.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(k, N)).catch(console.error);

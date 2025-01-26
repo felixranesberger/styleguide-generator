@@ -570,10 +570,10 @@ function getMainContentRegular(section) {
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
-                    id="preview-fullpage-${section.id}"
-                    src="/${section.fullpageFileName}"
-                    class="w-full preview-iframe"
-                    title="${section.header} Preview"
+                  id="preview-fullpage-${section.id}"
+                  src="/${section.fullpageFileName}"
+                  class="preview-iframe"
+                  title="${section.header} Preview"
             ></iframe>
         </div>
 
@@ -634,13 +634,13 @@ ${section.markup}
     
                     <iframe
                           src="/${section.fullpageFileName}?modifier=${modifier.value}"
-                          class="mt-2 w-full preview-iframe"
+                          class="preview-iframe mt-2"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                     ></iframe>
                 </div>
             </li>
           `).join("\n")}
-      </ul>      
+      </ul>
     ` : ""}
   `;
 }
