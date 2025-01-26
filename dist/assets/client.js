@@ -30,7 +30,7 @@ function g(e) {
   );
   e.style.height = `${o}px`;
 }
-function I() {
+function T() {
   document.body.classList.add("js-loaded");
 }
 const P = async (e) => {
@@ -42,8 +42,8 @@ const P = async (e) => {
       return;
     const r = new ResizeObserver(() => g(t));
     r.observe(o.document.documentElement), r.observe(o.document.body);
-  }), I();
-}, f = "in2theme", d = {
+  }), T();
+}, f = "in2theme", u = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
@@ -55,16 +55,16 @@ const P = async (e) => {
   }
   function r() {
     const n = o();
-    let c = d[n];
-    n === "normal" && t.matches && (c = d.dark);
+    let c = u[n];
+    n === "normal" && t.matches && (c = u.dark);
     const h = (i) => {
-      Object.values(d).forEach((M) => i.classList.remove(M)), i.classList.remove("dark");
+      Object.values(u).forEach((M) => i.classList.remove(M)), i.classList.remove("dark");
     }, m = (i) => {
-      i.classList.add(c), c === d.dark && i.classList.add("dark");
+      i.classList.add(c), c === u.dark && i.classList.add("dark");
     };
     h(e), m(e);
-    const y = document.querySelectorAll("iframe");
-    y && y.forEach((i) => {
+    const E = document.querySelectorAll("iframe");
+    E && E.forEach((i) => {
       h(i), m(i);
     }), h(document.body), m(document.body);
   }
@@ -77,12 +77,12 @@ const P = async (e) => {
     const c = n.value;
     localStorage.setItem(f, c), r();
   });
-  const s = o(), a = e.querySelector(`input[value="${s}"]`);
-  if (!a)
+  const s = o(), l = e.querySelector(`input[value="${s}"]`);
+  if (!l)
     throw new Error("No current theme input found");
-  a.checked = !0;
+  l.checked = !0;
 };
-function D() {
+function x() {
   const e = document.querySelector("header");
   if (!e)
     throw new Error("No header found");
@@ -91,7 +91,7 @@ function D() {
     document.documentElement.style.setProperty("--header-height", `${t()}px`);
   });
 }
-function O() {
+function D() {
   const e = document.querySelector("aside");
   if (!e)
     throw new Error("No aside menu found");
@@ -108,16 +108,16 @@ function O() {
   }
   window.addEventListener("resize", t), t();
 }
+x();
 D();
-O();
-const l = document.querySelector("#search-dialog");
-if (!l)
+const a = document.querySelector("#search-dialog");
+if (!a)
   throw new Error("No search dialog found");
-const T = document.querySelectorAll("[data-open-search]");
-if (T.length === 0)
+const y = document.querySelectorAll("[data-open-search]");
+if (y.length === 0)
   throw new Error("No open search buttons found");
-const u = document.querySelector("#search-input");
-if (!u)
+const d = document.querySelector("#search-input");
+if (!d)
   throw new Error("No search input found");
 const q = document.querySelector("#search-list");
 if (!q)
@@ -129,12 +129,12 @@ const H = document.querySelector("#search-no-results");
 if (!H)
   throw new Error("No search no results element found");
 function C() {
-  const e = u.value.toLowerCase().trim();
+  const e = d.value.toLowerCase().trim();
   let t = !1;
   A.forEach((o) => {
-    var a, n;
+    var l, n;
     let r = !1;
-    const s = ((a = o.getAttribute("data-search-keywords")) == null ? void 0 : a.split(",")) || [];
+    const s = ((l = o.getAttribute("data-search-keywords")) == null ? void 0 : l.split(",")) || [];
     if (s.length > 0)
       r = s.some((c) => c.toLowerCase().includes(e));
     else {
@@ -144,25 +144,27 @@ function C() {
     o.classList.toggle("search-category__item--active", r), r && (t = !0);
   }), q.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
 }
-u.addEventListener("input", C);
-T.forEach((e) => {
-  e.addEventListener("click", () => l.showModal());
+d.addEventListener("input", C);
+y.forEach((e) => {
+  e.addEventListener("click", () => a.showModal());
 });
-function E(e) {
-  e.target.closest("dialog") !== null || l.close();
+function p(e) {
+  e.target.closest("dialog") !== null || a.close();
 }
 new MutationObserver(() => {
-  l.open ? setTimeout(() => {
-    document.addEventListener("click", E);
-  }, 0) : (document.removeEventListener("click", E), u.value = "", C());
-}).observe(l, { attributes: !0, attributeFilter: ["open"] });
+  y.forEach(
+    (e) => e.ariaExpanded = a.open.toString()
+  ), d.ariaExpanded = a.open.toString(), a.open ? setTimeout(() => {
+    document.addEventListener("click", p);
+  }, 0) : (document.removeEventListener("click", p), d.value = "", C());
+}).observe(a, { attributes: !0, attributeFilter: ["open"] });
 document.addEventListener("keydown", (e) => {
-  e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), l.showModal());
+  e.key === "k" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), a.showModal());
 });
-const p = Array.from(document.querySelectorAll(".preview-iframe"));
-p.length > 0 ? P(p).catch(console.error) : I();
-const S = document.querySelector(".theme-select");
-S && R(S);
+const S = Array.from(document.querySelectorAll(".preview-iframe"));
+S.length > 0 ? P(S).catch(console.error) : T();
+const v = document.querySelector(".theme-select");
+v && R(v);
 const w = document.querySelectorAll("details:has(.code-highlight)");
 w.length > 0 && (w.forEach((e) => {
   const t = e.querySelector(".code-highlight");
@@ -186,7 +188,7 @@ w.length > 0 && (w.forEach((e) => {
     });
   });
 }, 5e3));
-const v = document.querySelector("#icon-search-input"), L = document.querySelector("#icon-search-input-reset"), b = document.querySelector("#icon-search-list");
-v && b && L && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(v, b, L)).catch(console.error);
-const N = "data-clipboard-value", k = document.querySelectorAll(`button[${N}]`);
-k.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(k, N)).catch(console.error);
+const L = document.querySelector("#icon-search-input"), b = document.querySelector("#icon-search-input-reset"), k = document.querySelector("#icon-search-list");
+L && k && b && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(L, k, b)).catch(console.error);
+const N = "data-clipboard-value", I = document.querySelectorAll(`button[${N}]`);
+I.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(I, N)).catch(console.error);
