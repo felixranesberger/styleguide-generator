@@ -23,7 +23,7 @@ async function waitForIframes(iframes: HTMLIFrameElement[]) {
   )
 }
 
-async function calculateIframeHeight(iframe: HTMLIFrameElement) {
+function calculateIframeHeight(iframe: HTMLIFrameElement) {
   const doc = iframe.contentWindow?.document
   if (!doc)
     throw new Error('iFrame was not fully loaded yet')
@@ -51,10 +51,22 @@ export function removeDocumentLoadingClass() {
 export default async (iframes: HTMLIFrameElement[]) => {
   await waitForIframes(iframes)
 
-  await Promise.allSettled(iframes.map(iframe => calculateIframeHeight(iframe)))
+  iframes.forEach(calculateIframeHeight)
 
+  // calculate new when window size changes
   window.addEventListener('resize', () => {
     iframes.forEach(iframe => calculateIframeHeight(iframe))
+  })
+
+  // calculate new when iframe content inside changes
+  iframes.forEach((iframe) => {
+    const iframeWindow = iframe.contentWindow
+    if (!iframeWindow)
+      return
+
+    const observer = new ResizeObserver(() => calculateIframeHeight(iframe))
+    observer.observe(iframeWindow.document.documentElement)
+    observer.observe(iframeWindow.document.body)
   })
 
   removeDocumentLoadingClass()

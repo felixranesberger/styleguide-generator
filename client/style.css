@@ -177,3 +177,10 @@ pre.shiki.shiki-themes {
 .menu-item--active {
   @apply bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)];
 }
+
+.preview-iframe {
+  width: 100%;
+  overflow-y: hidden;
+  min-height: 0;
+  border: none;
+}
