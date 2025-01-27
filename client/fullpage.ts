@@ -52,7 +52,6 @@ export class ModifierReplacer {
   }
 
   private replaceInDocument(targetDocument: Document): void {
-    let count = 0
     const walker = targetDocument.createTreeWalker(
       targetDocument.body,
       NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
@@ -63,8 +62,6 @@ export class ModifierReplacer {
 
     while (walker.nextNode()) {
       const node = walker.currentNode
-      count++
-
       if (node.nodeType === Node.TEXT_NODE) {
         this.replaceInTextNode(node as Text)
       }

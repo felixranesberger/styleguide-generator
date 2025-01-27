@@ -6,6 +6,8 @@ import chokidar from 'chokidar'
  */
 type WatchCallback = () => void
 
+let isChokidarReady = false
+
 /**
  * Watches for changes in file contents that match a specific regex pattern
  * @param path - File path or glob pattern to watch
@@ -33,6 +35,13 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
     }
 
     regexFileContents.set(filePath, currentFileMatches)
+
+    // only execute styleguide rebuild if chokidar is ready
+    // because we don't want to rebuild the styleguide on initial setup
+    // everytime a file is added
+    if (isChokidarReady) {
+      callback()
+    }
   }
 
   /**
@@ -70,13 +79,21 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
    */
   const handleFileRemoval = (filePath: string): void => {
     regexFileContents.delete(filePath)
+    callback()
   }
 
   // Set up file watcher
-  chokidar.watch(path)
+  const validFileTypes = ['.css', '.scss', '.sass', '.less']
+  chokidar.watch(path, {
+    // @ts-expect-error - chokidar types seem to be incomplete, ignore
+    ignored: (path, stats) => {
+      return stats?.isFile() && !validFileTypes.some(type => path.endsWith(type))
+    },
+  })
     .on('add', registerFileContentMatches)
     .on('change', handleContentChanges)
     .on('unlink', handleFileRemoval)
+    .on('ready', () => isChokidarReady = true)
 }
 
 /**

@@ -1,3 +1,6 @@
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+
 /* geist-mono-latin-300-normal */
 @font-face {
   font-family: 'Geist Mono';
@@ -51,10 +54,6 @@
   font-weight: 600;
   src: url(/assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 html {
   view-transition-name: none;

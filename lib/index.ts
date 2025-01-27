@@ -1,9 +1,10 @@
+import type { in2Section } from './parser.ts'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
-import { type in2Section, parse } from './parser.ts'
+import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
   generatePreviewFile,
@@ -294,7 +295,7 @@ export async function watchStyleguide(config: StyleguideConfiguration, onChange?
   // marke sure content dir ends with /
   const contentDirPath = config.contentDir.endsWith('/') ? config.contentDir : `${config.contentDir}/`
 
-  watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
+  watchStyleguideForChanges(contentDirPath, () => {
     (async () => {
       await buildStyleguide(config)
       if (onChange)

@@ -269,7 +269,7 @@ function getMainContentIcons(section: in2Section): string {
 
         <input
             id="icon-search-input"
-            class="flex-grow bg-transparent icon-search-input h-[28px] focus:outline-none"
+            class="grow bg-transparent icon-search-input h-[28px] focus:outline-hidden"
             placeholder="Search icons..."
             aria-autocomplete="list"
             autocomplete="off"
@@ -383,7 +383,7 @@ export function getSearchHtml(sections: {
     <div class="border-b px-4 py-3 border-styleguide-border">
         <input
             id="search-input"
-            class="w-full bg-transparent text-[18px] h-[28px] focus:outline-none"
+            class="w-full bg-transparent text-[18px] h-[28px] focus:outline-hidden"
             placeholder="Search..."
             aria-autocomplete="list"
             autocomplete="off"

@@ -1,11 +1,11 @@
 {
   "name": "styleguide",
   "type": "module",
+  "main": "./dist/node/lib/index.mjs",
+  "types": "./dist/node/lib/index.d.ts",
   "files": [
     "dist"
   ],
-  "main": "./dist/node/lib/index.mjs",
-  "types": "./dist/node/lib/index.d.ts",
   "scripts": {
     "build": "vite build && unbuild",
     "watch": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
@@ -14,21 +14,19 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "chokidar": "^3",
+    "chokidar": "^4.0.3",
     "diffable-html": "^5.0.0",
     "fs-extra": "^11.2.0",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.12.0",
-    "@antfu/utils": "^0.7.10",
+    "@antfu/eslint-config": "^4.1.0",
+    "@antfu/utils": "^8.1.0",
+    "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "shiki": "^1.26.1",
-    "tailwindcss": "^3.4.17",
+    "shiki": "^2.1.0",
     "unbuild": "^3.2.0",
     "vite": "^6.0.7"
   }
