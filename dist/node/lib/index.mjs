@@ -672,7 +672,7 @@ function getMainContentIcons(section) {
 
         <input
             id="icon-search-input"
-            class="flex-grow bg-transparent icon-search-input h-[28px] focus:outline-none"
+            class="grow bg-transparent icon-search-input h-[28px] focus:outline-hidden"
             placeholder="Search icons..."
             aria-autocomplete="list"
             autocomplete="off"
@@ -768,7 +768,7 @@ function getSearchHtml(sections) {
     <div class="border-b px-4 py-3 border-styleguide-border">
         <input
             id="search-input"
-            class="w-full bg-transparent text-[18px] h-[28px] focus:outline-none"
+            class="w-full bg-transparent text-[18px] h-[28px] focus:outline-hidden"
             placeholder="Search..."
             aria-autocomplete="list"
             autocomplete="off"
@@ -935,6 +935,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
   return clonedRepository;
 }
 
+let isChokidarReady = false;
 function watchForFileContentChanges(path, regex, callback) {
   if (typeof callback !== "function") {
     throw new TypeError("styleguide watch requires a callback function");
@@ -947,6 +948,9 @@ function watchForFileContentChanges(path, regex, callback) {
       return;
     }
     regexFileContents.set(filePath, currentFileMatches);
+    if (isChokidarReady) {
+      callback();
+    }
   };
   const handleContentChanges = (filePath) => {
     const previousFileMatches = regexFileContents.get(filePath);
@@ -970,8 +974,15 @@ function watchForFileContentChanges(path, regex, callback) {
   };
   const handleFileRemoval = (filePath) => {
     regexFileContents.delete(filePath);
+    callback();
   };
-  chokidar.watch(path).on("add", registerFileContentMatches).on("change", handleContentChanges).on("unlink", handleFileRemoval);
+  const validFileTypes = [".css", ".scss", ".sass", ".less"];
+  chokidar.watch(path, {
+    // @ts-expect-error - chokidar types seem to be incomplete, ignore
+    ignored: (path2, stats) => {
+      return stats?.isFile() && !validFileTypes.some((type) => path2.endsWith(type));
+    }
+  }).on("add", registerFileContentMatches).on("change", handleContentChanges).on("unlink", handleFileRemoval).on("ready", () => isChokidarReady = true);
 }
 function watchStyleguideForChanges(path, callback) {
   const kssSectionRegex = /\/\*[^*]*Styleguide.*?\*\//gs;
@@ -1156,7 +1167,7 @@ async function watchStyleguide(config, onChange) {
   globalThis.isWatchMode = true;
   await buildStyleguide(config);
   const contentDirPath = config.contentDir.endsWith("/") ? config.contentDir : `${config.contentDir}/`;
-  watchStyleguideForChanges(`${contentDirPath}**/*.{css,scss,sass,less}`, () => {
+  watchStyleguideForChanges(contentDirPath, () => {
     (async () => {
       await buildStyleguide(config);
       if (onChange)

@@ -4,7 +4,7 @@ async function s(e, o) {
   if (e.getAttribute(n) === "true")
     return;
   if (!i) {
-    const { createHighlighterCore: r, createOnigurumaEngine: h } = await import("./index-BI4RaP31.js");
+    const { createHighlighterCore: r, createOnigurumaEngine: h } = await import("./index-BQTtjnKg.js");
     i = await r({
       themes: [
         import("./aurora-x-BwoVEUWZ.js"),

@@ -174,7 +174,7 @@ w.length > 0 && (w.forEach((e) => {
   if (!o)
     throw new Error("No trigger button found");
   o.addEventListener("click", async () => {
-    const { highlightCode: r } = await import("./code-Df72DCne.js");
+    const { highlightCode: r } = await import("./code-C62xnK8Y.js");
     await r(t);
   });
 }), setTimeout(() => {
@@ -183,7 +183,7 @@ w.length > 0 && (w.forEach((e) => {
     if (!t)
       throw new Error("No code element found");
     requestIdleCallback(async () => {
-      const { highlightCode: o } = await import("./code-Df72DCne.js");
+      const { highlightCode: o } = await import("./code-C62xnK8Y.js");
       await o(t);
     });
   });
