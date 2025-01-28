@@ -1,23 +1,35 @@
 const MAX_WAIT_TIME = 5000
 
 async function waitForIframes(iframes: HTMLIFrameElement[]) {
-  const getIsIframeLoaded = (iframe: HTMLIFrameElement) => iframe.contentWindow?.document.readyState === 'complete'
+  const getIsIframeLoaded = (iframe: HTMLIFrameElement) => {
+    const doc = iframe.contentWindow?.document
+    if (!doc)
+      return false
+
+    // Check if there's meaningful content
+    const hasBody = doc.body && doc.body.children.length > 0
+    const isComplete = doc.readyState === 'complete'
+    const hasHeight = doc.documentElement.offsetHeight > 0
+
+    return hasBody && isComplete && hasHeight
+  }
 
   await Promise.allSettled(
     iframes.map((iframe) => {
-      return new Promise((resolve) => {
-        const resolveWithTimeout = () => setTimeout(resolve, 100)
-
-        const isIframeAlreadyLoaded = getIsIframeLoaded(iframe)
-        if (isIframeAlreadyLoaded) {
-          resolveWithTimeout()
-          return
-        }
-
-        iframe.addEventListener('load', resolveWithTimeout, { once: true })
+      return new Promise<void>((resolve) => {
+        const interval = setInterval(() => {
+          const isIframeReady = getIsIframeLoaded(iframe)
+          if (isIframeReady) {
+            clearInterval(interval)
+            return resolve()
+          }
+        }, 100)
 
         // resolve after some time, even if iframe is not loaded
-        setTimeout(resolve, MAX_WAIT_TIME)
+        setTimeout(() => {
+          clearInterval(interval)
+          return resolve()
+        }, MAX_WAIT_TIME)
       })
     }),
   )
