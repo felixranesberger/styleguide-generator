@@ -1,23 +1,23 @@
 async function _(e) {
   const t = (o) => {
-    var c;
-    const r = (c = o.contentWindow) == null ? void 0 : c.document;
+    var n;
+    const r = (n = o.contentWindow) == null ? void 0 : n.document;
     if (!r)
       return !1;
-    const s = r.body && r.body.children.length > 0, i = r.readyState === "complete", n = r.documentElement.offsetHeight > 0;
-    return s && i && n;
+    const c = r.body && r.body.children.length > 0, i = r.readyState === "complete";
+    return c && i && r.body.children.length > 0;
   };
   await Promise.allSettled(
     e.map((o) => new Promise((r) => {
-      const s = setInterval(() => {
+      const c = setInterval(() => {
         if (t(o))
-          return clearInterval(s), r();
+          return clearInterval(c), r();
       }, 100);
-      setTimeout(() => (clearInterval(s), r()), 5e3);
+      setTimeout(() => (clearInterval(c), r()), 5e3);
     }))
   );
 }
-function f(e) {
+function g(e) {
   var r;
   const t = (r = e.contentWindow) == null ? void 0 : r.document;
   if (!t)
@@ -37,33 +37,33 @@ function q() {
   document.body.classList.add("js-loaded");
 }
 const P = async (e) => {
-  await _(e), e.forEach(f), window.addEventListener("resize", () => {
-    e.forEach((t) => f(t));
+  await _(e), e.forEach(g), window.addEventListener("resize", () => {
+    e.forEach((t) => g(t));
   }), e.forEach((t) => {
     const o = t.contentWindow;
     if (!o)
       return;
-    const r = new ResizeObserver(() => f(t));
+    const r = new ResizeObserver(() => g(t));
     r.observe(o.document.documentElement), r.observe(o.document.body);
   }), q();
-}, g = "in2theme", h = {
+}, f = "in2theme", h = {
   normal: "theme-normal",
   light: "theme-light",
   dark: "theme-dark"
 }, R = (e) => {
   const t = window.matchMedia("(prefers-color-scheme: dark)");
   function o() {
-    const n = localStorage.getItem(g);
-    return n || localStorage.setItem(g, "normal"), n;
+    const n = localStorage.getItem(f);
+    return n || localStorage.setItem(f, "normal"), n;
   }
   function r() {
     const n = o();
-    let c = h[n];
-    n === "normal" && t.matches && (c = h.dark);
+    let s = h[n];
+    n === "normal" && t.matches && (s = h.dark);
     const u = (a) => {
       Object.values(h).forEach((M) => a.classList.remove(M)), a.classList.remove("dark");
     }, m = (a) => {
-      a.classList.add(c), c === h.dark && a.classList.add("dark");
+      a.classList.add(s), s === h.dark && a.classList.add("dark");
     };
     u(e), m(e);
     const E = document.querySelectorAll("iframe");
@@ -77,10 +77,10 @@ const P = async (e) => {
     const n = e.querySelector('input[name="theme"]:checked');
     if (!n)
       throw new Error("No selected theme found");
-    const c = n.value;
-    localStorage.setItem(g, c), r();
+    const s = n.value;
+    localStorage.setItem(f, s), r();
   });
-  const s = o(), i = e.querySelector(`input[value="${s}"]`);
+  const c = o(), i = e.querySelector(`input[value="${c}"]`);
   if (!i)
     throw new Error("No current theme input found");
   i.checked = !0;
@@ -105,8 +105,8 @@ function D() {
   function t() {
     const o = sessionStorage.getItem("asideScrollPercentage");
     if (o) {
-      const r = Number.parseFloat(o), s = (e.scrollHeight - e.clientHeight) * r / 100;
-      e.scrollTop = s;
+      const r = Number.parseFloat(o), c = (e.scrollHeight - e.clientHeight) * r / 100;
+      e.scrollTop = c;
     }
   }
   window.addEventListener("resize", t), t();
@@ -125,27 +125,27 @@ if (!d)
 const T = document.querySelector("#search-list");
 if (!T)
   throw new Error("No search list found");
-const H = document.querySelectorAll(".search-category__item--active");
-if (!H)
-  throw new Error("No search results found");
-const C = document.querySelector("#search-no-results");
+const C = document.querySelectorAll(".search-category__item--active");
 if (!C)
+  throw new Error("No search results found");
+const H = document.querySelector("#search-no-results");
+if (!H)
   throw new Error("No search no results element found");
 function A() {
   const e = d.value.toLowerCase().trim();
   let t = !1;
-  H.forEach((o) => {
+  C.forEach((o) => {
     var i, n;
     let r = !1;
-    const s = ((i = o.getAttribute("data-search-keywords")) == null ? void 0 : i.split(",")) || [];
-    if (s.length > 0)
-      r = s.some((c) => c.toLowerCase().includes(e));
+    const c = ((i = o.getAttribute("data-search-keywords")) == null ? void 0 : i.split(",")) || [];
+    if (c.length > 0)
+      r = c.some((s) => s.toLowerCase().includes(e));
     else {
-      const c = (n = o.innerText) == null ? void 0 : n.toLowerCase();
-      r = c == null ? void 0 : c.includes(e);
+      const s = (n = o.innerText) == null ? void 0 : n.toLowerCase();
+      r = s == null ? void 0 : s.includes(e);
     }
     o.classList.toggle("search-category__item--active", r), r && (t = !0);
-  }), T.classList.toggle("hidden", !t), C.classList.toggle("hidden", t);
+  }), T.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
 }
 d.addEventListener("input", A);
 y.forEach((e) => {
