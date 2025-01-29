@@ -6,12 +6,10 @@ async function waitForIframes(iframes: HTMLIFrameElement[]) {
     if (!doc)
       return false
 
-    // Check if there's meaningful content
     const hasBody = doc.body && doc.body.children.length > 0
     const isComplete = doc.readyState === 'complete'
-    const hasHeight = doc.documentElement.offsetHeight > 0
 
-    return hasBody && isComplete && hasHeight
+    return hasBody && isComplete && doc.body.children.length > 0
   }
 
   await Promise.allSettled(
