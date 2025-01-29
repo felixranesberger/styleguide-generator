@@ -29,21 +29,24 @@ if (codeDetails.length > 0) {
       throw new Error('No trigger button found')
 
     triggerButton.addEventListener('click', async () => {
-      const { highlightCode } = await import('./lib/code.ts')
+      const { createShikiHighlighter, highlightCode } = await import('./lib/code.ts')
+      await createShikiHighlighter()
       await highlightCode(codeElement)
     })
   })
 
   // highlight code in when browser is not busy and some time has passed
   setTimeout(() => {
-    codeDetails.forEach((detail) => {
-      const codeElement = detail.querySelector<HTMLElement>('.code-highlight')
-      if (!codeElement)
-        throw new Error('No code element found')
+    requestIdleCallback(async () => {
+      const { createShikiHighlighter, highlightCode } = await import('./lib/code.ts')
+      await createShikiHighlighter()
 
-      requestIdleCallback(async () => {
-        const { highlightCode } = await import('./lib/code.ts')
-        await highlightCode(codeElement)
+      codeDetails.forEach((detail) => {
+        const codeElement = detail.querySelector<HTMLElement>('.code-highlight')
+        if (!codeElement)
+          throw new Error('No code element found')
+
+        highlightCode(codeElement).catch(console.error)
       })
     })
   }, 5000)

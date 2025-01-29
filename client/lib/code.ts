@@ -1,8 +1,29 @@
 import type { HighlighterCore } from 'shiki'
+import htmlLang from '@shikijs/langs/html'
+import auroraX from '@shikijs/themes/aurora-x'
+import githubLightDefault from '@shikijs/themes/github-light-default'
+import { createHighlighterCore, createOnigurumaEngine } from 'shiki'
+import shikiWasm from 'shiki/wasm'
 
 const CODE_HIGHLIGHTED_ATTRIBUTE = 'data-highlighted'
 
 let highlighter: HighlighterCore
+
+export async function createShikiHighlighter() {
+  if (highlighter)
+    return
+
+  highlighter = await createHighlighterCore({
+    themes: [
+      auroraX,
+      githubLightDefault,
+    ],
+    langs: [
+      htmlLang,
+    ],
+    engine: createOnigurumaEngine(shikiWasm),
+  })
+}
 
 export async function highlightCode(element: HTMLElement, modifierClass?: string) {
   const isAlreadyHighlighted = element.getAttribute(CODE_HIGHLIGHTED_ATTRIBUTE) === 'true'
@@ -10,18 +31,7 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
     return
 
   if (!highlighter) {
-    const { createHighlighterCore, createOnigurumaEngine } = await import('shiki')
-
-    highlighter = await createHighlighterCore({
-      themes: [
-        import('@shikijs/themes/aurora-x'),
-        import('@shikijs/themes/github-light-default'),
-      ],
-      langs: [
-        import('@shikijs/langs/html'),
-      ],
-      engine: createOnigurumaEngine(import('shiki/wasm')),
-    })
+    await createShikiHighlighter()
   }
 
   const sourceElement = element.querySelector<HTMLTemplateElement>('[data-type="code"]')
