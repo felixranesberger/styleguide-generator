@@ -1,29 +1,29 @@
 async function _(e) {
-  const t = (o) => {
+  const t = (r) => {
     var n;
-    const r = (n = o.contentWindow) == null ? void 0 : n.document;
-    if (!r)
+    const o = (n = r.contentWindow) == null ? void 0 : n.document;
+    if (!o)
       return !1;
-    const c = r.body && r.body.children.length > 0, i = r.readyState === "complete";
-    return c && i && r.body.children.length > 0;
+    const c = o.body && o.body.children.length > 0, i = o.readyState === "complete";
+    return c && i && o.body.children.length > 0;
   };
   await Promise.allSettled(
-    e.map((o) => new Promise((r) => {
+    e.map((r) => new Promise((o) => {
       const c = setInterval(() => {
-        if (t(o))
-          return clearInterval(c), r();
+        if (t(r))
+          return clearInterval(c), o();
       }, 100);
-      setTimeout(() => (clearInterval(c), r()), 5e3);
+      setTimeout(() => (clearInterval(c), o()), 5e3);
     }))
   );
 }
 function g(e) {
-  var r;
-  const t = (r = e.contentWindow) == null ? void 0 : r.document;
+  var o;
+  const t = (o = e.contentWindow) == null ? void 0 : o.document;
   if (!t)
     throw new Error("iFrame was not fully loaded yet");
   e.style.height = "0px", e.offsetHeight;
-  const o = Math.max(
+  const r = Math.max(
     t.documentElement.scrollHeight,
     t.body.scrollHeight,
     t.documentElement.offsetHeight,
@@ -31,7 +31,7 @@ function g(e) {
     t.documentElement.clientHeight,
     t.body.clientHeight
   );
-  e.style.height = `${o}px`;
+  e.style.height = `${r}px`;
 }
 function q() {
   document.body.classList.add("js-loaded");
@@ -40,11 +40,11 @@ const P = async (e) => {
   await _(e), e.forEach(g), window.addEventListener("resize", () => {
     e.forEach((t) => g(t));
   }), e.forEach((t) => {
-    const o = t.contentWindow;
-    if (!o)
+    const r = t.contentWindow;
+    if (!r)
       return;
-    const r = new ResizeObserver(() => g(t));
-    r.observe(o.document.documentElement), r.observe(o.document.body);
+    const o = new ResizeObserver(() => g(t));
+    o.observe(r.document.documentElement), o.observe(r.document.body);
   }), q();
 }, f = "in2theme", h = {
   normal: "theme-normal",
@@ -52,12 +52,12 @@ const P = async (e) => {
   dark: "theme-dark"
 }, R = (e) => {
   const t = window.matchMedia("(prefers-color-scheme: dark)");
-  function o() {
+  function r() {
     const n = localStorage.getItem(f);
     return n || localStorage.setItem(f, "normal"), n;
   }
-  function r() {
-    const n = o();
+  function o() {
+    const n = r();
     let s = h[n];
     n === "normal" && t.matches && (s = h.dark);
     const u = (a) => {
@@ -72,15 +72,15 @@ const P = async (e) => {
     }), u(document.body), m(document.body);
   }
   t.addEventListener("change", () => {
-    o() === "normal" && r();
-  }), r(), e.addEventListener("change", () => {
+    r() === "normal" && o();
+  }), o(), e.addEventListener("change", () => {
     const n = e.querySelector('input[name="theme"]:checked');
     if (!n)
       throw new Error("No selected theme found");
     const s = n.value;
-    localStorage.setItem(f, s), r();
+    localStorage.setItem(f, s), o();
   });
-  const c = o(), i = e.querySelector(`input[value="${c}"]`);
+  const c = r(), i = e.querySelector(`input[value="${c}"]`);
   if (!i)
     throw new Error("No current theme input found");
   i.checked = !0;
@@ -99,13 +99,13 @@ function D() {
   if (!e)
     throw new Error("No aside menu found");
   e.addEventListener("scroll", () => {
-    const o = e.scrollTop / (e.scrollHeight - e.clientHeight) * 100;
-    sessionStorage.setItem("asideScrollPercentage", o.toString());
+    const r = e.scrollTop / (e.scrollHeight - e.clientHeight) * 100;
+    sessionStorage.setItem("asideScrollPercentage", r.toString());
   });
   function t() {
-    const o = sessionStorage.getItem("asideScrollPercentage");
-    if (o) {
-      const r = Number.parseFloat(o), c = (e.scrollHeight - e.clientHeight) * r / 100;
+    const r = sessionStorage.getItem("asideScrollPercentage");
+    if (r) {
+      const o = Number.parseFloat(r), c = (e.scrollHeight - e.clientHeight) * o / 100;
       e.scrollTop = c;
     }
   }
@@ -125,27 +125,27 @@ if (!d)
 const T = document.querySelector("#search-list");
 if (!T)
   throw new Error("No search list found");
-const C = document.querySelectorAll(".search-category__item--active");
-if (!C)
-  throw new Error("No search results found");
-const H = document.querySelector("#search-no-results");
+const H = document.querySelectorAll(".search-category__item--active");
 if (!H)
+  throw new Error("No search results found");
+const C = document.querySelector("#search-no-results");
+if (!C)
   throw new Error("No search no results element found");
 function A() {
   const e = d.value.toLowerCase().trim();
   let t = !1;
-  C.forEach((o) => {
+  H.forEach((r) => {
     var i, n;
-    let r = !1;
-    const c = ((i = o.getAttribute("data-search-keywords")) == null ? void 0 : i.split(",")) || [];
+    let o = !1;
+    const c = ((i = r.getAttribute("data-search-keywords")) == null ? void 0 : i.split(",")) || [];
     if (c.length > 0)
-      r = c.some((s) => s.toLowerCase().includes(e));
+      o = c.some((s) => s.toLowerCase().includes(e));
     else {
-      const s = (n = o.innerText) == null ? void 0 : n.toLowerCase();
-      r = s == null ? void 0 : s.includes(e);
+      const s = (n = r.innerText) == null ? void 0 : n.toLowerCase();
+      o = s == null ? void 0 : s.includes(e);
     }
-    o.classList.toggle("search-category__item--active", r), r && (t = !0);
-  }), T.classList.toggle("hidden", !t), H.classList.toggle("hidden", t);
+    r.classList.toggle("search-category__item--active", o), o && (t = !0);
+  }), T.classList.toggle("hidden", !t), C.classList.toggle("hidden", t);
 }
 d.addEventListener("input", A);
 y.forEach((e) => {
@@ -173,21 +173,21 @@ w.length > 0 && (w.forEach((e) => {
   const t = e.querySelector(".code-highlight");
   if (!t)
     throw new Error("No code element found");
-  const o = e.querySelector("summary");
-  if (!o)
+  const r = e.querySelector("summary");
+  if (!r)
     throw new Error("No trigger button found");
-  o.addEventListener("click", async () => {
-    const { highlightCode: r } = await import("./code-C62xnK8Y.js");
-    await r(t);
+  r.addEventListener("click", async () => {
+    const { createShikiHighlighter: o, highlightCode: c } = await import("./code-BL-eL8V0.js");
+    await o(), await c(t);
   });
 }), setTimeout(() => {
-  w.forEach((e) => {
-    const t = e.querySelector(".code-highlight");
-    if (!t)
-      throw new Error("No code element found");
-    requestIdleCallback(async () => {
-      const { highlightCode: o } = await import("./code-C62xnK8Y.js");
-      await o(t);
+  requestIdleCallback(async () => {
+    const { createShikiHighlighter: e, highlightCode: t } = await import("./code-BL-eL8V0.js");
+    await e(), w.forEach((r) => {
+      const o = r.querySelector(".code-highlight");
+      if (!o)
+        throw new Error("No code element found");
+      t(o).catch(console.error);
     });
   });
 }, 5e3));
