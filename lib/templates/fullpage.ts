@@ -33,7 +33,7 @@ export async function generateFullPageFile(data: {
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"></script>
-    ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}" />`).join('\n')}
+    ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}">`).join('\n')}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
     ${data.html}

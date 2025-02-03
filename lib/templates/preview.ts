@@ -460,7 +460,7 @@ export async function generatePreviewFile(data: {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/preview.svg">
-    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css">
     <script type="module" src="/assets/client.js"></script>
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? ' theme-light' : ''}">
