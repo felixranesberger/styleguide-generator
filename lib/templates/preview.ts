@@ -462,6 +462,11 @@ export async function generatePreviewFile(data: {
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/preview.svg">
     <link rel="stylesheet" type="text/css" href="/assets/styleguide.css">
     <script type="module" src="/assets/client.js"></script>
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? ' theme-light' : ''}">
     ${data.html.header}
