@@ -103,8 +103,8 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
  */
 export function watchStyleguideForChanges(path: string | string[], callback: WatchCallback): void {
   // Matches the KSS section comment block
-  // (file must start with "/*", end with "*/" and contain "Styleguide"
-  const kssSectionRegex = /\/\*[^*]*Styleguide.*?\*\//gs
+  // (file must start with "/*", "/**" and end with "*/", "**/" and contain "Styleguide"
+  const kssSectionRegex = /\/\*{1,2}[\s\S]*?Styleguide[\s\S]*?\*\//g
 
   watchForFileContentChanges(
     path,
