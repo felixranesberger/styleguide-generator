@@ -421,7 +421,7 @@ async function generateFullPageFile(data) {
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"><\/script>
-    ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}" />`).join("\n")}
+    ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}">`).join("\n")}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
     ${data.html}
@@ -825,8 +825,13 @@ async function generatePreviewFile(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/preview.svg">
-    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css">
     <script type="module" src="/assets/client.js"><\/script>
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
     ${data.html.header}
@@ -985,7 +990,7 @@ function watchForFileContentChanges(path, regex, callback) {
   }).on("add", registerFileContentMatches).on("change", handleContentChanges).on("unlink", handleFileRemoval).on("ready", () => isChokidarReady = true);
 }
 function watchStyleguideForChanges(path, callback) {
-  const kssSectionRegex = /\/\*[^*]*Styleguide.*?\*\//gs;
+  const kssSectionRegex = /\/\*{1,2}[\s\S]*?Styleguide[\s\S]*?\*\//g;
   watchForFileContentChanges(
     path,
     kssSectionRegex,
