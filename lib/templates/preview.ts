@@ -1,6 +1,8 @@
 import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import { logicalWriteFile } from '../utils.ts'
 
+const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
+
 export function getHeaderHtml() {
   return `
 <header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1220px] border-styleguide-border bg-styleguide-bg-highlight">
@@ -130,9 +132,9 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
     && (section.colors === undefined || section.colors.length === 0)
 
   return `
-<section id="section-${section.id}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
+<section id="section-${sanitizeId(section.id)}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
     <div class="flex items-center justify-between gap-6">
-        <a class="relative group" href="#section-${section.id}">
+        <a class="relative group" href="#section-${sanitizeId(section.id)}">
             <svg class="absolute top-1/2 -left-6 -translate-y-1/2 opacity-0 transition size-[18px] group-hover:opacity-100 group-focus:opacity-100"
                  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
@@ -164,7 +166,7 @@ function getMainContentRegular(section: in2Section): string {
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
-                  id="preview-fullpage-${section.id}"
+                  id="preview-fullpage-${sanitizeId(section.id)}"
                   src="/${section.fullpageFileName}"
                   class="preview-iframe"
                   title="${section.header} Preview"
@@ -184,7 +186,7 @@ function getMainContentRegular(section: in2Section): string {
             </summary>
 
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
-                <div id="code-fullpage-${section.id}" class="overflow-x-auto w-full code-highlight">
+                <div id="code-fullpage-${sanitizeId(section.id)}" class="overflow-x-auto w-full code-highlight">
                   <template data-type="code">
 ${section.markup}
                   </template>
