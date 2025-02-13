@@ -406,10 +406,13 @@ async function logicalWriteFile(filepath, content) {
 }
 
 async function generateFullPageFile(data) {
-  const computedScriptTags = data.js.map((js) => {
+  const computedScriptTags = data.js.filter((entry) => entry.type !== "overwriteStyleguide").map((js) => {
     const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(" ") : "";
     return `<script src="${js.src}" ${additionalAttributes}><\/script>`;
-  });
+  }).join("\n");
+  const computedStyleTags = data.css.filter((entry) => entry.type !== "overwriteStyleguide").map((css) => {
+    return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
+  }).join("\n");
   const content = `
 <!doctype html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ""}>
@@ -421,11 +424,11 @@ async function generateFullPageFile(data) {
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"><\/script>
-    ${data.css.map((css) => `<link rel="stylesheet" type="text/css" href="${css}">`).join("\n")}
+    ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
     ${data.html}
-    ${computedScriptTags.join("\n")}
+    ${computedScriptTags}
 </body>
 </html>
 `.trim();
@@ -816,6 +819,13 @@ function getSearchHtml(sections) {
 `.trim();
 }
 async function generatePreviewFile(data) {
+  const computedScriptTags = data.js.filter((entry) => entry.type === "overwriteStyleguide").map((js) => {
+    const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(" ") : "";
+    return `<script src="${js.src}" ${additionalAttributes}><\/script>`;
+  }).join("\n");
+  const computedStyleTags = data.css.filter((entry) => entry.type === "overwriteStyleguide").map((css) => {
+    return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
+  }).join("\n");
   const content = `
 <!doctype html>
 <html lang="${data.page.lang}">
@@ -833,6 +843,7 @@ async function generatePreviewFile(data) {
     <link rel="preload" href="/assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    ${computedStyleTags}
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
     ${data.html.header}
@@ -865,6 +876,8 @@ async function generatePreviewFile(data) {
       }]
     }
     <\/script>
+    
+    ${computedScriptTags}
 </body>
 </html>
 `.trim();

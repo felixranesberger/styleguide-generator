@@ -11,8 +11,12 @@ interface StyleguideConfiguration {
     html: {
         lang: string;
         assets: {
-            css: string[];
+            css: {
+                type?: 'regular' | 'overwriteStyleguide';
+                src: string;
+            }[];
             js: {
+                type?: 'regular' | 'overwriteStyleguide';
                 src: string;
                 additionalAttributes?: Record<string, string>;
             }[];
