@@ -81,8 +81,8 @@ function parseColors(text: string): ColorObject[] {
   text = text.trim()
   const colors: ColorObject[] = []
 
-  // CSS4 colors regex
-  const regex = /^(?:(\S+)\s*:\s*)?([a-z]+|#[0-9a-f]{3}|#(?:[0-9a-f]{2}){2,4}|(?:rgb|hsl)a?\((?:-?\d+%?[,\s]+){2,3}[\d.]+%?\))(?:\s*-\s*(.*))?$/gim
+  // Extract colors (hex, rgb, css variables etc)
+  const regex = /^(\S+)\s*:\s*(var\(--[a-z0-9-]+\)|[a-z]+|#[0-9a-f]{3}|#(?:[0-9a-f]{2}){2,4}|(?:rgb|hsl)a?\((?:-?\d+%?[,\s]+){2,3}[\d.]+%?\))(?:\s*-\s*(.*))?$/gim
 
   let test = regex.exec(text)
 
@@ -106,16 +106,12 @@ function parseColors(text: string): ColorObject[] {
   return colors
 }
 
-function parseWrapper(text: string): string {
-  return text.trim()
-}
-
 function parseIcons(text: string): IconObject[] {
   text = text.trim()
   const icons: IconObject[] = []
 
-  // Updated regex to handle SVG tags with attributes
-  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>)$/gm
+  // Extract <svg> and <i> tags
+  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>|<i[^>]*><\/i>)$/gm
 
   let match = regex.exec(text)
 
@@ -129,10 +125,13 @@ function parseIcons(text: string): IconObject[] {
     match = regex.exec(text)
   }
 
-  // Add validation and error handling
+  // Add extra validation and error handling
   icons.forEach((icon, index) => {
-    if (!icon.svg.startsWith('<svg') || !icon.svg.endsWith('</svg>')) {
-      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed SVG content`)
+    const isValidSvg = icon.svg.startsWith('<svg') && icon.svg.endsWith('</svg>')
+    const isValidI = icon.svg.startsWith('<i') && icon.svg.endsWith('</i>')
+
+    if (!isValidSvg && !isValidI) {
+      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed content`)
     }
   })
 
