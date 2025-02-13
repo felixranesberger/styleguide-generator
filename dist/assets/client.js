@@ -192,6 +192,6 @@ w.length > 0 && (w.forEach((e) => {
   });
 }, 5e3));
 const L = document.querySelector("#icon-search-input"), b = document.querySelector("#icon-search-input-reset"), I = document.querySelector("#icon-search-list");
-L && I && b && import("./icons-DKt1vG1z.js").then(({ default: e }) => e(L, I, b)).catch(console.error);
+L && I && b && import("./icons-DWBVzKp_.js").then(({ default: e }) => e(L, I, b)).catch(console.error);
 const N = "data-clipboard-value", k = document.querySelectorAll(`button[${N}]`);
 k.length > 0 && import("./clipboard-BwiD_T_n.js").then(({ default: e }) => e(k, N)).catch(console.error);

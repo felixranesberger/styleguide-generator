@@ -12,7 +12,7 @@ const l = (c, n, r) => {
     const i = o.querySelector(".icon-search-list__item-copy");
     if (!i)
       throw new Error("No copy button found");
-    const e = o.querySelector("svg:not(.icon-search-list__item-copy-icon)");
+    const e = o.querySelector("svg:not(.icon-search-list__item-copy-icon), i");
     if (!e)
       throw new Error("No icon found");
     const s = e.outerHTML.replace(/\n/g, "").replace(/\s{2,}/g, " ").trim(), t = o.querySelector(".icon-search-list__item-copy-icon");
