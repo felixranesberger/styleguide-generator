@@ -11,7 +11,7 @@ import chokidar from 'chokidar';
 function parseColors(text) {
   text = text.trim();
   const colors = [];
-  const regex = /^(?:(\S+)\s*:\s*)?([a-z]+|#[0-9a-f]{3}|#(?:[0-9a-f]{2}){2,4}|(?:rgb|hsl)a?\((?:-?\d+%?[,\s]+){2,3}[\d.]+%?\))(?:\s*-\s*(.*))?$/gim;
+  const regex = /^(\S+)\s*:\s*(var\(--[a-z0-9-]+\)|[a-z]+|#[0-9a-f]{3}|#(?:[0-9a-f]{2}){2,4}|(?:rgb|hsl)a?\((?:-?\d+%?[,\s]+){2,3}[\d.]+%?\))(?:\s*-\s*(.*))?$/gim;
   let test = regex.exec(text);
   while (test !== null) {
     const color = {
@@ -31,7 +31,7 @@ function parseColors(text) {
 function parseIcons(text) {
   text = text.trim();
   const icons = [];
-  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>)$/gm;
+  const regex = /^([^:]+):\s*(<svg[^>]*>[\s\S]*?<\/svg>|<i[^>]*><\/i>)$/gm;
   let match = regex.exec(text);
   while (match !== null) {
     const icon = {
@@ -42,8 +42,10 @@ function parseIcons(text) {
     match = regex.exec(text);
   }
   icons.forEach((icon, index) => {
-    if (!icon.svg.startsWith("<svg") || !icon.svg.endsWith("</svg>")) {
-      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed SVG content`);
+    const isValidSvg = icon.svg.startsWith("<svg") && icon.svg.endsWith("</svg>");
+    const isValidI = icon.svg.startsWith("<i") && icon.svg.endsWith("</i>");
+    if (!isValidSvg && !isValidI) {
+      console.warn(`Warning: Icon "${icon.name}" at index ${index} may have malformed content`);
     }
   });
   return icons;
