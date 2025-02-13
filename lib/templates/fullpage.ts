@@ -1,3 +1,4 @@
+import type { StyleguideConfiguration } from '../index.ts'
 import { logicalWriteFile } from '../utils.ts'
 
 export async function generateFullPageFile(data: {
@@ -10,17 +11,24 @@ export async function generateFullPageFile(data: {
     htmlclass?: string
     bodyclass?: string
   }
-  css: string[]
-  js: {
-    src: string
-    additionalAttributes?: Record<string, string>
-  }[]
+  css: StyleguideConfiguration['html']['assets']['css']
+  js: StyleguideConfiguration['html']['assets']['js']
   html: string
 }) {
-  const computedScriptTags = data.js.map((js) => {
-    const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(' ') : ''
-    return `<script src="${js.src}" ${additionalAttributes}></script>`
-  })
+  const computedScriptTags = data.js
+    .filter(entry => entry.type !== 'overwriteStyleguide')
+    .map((js) => {
+      const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(' ') : ''
+      return `<script src="${js.src}" ${additionalAttributes}></script>`
+    })
+    .join('\n')
+
+  const computedStyleTags = data.css
+    .filter(entry => entry.type !== 'overwriteStyleguide')
+    .map((css) => {
+      return `<link rel="stylesheet" type="text/css" href="${css.src}">`
+    })
+    .join('\n')
 
   const content = `
 <!doctype html>
@@ -33,11 +41,11 @@ export async function generateFullPageFile(data: {
     <meta name="generator" content="styleguide">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
     <script type="module" src="/assets/client-fullpage.js"></script>
-    ${data.css.map(css => `<link rel="stylesheet" type="text/css" href="${css}">`).join('\n')}
+    ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
     ${data.html}
-    ${computedScriptTags.join('\n')}
+    ${computedScriptTags}
 </body>
 </html>
 `.trim()
