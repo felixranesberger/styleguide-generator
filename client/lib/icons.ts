@@ -23,7 +23,7 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
     if (!copyButton)
       throw new Error('No copy button found')
 
-    const icon = item.querySelector<SVGElement>('svg:not(.icon-search-list__item-copy-icon)')
+    const icon = item.querySelector<SVGElement>('svg:not(.icon-search-list__item-copy-icon), i')
     if (!icon)
       throw new Error('No icon found')
 
