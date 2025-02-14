@@ -1,6 +1,8 @@
 var a = Object.defineProperty;
-var d = (r, e, t) => e in r ? a(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var n = (r, e, t) => d(r, typeof e != "symbol" ? e + "" : e, t);
+var d = (o, e, t) => e in o ? a(o, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : o[e] = t;
+var n = (o, e, t) => d(o, typeof e != "symbol" ? e + "" : e, t);
+const p = new URLSearchParams(window.location.search);
+p.get("preview") === "true" && document.documentElement.classList.add("styleguide-preview");
 class c {
   constructor(e) {
     n(this, "modifier");
@@ -14,12 +16,12 @@ class c {
     const i = new URLSearchParams(window.location.search).get("modifier");
     if (!i)
       return null;
-    const o = i.split(".").filter((s) => s.length > 0).join(" "), l = new c({ modifier: o });
+    const r = i.split(".").filter((s) => s.length > 0).join(" "), l = new c({ modifier: r });
     return l.initialize(e), l;
   }
   replaceAll(e) {
-    const t = encodeURIComponent(JSON.stringify(this.placeholder)), i = JSON.stringify({ modifierClass: this.placeholder }), o = encodeURIComponent(i);
-    return e.replace(new RegExp(this.escapeRegExp(this.placeholder), "g"), this.modifier).replace(new RegExp(this.escapeRegExp(t), "g"), this.modifier).replace(new RegExp(this.escapeRegExp(o), "g"), this.modifier);
+    const t = encodeURIComponent(JSON.stringify(this.placeholder)), i = JSON.stringify({ modifierClass: this.placeholder }), r = encodeURIComponent(i);
+    return e.replace(new RegExp(this.escapeRegExp(this.placeholder), "g"), this.modifier).replace(new RegExp(this.escapeRegExp(t), "g"), this.modifier).replace(new RegExp(this.escapeRegExp(r), "g"), this.modifier);
   }
   escapeRegExp(e) {
     return e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -45,8 +47,8 @@ class c {
   }
   replaceInElementAttributes(e) {
     Array.from(e.attributes).forEach((t) => {
-      const i = t.value, o = this.replaceAll(i);
-      i !== o && (t.value = o);
+      const i = t.value, r = this.replaceAll(i);
+      i !== r && (t.value = r);
     });
   }
 }

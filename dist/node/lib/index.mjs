@@ -578,7 +578,7 @@ function getMainContentRegular(section) {
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
                   id="preview-fullpage-${sanitizeId(section.id)}"
-                  src="/${section.fullpageFileName}"
+                  src="/${section.fullpageFileName}?preview=true"
                   class="preview-iframe"
                   title="${section.header} Preview"
                   scrolling="no"
@@ -641,7 +641,7 @@ ${section.markup}
                     </div>
     
                     <iframe
-                          src="/${section.fullpageFileName}?modifier=${modifier.value}"
+                          src="/${section.fullpageFileName}?preview=true&modifier=${modifier.value}"
                           class="preview-iframe mt-2"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                           scrolling="no"
