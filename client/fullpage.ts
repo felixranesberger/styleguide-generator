@@ -3,6 +3,12 @@ interface ModifierReplacerConfig {
   placeholder?: string
 }
 
+// add styleguide preview class when in iframe preview mode
+const urlSearchParams = new URLSearchParams(window.location.search)
+if (urlSearchParams.get('preview') === 'true') {
+  document.documentElement.classList.add('styleguide-preview')
+}
+
 export class ModifierReplacer {
   private readonly modifier: string
   private readonly placeholder: string
