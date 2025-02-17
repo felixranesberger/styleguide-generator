@@ -840,11 +840,11 @@ async function generatePreviewFile(data) {
     <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg">
     <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css">
     <script type="module" src="/styleguide-assets/client.js"><\/script>
-    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedStyleTags}
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
