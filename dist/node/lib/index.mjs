@@ -424,8 +424,8 @@ async function generateFullPageFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg">
-    <script type="module" src="/styleguide-assets/client-fullpage.js"><\/script>
+    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
+    <script type="module" src="/styleguide-assets/client-fullpage.js?raw"><\/script>
     ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
@@ -837,14 +837,14 @@ async function generatePreviewFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg">
-    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css">
-    <script type="module" src="/styleguide-assets/client.js"><\/script>
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
+    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css?raw">
+    <script type="module" src="/styleguide-assets/client.js?raw"><\/script>
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedStyleTags}
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
