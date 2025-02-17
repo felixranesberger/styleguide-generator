@@ -39,8 +39,8 @@ export async function generateFullPageFile(data: {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
-    <script type="module" src="/assets/client-fullpage.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg">
+    <script type="module" src="/styleguide-assets/client-fullpage.js"></script>
     ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>

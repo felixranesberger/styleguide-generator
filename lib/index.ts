@@ -271,14 +271,14 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const findAssetsDirectoryPath = () => {
     const isLibraryDevelopmentIndexTs = __filename.endsWith('/lib/index.ts')
     if (isLibraryDevelopmentIndexTs)
-      return path.resolve(process.cwd(), 'dist/assets')
+      return path.resolve(process.cwd(), 'dist/styleguide-assets')
 
     // this is returned when the library is run by the real user
-    return path.resolve(__dirname, '../../assets')
+    return path.resolve(__dirname, '../../styleguide-assets')
   }
 
   const assetsDirectoryPath = findAssetsDirectoryPath()
-  const assetsDirectoryOutputPath = path.join(config.outDir, 'assets')
+  const assetsDirectoryOutputPath = path.join(config.outDir, 'styleguide-assets')
   const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath)

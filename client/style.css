@@ -7,7 +7,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 300;
-  src: url(/assets/fonts/geist-mono-latin-300-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2) format('woff2');
 }
 
 /* geist-mono-latin-400-normal */
@@ -16,7 +16,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url(/assets/fonts/geist-mono-latin-400-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2) format('woff2');
 }
 
 /* geist-mono-latin-600-normal */
@@ -25,7 +25,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 600;
-  src: url(/assets/fonts/geist-mono-latin-600-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2) format('woff2');
 }
 
 /* geist-sans-latin-300-normal */
@@ -34,7 +34,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 300;
-  src: url(/assets/fonts/geist-sans-latin-300-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-sans-latin-300-normal.woff2) format('woff2');
 }
 
 /* geist-sans-latin-400-normal */
@@ -43,7 +43,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url(/assets/fonts/geist-sans-latin-400-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-sans-latin-400-normal.woff2) format('woff2');
 }
 
 /* geist-sans-latin-600-normal */
@@ -52,7 +52,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 600;
-  src: url(/assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
+  src: url(/styleguide-assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
 }
 
 html {

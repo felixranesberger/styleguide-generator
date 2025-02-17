@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
-    outDir: 'dist/assets',
+    outDir: 'dist/styleguide-assets',
     emptyOutDir: true,
     lib: {
       entry: {
