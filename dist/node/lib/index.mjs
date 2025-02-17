@@ -424,8 +424,8 @@ async function generateFullPageFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon/fullpage.svg">
-    <script type="module" src="/assets/client-fullpage.js"><\/script>
+    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg">
+    <script type="module" src="/styleguide-assets/client-fullpage.js"><\/script>
     ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
@@ -440,7 +440,7 @@ async function generateFullPageFile(data) {
 const sanitizeId = (id) => id.toLowerCase().replaceAll(".", "-");
 function getHeaderHtml() {
   return `
-<header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1220px] border-styleguide-border bg-styleguide-bg-highlight">
+<header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1600px] border-styleguide-border bg-styleguide-bg-highlight">
     <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-highlight" href="/">
         ${globalThis.styleguideConfiguration.projectTitle}
     </a>
@@ -837,20 +837,20 @@ async function generatePreviewFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon/preview.svg">
-    <link rel="stylesheet" type="text/css" href="/assets/styleguide.css">
-    <script type="module" src="/assets/client.js"><\/script>
-    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg">
+    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css">
+    <script type="module" src="/styleguide-assets/client.js"><\/script>
+    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedStyleTags}
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
     ${data.html.header}
   
-    <main class="relative flex h-full min-h-screen min-[1222px]:border-x min-[1220px]:mx-auto max-w-[1220px] border-styleguide-border">
+    <main class="relative flex h-full min-h-screen min-[1222px]:border-x min-[1220px]:mx-auto max-w-[1600px] border-styleguide-border">
       <aside
           class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
           style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
@@ -1173,11 +1173,11 @@ async function buildStyleguide(config) {
   const findAssetsDirectoryPath = () => {
     const isLibraryDevelopmentIndexTs = __filename.endsWith("/lib/index.ts");
     if (isLibraryDevelopmentIndexTs)
-      return path.resolve(process.cwd(), "dist/assets");
-    return path.resolve(__dirname, "../../assets");
+      return path.resolve(process.cwd(), "dist/styleguide-assets");
+    return path.resolve(__dirname, "../../styleguide-assets");
   };
   const assetsDirectoryPath = findAssetsDirectoryPath();
-  const assetsDirectoryOutputPath = path.join(config.outDir, "assets");
+  const assetsDirectoryOutputPath = path.join(config.outDir, "styleguide-assets");
   const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0;
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath);
