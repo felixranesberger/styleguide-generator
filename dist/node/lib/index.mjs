@@ -998,12 +998,16 @@ function watchForFileContentChanges(path, regex, callback) {
     callback();
   };
   const validFileTypes = [".css", ".scss", ".sass", ".less"];
-  chokidar.watch(path, {
+  const watcher = chokidar.watch(path, {
     // @ts-expect-error - chokidar types seem to be incomplete, ignore
     ignored: (path2, stats) => {
       return stats?.isFile() && !validFileTypes.some((type) => path2.endsWith(type));
     }
   }).on("add", registerFileContentMatches).on("change", handleContentChanges).on("unlink", handleFileRemoval).on("ready", () => isChokidarReady = true);
+  process.on("SIGINT", watcher.close);
+  process.on("SIGTERM", watcher.close);
+  process.on("SIGHUP", watcher.close);
+  process.on("exit", watcher.close);
 }
 function watchStyleguideForChanges(path, callback) {
   const kssSectionRegex = /\/\*{1,2}[\s\S]*?Styleguide[\s\S]*?\*\//g;
