@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import process from 'node:process'
 import chokidar from 'chokidar'
 
 /**
@@ -84,7 +85,7 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
 
   // Set up file watcher
   const validFileTypes = ['.css', '.scss', '.sass', '.less']
-  chokidar.watch(path, {
+  const watcher = chokidar.watch(path, {
     // @ts-expect-error - chokidar types seem to be incomplete, ignore
     ignored: (path, stats) => {
       return stats?.isFile() && !validFileTypes.some(type => path.endsWith(type))
@@ -94,6 +95,11 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
     .on('change', handleContentChanges)
     .on('unlink', handleFileRemoval)
     .on('ready', () => isChokidarReady = true)
+
+  process.on('SIGINT', watcher.close) // Ctrl+C
+  process.on('SIGTERM', watcher.close) // Kill command
+  process.on('SIGHUP', watcher.close) // Terminal closed
+  process.on('exit', watcher.close) // Process exit
 }
 
 /**
