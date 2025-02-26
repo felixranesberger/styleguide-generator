@@ -38,7 +38,7 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
     if (!copyIcon)
       throw new Error('No copy icon found')
 
-    copyButton.addEventListener('click', () => {
+    copyButton.addEventListener('click', async () => {
       icon.classList.add('opacity-0', 'scale-75', 'transition', 'duration-500', 'ease-in-out')
       copyIcon.classList.add('icon-search-list__item-copy-icon--active')
       setTimeout(() => {
@@ -46,7 +46,7 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
         setTimeout(() => icon.classList.remove('opacity-0', 'scale-75'), 350)
       }, 1000)
 
-      navigator.clipboard.writeText(iconContent).catch(console.error)
+      await navigator.clipboard.writeText(iconContent).catch(console.error)
     })
   })
 }

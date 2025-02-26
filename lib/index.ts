@@ -8,6 +8,8 @@ import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
   generatePreviewFile,
+  getAlerts,
+  getCodeAuditDialog,
   getHeaderHtml,
   getMainContentHtml,
   getNextPageControlsHtml,
@@ -260,6 +262,8 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
             mainContent: getMainContentHtml(secondLevelSection),
             nextPageControls: getNextPageControlsHtml(nextPageControlsData),
             search: searchHtml,
+            codeAuditDialog: getCodeAuditDialog(),
+            alerts: getAlerts(),
           },
         }),
       )

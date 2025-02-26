@@ -15,27 +15,8 @@ import { watchStyleguide } from './lib/index';
     html: {
       lang: 'de',
       assets: {
-        css: [
-          { src: '/main.css' },
-          { src: '/styleguide-overwrite.css', type: 'overwriteStyleguide' },
-        ],
-        js: [
-          {
-            src: '/main.js',
-            additionalAttributes: {
-              type: 'module',
-              defer: '',
-            },
-          },
-          {
-            src: '/styleguide-overwrite.js',
-            type: 'overwriteStyleguide',
-            additionalAttributes: {
-              type: 'module',
-              defer: '',
-            },
-          },
-        ],
+        css: [],
+        js: [],
       },
     },
   }, () => {

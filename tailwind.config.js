@@ -2,6 +2,7 @@
 export default {
   content: [
     './lib/**/*.{js,ts,jsx,tsx,css}',
+    './client/**/*.{js,ts,jsx,tsx,css}',
   ],
   theme: {
     extend: {

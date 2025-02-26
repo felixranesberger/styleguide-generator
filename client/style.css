@@ -84,6 +84,10 @@ body.js-loaded {
   @apply visible;
 }
 
+summary {
+  list-style: none;
+}
+
 summary::marker,
 summary::-webkit-details-marker {
   display: none;
@@ -183,3 +187,33 @@ pre.shiki.shiki-themes {
   min-height: 0;
   border: none;
 }
+
+.c-toast {
+  @apply
+    fixed
+    flex
+    items-center
+    gap-2
+    bottom-4
+    right-4
+    left-4
+    md:left-auto
+    justify-center
+    md:justify-start
+    p-4
+    border-1
+    border-styleguide-border
+    bg-styleguide-bg-highlight
+    text-[12px]
+    font-mono
+    [&>span]:text-styleguide-highlight
+    font-semibold
+    rounded-lg
+    shadow-2xl
+    after:absolute
+    after:inset-x-0
+    after:top-[-5px]
+    after:h-[5px]
+    after:w-full;
+}
+

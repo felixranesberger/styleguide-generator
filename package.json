@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "vite build && unbuild",
-    "watch": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
+    "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -17,6 +17,7 @@
     "chokidar": "^4.0.3",
     "diffable-html": "^5.0.0",
     "fs-extra": "^11.2.0",
+    "motion": "^12.4.7",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },
@@ -26,6 +27,7 @@
     "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
+    "html-validate": "^9.3.0",
     "shiki": "^2.1.0",
     "unbuild": "^3.2.0",
     "vite": "^6.0.7"
