@@ -654,7 +654,7 @@ ${section.markup}
                             <h4 class="font-semibold text-styleguide-highlight">${modifier.description}</h4>
     
                             <button
-                                  class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
+                                  class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight active:scale-95"
                                   title="Copy content"
                                   data-clipboard-value="${modifier.value}"
                                   data-clipboard-alert-message="${modifier.value.split(".").length === 0 ? "Copied class name to clipboard!" : "Copied class names to clipboard!"}"
