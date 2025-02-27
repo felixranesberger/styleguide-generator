@@ -166,11 +166,7 @@ pre.shiki.shiki-themes {
 }
 
 .icon-search-list__item-copy-icon {
-  @apply opacity-0 pointer-events-none scale-75 transition duration-500 absolute left-1/2 -translate-x-1/2;
-}
-
-.icon-search-list__item-copy-icon--active {
-  @apply opacity-100 scale-100;
+  @apply opacity-0 pointer-events-none absolute left-1/2 -translate-x-1/2;
 }
 
 .menu-item {

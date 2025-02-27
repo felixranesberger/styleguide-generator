@@ -1,3 +1,5 @@
+import { animate, spring } from 'motion'
+
 export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTMLButtonElement) => {
   input.addEventListener('input', () => {
     const filter = input.value.toLowerCase()
@@ -39,14 +41,25 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
       throw new Error('No copy icon found')
 
     copyButton.addEventListener('click', async () => {
-      icon.classList.add('opacity-0', 'scale-75', 'transition', 'duration-500', 'ease-in-out')
-      copyIcon.classList.add('icon-search-list__item-copy-icon--active')
-      setTimeout(() => {
-        copyIcon.classList.remove('icon-search-list__item-copy-icon--active')
-        setTimeout(() => icon.classList.remove('opacity-0', 'scale-75'), 350)
-      }, 1000)
-
       await navigator.clipboard.writeText(iconContent).catch(console.error)
+
+      animate(icon, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 })
+
+      animate(
+        copyIcon,
+        { scale: [0, 1], opacity: [0, 1] },
+        { duration: 0.5, delay: 0.2, type: spring, bounce: 0.4 },
+      )
+
+      await new Promise(resolve => setTimeout(resolve, 1200))
+
+      animate(copyIcon, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 })
+
+      animate(
+        icon,
+        { scale: [0, 1], opacity: [0, 1] },
+        { duration: 1, delay: 0.1, type: spring, bounce: 0.2 },
+      )
     })
   })
 }
