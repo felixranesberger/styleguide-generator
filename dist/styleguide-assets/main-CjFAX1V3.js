@@ -3040,7 +3040,7 @@ We.length > 0 && (We.forEach((t) => {
 }, 5e3));
 const Se = document.querySelectorAll("[data-code-audit-iframe]"), j = document.querySelector("#code-audit-dialog");
 Se.length > 0 && j && (async () => {
-  const { createHtmlValidator: t, auditCode: e } = await import("./html-validator-BPJTaG8R.js");
+  const { createHtmlValidator: t, auditCode: e } = await import("./html-validator-CEwUY3wf.js");
   Se.forEach((n) => n.addEventListener("click", async () => {
     Se.forEach((r) => r.setAttribute("aria-expanded", "false")), n.setAttribute("disabled", "");
     const { isValid: s } = await e(n, j);
@@ -3067,7 +3067,7 @@ Se.length > 0 && j && (async () => {
 const rn = document.querySelector("#icon-search-input"), on = document.querySelector("#icon-search-input-reset"), an = document.querySelector("#icon-search-list");
 rn && an && on && import("./icons-B1FYFkkU.js").then(({ default: t }) => t(rn, an, on)).catch(console.error);
 const gs = "data-clipboard-value", ln = document.querySelectorAll(`button[${gs}]`);
-ln.length > 0 && import("./clipboard-J9_Rln2c.js").then(({ default: t }) => t(ln, gs)).catch(console.error);
+ln.length > 0 && import("./clipboard-CM_waA9t.js").then(({ default: t }) => t(ln, gs)).catch(console.error);
 export {
   To as r
 };

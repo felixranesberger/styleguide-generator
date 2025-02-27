@@ -18,7 +18,7 @@ const u = {
   ].join(";")
 };
 let i;
-function v(o, r) {
+function y(o, r) {
   console.group("%cValidation Error", u.header), console.info(
     "%c%o",
     u.elementStyle,
@@ -29,7 +29,7 @@ function v(o, r) {
     o
   ), console.groupEnd();
 }
-async function y() {
+async function v() {
   const { HtmlValidate: o, StaticConfigLoader: r } = await import("./browser-ChRpqXa8.js");
   if (i)
     return i;
@@ -47,20 +47,21 @@ async function S(o, r) {
   const c = document.querySelector(`#${s}`);
   if (!c)
     throw new Error("Code audit template not found");
-  const w = await y(), p = (m = c.contentDocument) == null ? void 0 : m.documentElement.outerHTML;
+  const w = await v(), p = (m = c.contentDocument) == null ? void 0 : m.documentElement.outerHTML;
   if (!p)
     throw new Error("No HTML content found in code audit template");
   const d = r.querySelector(".audit-results");
   if (!d)
     throw new Error("No audit results list found");
-  const { results: g, valid: f } = await w.validateString(p, {
+  const { results: f, valid: g } = await w.validateString(p, {
     rules: {
-      "no-trailing-whitespace": "off"
+      "no-trailing-whitespace": "off",
+      "no-inline-style": "off"
     }
   });
-  if (f || g.length === 0)
+  if (g || f.length === 0)
     return { isValid: !0 };
-  const x = g[0].messages.sort((t, e) => t.severity - e.severity).reduce((t, e) => {
+  const x = f[0].messages.sort((t, e) => t.severity - e.severity).reduce((t, e) => {
     const l = t.find((n) => n.ruleId === e.ruleId);
     return l ? (e.selector && !l.selectors.includes(e.selector) && l.selectors.push(e.selector), t) : (t.push({
       // escape possible html entities
@@ -128,12 +129,12 @@ async function S(o, r) {
       if (!n)
         throw new Error("No elements found");
       n.forEach((a) => {
-        v(e, a), a.style.outline = "2px solid red", a.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => a.style.outline = "", 5e3);
+        y(e, a), a.style.outline = "2px solid red", a.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => a.style.outline = "", 5e3);
       });
     });
-  }), { isValid: f };
+  }), { isValid: g };
 }
 export {
   S as auditCode,
-  y as createHtmlValidator
+  v as createHtmlValidator
 };
