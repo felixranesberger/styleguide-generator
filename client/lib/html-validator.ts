@@ -84,6 +84,7 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
   const { results: validatorResults, valid: isHTMLValid } = await validator.validateString(html, {
     rules: {
       'no-trailing-whitespace': 'off',
+      'no-inline-style': 'off',
     },
   })
 
