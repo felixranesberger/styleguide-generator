@@ -49,12 +49,13 @@ function prettyValidationError<T extends HTMLElement>(error: string, element: T)
 }
 
 export async function createHtmlValidator() {
-  const { HtmlValidate } = await import('html-validate/dist/es/browser.js')
+  const { HtmlValidate, StaticConfigLoader } = await import('html-validate/browser')
 
   if (validator)
     return validator
 
-  validator = new HtmlValidate()
+  const loader = new StaticConfigLoader()
+  validator = new HtmlValidate(loader)
   return validator
 }
 
