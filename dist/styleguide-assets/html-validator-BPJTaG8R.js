@@ -1,4 +1,4 @@
-const d = {
+const u = {
   header: [
     "background: #ff5757",
     "color: white",
@@ -17,38 +17,41 @@ const d = {
     "font-style: italic"
   ].join(";")
 };
-let a;
-function v(r, l) {
-  console.group("%cValidation Error", d.header), console.info(
+let i;
+function v(o, r) {
+  console.group("%cValidation Error", u.header), console.info(
     "%c%o",
-    d.elementStyle,
-    l
+    u.elementStyle,
+    r
   ), console.info(
     "%c%s",
-    d.messageStyle,
-    r
+    u.messageStyle,
+    o
   ), console.groupEnd();
 }
 async function y() {
-  const { HtmlValidate: r } = await import("./browser-ChRpqXa8.js");
-  return a || (a = new r(), a);
+  const { HtmlValidate: o, StaticConfigLoader: r } = await import("./browser-ChRpqXa8.js");
+  if (i)
+    return i;
+  const s = new r();
+  return i = new o(s), i;
 }
-function b(r) {
-  return r.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function b(o) {
+  return o.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-async function S(r, l) {
+async function S(o, r) {
   var m;
-  const u = r.getAttribute("data-code-audit-iframe");
-  if (!u)
+  const s = o.getAttribute("data-code-audit-iframe");
+  if (!s)
     throw new Error("No code audit template selector provided");
-  const i = document.querySelector(`#${u}`);
-  if (!i)
+  const c = document.querySelector(`#${s}`);
+  if (!c)
     throw new Error("Code audit template not found");
-  const w = await y(), p = (m = i.contentDocument) == null ? void 0 : m.documentElement.outerHTML;
+  const w = await y(), p = (m = c.contentDocument) == null ? void 0 : m.documentElement.outerHTML;
   if (!p)
     throw new Error("No HTML content found in code audit template");
-  const c = l.querySelector(".audit-results");
-  if (!c)
+  const d = r.querySelector(".audit-results");
+  if (!d)
     throw new Error("No audit results list found");
   const { results: g, valid: f } = await w.validateString(p, {
     rules: {
@@ -58,8 +61,8 @@ async function S(r, l) {
   if (f || g.length === 0)
     return { isValid: !0 };
   const x = g[0].messages.sort((t, e) => t.severity - e.severity).reduce((t, e) => {
-    const o = t.find((s) => s.ruleId === e.ruleId);
-    return o ? (e.selector && !o.selectors.includes(e.selector) && o.selectors.push(e.selector), t) : (t.push({
+    const l = t.find((n) => n.ruleId === e.ruleId);
+    return l ? (e.selector && !l.selectors.includes(e.selector) && l.selectors.push(e.selector), t) : (t.push({
       // escape possible html entities
       ruleId: e.ruleId.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
       message: e.message,
@@ -68,7 +71,7 @@ async function S(r, l) {
       context: e.context
     }), t);
   }, []);
-  return c.innerHTML = `
+  return d.innerHTML = `
     ${x.map((t) => `
         <li class="border-b border-styleguide-border first:border-t last:border-none">
             <details class="group">
@@ -111,21 +114,21 @@ async function S(r, l) {
         </li>
     `).join(`
 `)}
-  `, c.querySelectorAll("[data-iframe-selector]").forEach((t) => {
+  `, d.querySelectorAll("[data-iframe-selector]").forEach((t) => {
     const e = t.getAttribute("data-iframe-selector");
     if (!e)
       throw new Error("No message found");
     t.addEventListener("click", () => {
       var h;
-      l.close();
-      const o = t.textContent;
-      if (!o)
+      r.close();
+      const l = t.textContent;
+      if (!l)
         throw new Error("No selector found");
-      const s = (h = i.contentDocument) == null ? void 0 : h.querySelectorAll(o);
-      if (!s)
+      const n = (h = c.contentDocument) == null ? void 0 : h.querySelectorAll(l);
+      if (!n)
         throw new Error("No elements found");
-      s.forEach((n) => {
-        v(e, n), n.style.outline = "2px solid red", n.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => n.style.outline = "", 5e3);
+      n.forEach((a) => {
+        v(e, a), a.style.outline = "2px solid red", a.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => a.style.outline = "", 5e3);
       });
     });
   }), { isValid: f };
