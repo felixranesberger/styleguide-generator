@@ -155,7 +155,7 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
                         ${message.selectors.map(selector => `
                             <li>
                                 <button 
-                                    class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer"
+                                    class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer text-left"
                                     data-iframe-selector="${escapeHtml(`${message.ruleId}: ${message.message}`)}"
                                   >
                                     ${selector}

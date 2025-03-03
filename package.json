@@ -1,5 +1,6 @@
 {
   "name": "styleguide",
+  "description": "Modern KSS compatible styleguide generator",
   "type": "module",
   "main": "./dist/node/lib/index.mjs",
   "types": "./dist/node/lib/index.d.ts",
@@ -22,11 +23,12 @@
     "tinyglobby": "^0.2.10"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.1.0",
+    "@antfu/eslint-config": "^4.3.0",
     "@antfu/utils": "^8.1.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
+    "eslint": "^9.21.0",
     "html-validate": "^9.3.0",
     "shiki": "^2.1.0",
     "unbuild": "^3.2.0",
