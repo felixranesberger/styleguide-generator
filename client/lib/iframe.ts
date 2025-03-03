@@ -68,15 +68,22 @@ export default async (iframes: HTMLIFrameElement[]) => {
     iframes.forEach(iframe => calculateIframeHeight(iframe))
   })
 
-  // calculate new when iframe content inside changes
+  // calculate new when iframe content inside changes and some propagate keyboard events
   iframes.forEach((iframe) => {
     const iframeWindow = iframe.contentWindow
     if (!iframeWindow)
       return
 
     const observer = new ResizeObserver(() => calculateIframeHeight(iframe))
-    observer.observe(iframeWindow.document.documentElement)
     observer.observe(iframeWindow.document.body)
+
+    // when user presses cmd+k or ctrl+k inside iframe,
+    // dispatch event to open search in parent window
+    iframeWindow.addEventListener('keydown', (event) => {
+      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+        window.dispatchEvent(new Event('styleguideOpenSearch'))
+      }
+    })
   })
 
   removeDocumentLoadingClass()
