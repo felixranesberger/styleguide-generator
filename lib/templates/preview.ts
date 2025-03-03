@@ -516,7 +516,7 @@ export async function generatePreviewFile(data: {
     .join('\n')
 
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
     <title>${data.page.title}</title>

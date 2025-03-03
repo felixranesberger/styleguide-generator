@@ -31,7 +31,7 @@ export async function generateFullPageFile(data: {
     .join('\n')
 
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ''}>
 <head>
     <title>${data.page.title}</title>
