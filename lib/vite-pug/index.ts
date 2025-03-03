@@ -75,7 +75,14 @@ export async function compilePugMarkup(
       }
 
       const { id, html } = result
-      clonedRepository.set(id, { markup: html })
+
+      // pug outputs some semantic issues that throw accessibility
+      // errors, so we need to fix them after compiling
+      const parsedMarkup = html
+        .replaceAll('required="required"', 'required')
+        .replaceAll('checked="checked"', 'checked')
+
+      clonedRepository.set(id, { markup: parsedMarkup })
 
       workerNode.busy = false
     })
