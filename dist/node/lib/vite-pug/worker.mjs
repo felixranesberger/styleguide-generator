@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { parentPort } from 'node:worker_threads';
 import toDiffableHtml from 'diffable-html';
-import pug from 'pug-monorepo/packages/pug/lib/index.js';
+import pug from 'pug';
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
 function compilePug(contentDir, mode, html) {
