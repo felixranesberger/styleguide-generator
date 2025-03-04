@@ -73,9 +73,9 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
     throw new Error('Code audit template not found')
 
   const validator = await createHtmlValidator()
-  const html = codeAuditIFrame.contentDocument?.documentElement.outerHTML
-  if (!html)
-    throw new Error('No HTML content found in code audit template')
+
+  const htmlResponse = await fetch(codeAuditIFrame.src)
+  const html = await htmlResponse.text()
 
   const resultsList = auditResultDialog.querySelector<HTMLUListElement>('.audit-results')
   if (!resultsList)
