@@ -406,6 +406,17 @@ async function logicalWriteFile(filepath, content) {
   }
   await fs.writeFile(filepath, content);
 }
+function fixAccessibilityIssues(html) {
+  let parsedMarkup = html;
+  const omitValue = ["required", "disabled", "checked", "selected", "multiple", "readonly"];
+  omitValue.forEach((value) => {
+    parsedMarkup = parsedMarkup.replaceAll(`${value}="${value}"`, value).replaceAll(`${value}=""`, value);
+  });
+  return parsedMarkup;
+}
+function sanitizeSpecialCharacters(text) {
+  return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
 
 async function generateFullPageFile(data) {
   const computedScriptTags = data.js.filter((entry) => entry.type !== "overwriteStyleguide").map((js) => {
@@ -416,11 +427,11 @@ async function generateFullPageFile(data) {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ""}>
 <head>
-    <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
+    ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
@@ -447,7 +458,7 @@ function getHeaderHtml() {
 
     <div class="flex grow items-center justify-end py-4 md:justify-between">
         <button
-            class="inline-flex items-center justify-between gap-2 rounded-full border p-2 text-sm transition border-styleguide-border hover:text-styleguide-highlight focus:text-styleguide-highlight md:min-w-[150px] md:py-1.5 md:rounded-md md:px-2"
+            class="inline-flex items-center cursor-pointer justify-between gap-2 rounded-full border p-2 text-sm transition border-styleguide-border hover:text-styleguide-highlight focus:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] md:py-1.5 md:rounded-md md:px-2"
             aria-controls="search-dialog"
             aria-expanded="false"
             data-open-search=""
@@ -525,6 +536,23 @@ function getSidebarMenuHtml(sections, activePageHref) {
 </ul>
 `.trim();
 }
+function getCodeAuditDialog() {
+  return `
+    <dialog 
+        id="code-audit-dialog"
+        class="fixed -inset-x-0 top-auto bottom-0 z-30 pt-6 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+      >
+          <h2 class="flex items-center gap-2 mb-4 px-6">
+            <svg class="-mt-0.5 h-4 transition duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.88" aria-hidden="true"><title>accessibility</title><path fill="currentcolor" d="M61.44,0A61.46,61.46,0,1,1,18,18,61.21,61.21,0,0,1,61.44,0Zm-.39,74.18L52.1,98.91a4.94,4.94,0,0,1-2.58,2.83A5,5,0,0,1,42.7,95.5l6.24-17.28a26.3,26.3,0,0,0,1.17-4,40.64,40.64,0,0,0,.54-4.18c.24-2.53.41-5.27.54-7.9s.22-5.18.29-7.29c.09-2.63-.62-2.8-2.73-3.3l-.44-.1-18-3.39A5,5,0,0,1,27.08,46a5,5,0,0,1,5.05-7.74l19.34,3.63c.77.07,1.52.16,2.31.25a57.64,57.64,0,0,0,7.18.53A81.13,81.13,0,0,0,69.9,42c.9-.1,1.75-.21,2.6-.29l18.25-3.42A5,5,0,0,1,94.5,39a5,5,0,0,1,1.3,7,5,5,0,0,1-3.21,2.09L75.15,51.37c-.58.13-1.1.22-1.56.29-1.82.31-2.72.47-2.61,3.06.08,1.89.31,4.15.61,6.51.35,2.77.81,5.71,1.29,8.4.31,1.77.6,3.19,1,4.55s.79,2.75,1.39,4.42l6.11,16.9a5,5,0,0,1-6.82,6.24,4.94,4.94,0,0,1-2.58-2.83L63,74.23,62,72.4l-1,1.78Zm.39-53.52a8.83,8.83,0,1,1-6.24,2.59,8.79,8.79,0,0,1,6.24-2.59Zm36.35,4.43a51.42,51.42,0,1,0,15,36.35,51.27,51.27,0,0,0-15-36.35Z"/></svg>
+            <span class="text-lg font-semibold text-styleguide-highlight leading-[1]">
+                Code Audit Results
+            </span>
+          </h2>
+          
+          <ul class="audit-results"></ul>
+    </dialog>
+  `;
+}
 function getMainContentHtml(secondLevelSection) {
   let output = "";
   function renderSection(section) {
@@ -546,7 +574,10 @@ function getMainContentSectionWrapper(section, html) {
   const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
   const hasSectionExternalFullPage = section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
   return `
-<section id="section-${sanitizeId(section.id)}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
+<section 
+  id="section-${sanitizeId(section.id)}" 
+  class="border-b px-4 py-10 border-b-styleguide-border scroll-mt-[50px] md:px-10"
+>
     <div class="flex items-center justify-between gap-6">
         <a class="relative group" href="#section-${sanitizeId(section.id)}">
             <svg class="absolute top-1/2 -left-6 -translate-y-1/2 opacity-0 transition size-[18px] group-hover:opacity-100 group-focus:opacity-100"
@@ -587,13 +618,27 @@ function getMainContentRegular(section) {
 
         <!-- Code -->
         <details class="group">
-           <summary class="flex cursor-pointer items-center gap-2 rounded-b-2xl px-6 py-4 text-sm font-light bg-styleguide-bg">
-                <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
-                </svg>
-  
-                <span class="group-open:hidden">Show code</span>
-                <span class="group-open:block hidden">Hide code</span>
+           <summary class="flex cursor-pointer justify-between items-center rounded-b-2xl px-6 text-sm font-light bg-styleguide-bg">
+                <span class="flex gap-2 items-center py-4">
+                    <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                    </svg>
+      
+                    <span class="group-open:hidden">Show code</span>
+                    <span class="group-open:block hidden">Hide code</span>
+                </span>
+                
+                <span class="flex items-center">
+                    <button
+                        class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight transition duration-200" 
+                        data-code-audit-iframe="preview-fullpage-${sanitizeId(section.id)}"
+                        aria-controls="code-audit-dialog"
+                        aria-expanded="false"
+                    >
+                        <svg class="h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.88" aria-hidden="true"><title>accessibility</title><path fill="currentcolor" d="M61.44,0A61.46,61.46,0,1,1,18,18,61.21,61.21,0,0,1,61.44,0Zm-.39,74.18L52.1,98.91a4.94,4.94,0,0,1-2.58,2.83A5,5,0,0,1,42.7,95.5l6.24-17.28a26.3,26.3,0,0,0,1.17-4,40.64,40.64,0,0,0,.54-4.18c.24-2.53.41-5.27.54-7.9s.22-5.18.29-7.29c.09-2.63-.62-2.8-2.73-3.3l-.44-.1-18-3.39A5,5,0,0,1,27.08,46a5,5,0,0,1,5.05-7.74l19.34,3.63c.77.07,1.52.16,2.31.25a57.64,57.64,0,0,0,7.18.53A81.13,81.13,0,0,0,69.9,42c.9-.1,1.75-.21,2.6-.29l18.25-3.42A5,5,0,0,1,94.5,39a5,5,0,0,1,1.3,7,5,5,0,0,1-3.21,2.09L75.15,51.37c-.58.13-1.1.22-1.56.29-1.82.31-2.72.47-2.61,3.06.08,1.89.31,4.15.61,6.51.35,2.77.81,5.71,1.29,8.4.31,1.77.6,3.19,1,4.55s.79,2.75,1.39,4.42l6.11,16.9a5,5,0,0,1-6.82,6.24,4.94,4.94,0,0,1-2.58-2.83L63,74.23,62,72.4l-1,1.78Zm.39-53.52a8.83,8.83,0,1,1-6.24,2.59,8.79,8.79,0,0,1,6.24-2.59Zm36.35,4.43a51.42,51.42,0,1,0,15,36.35,51.27,51.27,0,0,0-15-36.35Z"/></svg>
+                        <span class="hidden md:inline-block">Audit</span>
+                    </button>
+                </span>
             </summary>
 
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
@@ -626,6 +671,7 @@ ${section.markup}
                                   class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
                                   title="Copy content"
                                   data-clipboard-value="${modifier.value}"
+                                  data-clipboard-alert-message="${modifier.value.split(".").length === 0 ? "Copied class name to clipboard!" : "Copied class names to clipboard!"}"
                             >
                                 ${modifier.value}
                             </button>
@@ -657,9 +703,23 @@ function getMainContentColors(section) {
   return `
     <ul class="my-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
         ${section.colors?.map(
-    (color) => `<li class="relative rounded-2xl px-4 py-6" style="background-color: ${color.color}"></li>`
+    (color) => `<li>
+            <button 
+                class="relative w-full rounded-2xl px-4 py-6 cursor-copy" 
+                style="background-color: ${color.color}"
+                data-clipboard-value="${color.color}"
+                data-clipboard-alert-message="Copied color to clipboard!"
+              >
+                <span class="sr-only">Copy color to clipboard</span>  
+              </button>
+          </li>`
   ).join("\n")}
     </ul>
+  `;
+}
+function getAlerts() {
+  return `
+    <div id="alerts"></div>
   `;
 }
 function getMainContentIcons(section) {
@@ -708,12 +768,12 @@ function getMainContentIcons(section) {
             class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
         >
             ${section.icons?.map((icon) => `
-              <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 transition-[border] duration-700 items icon-search-list__item bg-styleguide-bg-highlight hover:border-styleguide-border focus:border-styleguide-border">
+              <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 duration-700 items icon-search-list__item bg-styleguide-bg-highlight transition hover:border-styleguide-border focus:border-styleguide-border">
                   <div class="relative flex w-full justify-center size-6 text-styleguide-highlight [&>svg]:h-full [&>svg]:w-auto [&>i]:size-[24px] [&>i]:text-[24px] [&>i]:leading-[1em] text-styleguide-highlight">
                       ${icon.svg}
   
                       <!-- Successfully copied icon -->
-                      <svg class="pointer-events-none ease-in-out icon-search-list__item-copy-icon size-5 text-styleguide-highlight" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <svg class="pointer-events-none icon-search-list__item-copy-icon size-5 text-styleguide-highlight" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
                       </svg>
                   </div>
@@ -768,7 +828,7 @@ function getSearchHtml(sections) {
   return `
 <dialog
     id="search-dialog"
-    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full opacity-0 max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">
@@ -818,6 +878,8 @@ function getSearchHtml(sections) {
         No results found
     </p>
 </dialog>
+
+<div class="search-backdrop"></div>
 `.trim();
 }
 async function generatePreviewFile(data) {
@@ -829,10 +891,10 @@ async function generatePreviewFile(data) {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
-    <title>${data.page.title}</title>
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -866,7 +928,9 @@ async function generatePreviewFile(data) {
       </div>
     </main>
    
+    ${data.html.alerts}
     ${data.html.search}
+    ${data.html.codeAuditDialog}
     
     <script type="speculationrules">
     {
@@ -927,7 +991,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
         return;
       }
       const { id, html } = result;
-      clonedRepository.set(id, { markup: html });
+      clonedRepository.set(id, { markup: fixAccessibilityIssues(html) });
       workerNode.busy = false;
     });
   });
@@ -1166,7 +1230,9 @@ async function buildStyleguide(config) {
             ),
             mainContent: getMainContentHtml(secondLevelSection),
             nextPageControls: getNextPageControlsHtml(nextPageControlsData),
-            search: searchHtml
+            search: searchHtml,
+            codeAuditDialog: getCodeAuditDialog(),
+            alerts: getAlerts()
           }
         })
       );

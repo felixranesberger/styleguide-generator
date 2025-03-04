@@ -44,8 +44,9 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
       }
 
       const pugFn = pug.compileFile(pugFilePath, {
-        pretty: false,
-        cache: true,
+        pretty: true,
+        // define doctype to avoid self-closing tags on wrong places
+        doctype: 'html',
       })
 
       const pugOutput = pugFn(pugLocals)
