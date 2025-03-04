@@ -19,7 +19,7 @@
     "diffable-html": "^5.0.0",
     "fs-extra": "^11.2.0",
     "motion": "^12.4.7",
-    "pug": "^3.0.3",
+    "pug-monorepo": "github:in2code-de/pug#e0d5168",
     "tinyglobby": "^0.2.10"
   },
   "devDependencies": {
