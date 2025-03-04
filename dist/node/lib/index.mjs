@@ -406,6 +406,14 @@ async function logicalWriteFile(filepath, content) {
   }
   await fs.writeFile(filepath, content);
 }
+function fixAccessibilityIssues(html) {
+  let parsedMarkup = html;
+  const omitValue = ["required", "disabled", "checked", "selected", "multiple", "readonly"];
+  omitValue.forEach((value) => {
+    parsedMarkup = parsedMarkup.replaceAll(`${value}="${value}"`, value).replaceAll(`${value}=""`, value);
+  });
+  return parsedMarkup;
+}
 function sanitizeSpecialCharacters(text) {
   return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
@@ -980,7 +988,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
         return;
       }
       const { id, html } = result;
-      clonedRepository.set(id, { markup: html });
+      clonedRepository.set(id, { markup: fixAccessibilityIssues(html) });
       workerNode.busy = false;
     });
   });
