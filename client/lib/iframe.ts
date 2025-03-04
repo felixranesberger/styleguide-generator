@@ -61,15 +61,9 @@ export function removeDocumentLoadingClass() {
 export default async (iframes: HTMLIFrameElement[]) => {
   await waitForIframes(iframes)
 
-  iframes.forEach(calculateIframeHeight)
-
-  // calculate new when window size changes
-  window.addEventListener('resize', () => {
-    iframes.forEach(iframe => calculateIframeHeight(iframe))
-  })
-
-  // calculate new when iframe content inside changes and some propagate keyboard events
   iframes.forEach((iframe) => {
+    calculateIframeHeight(iframe)
+
     const iframeWindow = iframe.contentWindow
     if (!iframeWindow)
       return
@@ -85,6 +79,23 @@ export default async (iframes: HTMLIFrameElement[]) => {
       }
     })
   })
+
+  // calculate new when window size changes
+  window.addEventListener('resize', () => {
+    iframes.forEach(iframe => calculateIframeHeight(iframe))
+  })
+
+  // jump to anchor links when iframes are calculated
+  if (window.location.hash) {
+    const target = document.querySelector(window.location.hash)
+    if (target) {
+      // TODO: check if we somehow can improve this dumb setTimeout functionality
+      // wait till iframes are resized, so we can jump to anchor links
+      await new Promise(resolve => setTimeout(resolve, 200))
+
+      target.scrollIntoView()
+    }
+  }
 
   removeDocumentLoadingClass()
 }
