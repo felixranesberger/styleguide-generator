@@ -406,6 +406,9 @@ async function logicalWriteFile(filepath, content) {
   }
   await fs.writeFile(filepath, content);
 }
+function sanitizeSpecialCharacters(text) {
+  return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
 
 async function generateFullPageFile(data) {
   const computedScriptTags = data.js.filter((entry) => entry.type !== "overwriteStyleguide").map((js) => {
@@ -416,11 +419,11 @@ async function generateFullPageFile(data) {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ""}>
 <head>
-    <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
+    ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
@@ -458,9 +461,9 @@ function getHeaderHtml() {
                 <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
             </svg>
 
-            <kbd class="relative hidden md:inline-flex items-center pb-[3px] pt-[4px] gap-1 rounded-md border font-semibold text-[10px] border-styleguide-border px-1.5">
-                <span class="inline-block text-[12px] leading-[1]">\u2318</span>
-                <span class="leading-[1]">K</span>
+            <kbd class="relative hidden items-center gap-1 rounded-md border font-semibold text-[10px] border-styleguide-border px-1.5 md:inline-flex">
+                <span class="inline-block text-[12px]">\u2318</span>
+                <span>K</span>
             </kbd>
         </button>
 
@@ -605,15 +608,13 @@ function getMainContentRegular(section) {
         <!-- Code -->
         <details class="group">
            <summary class="flex cursor-pointer justify-between items-center rounded-b-2xl px-6 text-sm font-light bg-styleguide-bg">
-                <span class="flex gap-2 items-center py-4 select-none">
-                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <span class="flex gap-2 items-center py-4">
+                    <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                         <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
                     </svg>
-    
-                    <span class="relative overflow-y-hidden leading-[1.1]">
-                      <span class="show-code inline-block">Show code</span>
-                      <span class="hide-code inline-block absolute inset-0" style="transform: translateY(-100%)" aria-hidden="true">Hide code</span>
-                    </span>
+      
+                    <span class="group-open:hidden">Show code</span>
+                    <span class="group-open:block hidden">Hide code</span>
                 </span>
                 
                 <span class="flex items-center">
@@ -816,7 +817,7 @@ function getSearchHtml(sections) {
   return `
 <dialog
     id="search-dialog"
-    class="fixed -inset-x-0 top-auto bottom-0 z-30 open:opacity-0 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">
@@ -866,6 +867,7 @@ function getSearchHtml(sections) {
         No results found
     </p>
 </dialog>
+
 <div class="search-backdrop"></div>
 `.trim();
 }
@@ -878,10 +880,10 @@ async function generatePreviewFile(data) {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
-    <title>${data.page.title}</title>
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -978,8 +980,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
         return;
       }
       const { id, html } = result;
-      const parsedMarkup = html.replaceAll('required="required"', "required").replaceAll('checked="checked"', "checked");
-      clonedRepository.set(id, { markup: parsedMarkup });
+      clonedRepository.set(id, { markup: html });
       workerNode.busy = false;
     });
   });
