@@ -29,8 +29,9 @@ function compilePug(contentDir, mode, html) {
         throw new Error(`${pugSourcePath} is not a valid .pug file`);
       }
       const pugFn = pug.compileFile(pugFilePath, {
-        pretty: false,
-        cache: true
+        pretty: true,
+        // define doctype to avoid self-closing tags on wrong places
+        doctype: "html"
       });
       const pugOutput = pugFn(pugLocals);
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
