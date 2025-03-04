@@ -4,6 +4,7 @@ import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { Worker } from 'node:worker_threads'
+import { fixAccessibilityIssues } from '../utils.ts'
 
 const MAX_POOL_SIZE = os.cpus().length
 
@@ -75,7 +76,7 @@ export async function compilePugMarkup(
       }
 
       const { id, html } = result
-      clonedRepository.set(id, { markup: html })
+      clonedRepository.set(id, { markup: fixAccessibilityIssues(html) })
       workerNode.busy = false
     })
   })
