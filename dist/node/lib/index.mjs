@@ -825,7 +825,7 @@ function getSearchHtml(sections) {
   return `
 <dialog
     id="search-dialog"
-    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full opacity-0 max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">

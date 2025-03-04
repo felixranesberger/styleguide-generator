@@ -2996,7 +2996,7 @@ async function Tt() {
 async function vs() {
   if (!I.open)
     return;
-  document.removeEventListener("click", ys), gs() ? (F(I, { opacity: 0, y: [0, 250] }, { duration: 0.3, ease: "easeOut" }), await F(U, { opacity: 0 }, { duration: 0.3, ease: "easeOut" })) : (F(I, { opacity: 0 }, { duration: 0.3, ease: "easeOut" }), await F(U, { opacity: 0 }, { duration: 0.4, ease: "easeOut" }).then(() => U.style.display = "none")), ke.forEach((e) => e.ariaExpanded = "false"), j.ariaExpanded = "false", I.close();
+  document.removeEventListener("click", ys), gs() ? (F(I, { opacity: 0, y: [0, 250] }, { duration: 0.3, ease: "easeOut" }), await F(U, { opacity: 0 }, { duration: 0.3, ease: "easeOut" })) : (F(I, { opacity: 0, scale: [1, 0.98] }, { duration: 0.3, ease: "easeOut" }), await F(U, { opacity: 0 }, { duration: 0.3, ease: "linear" }).then(() => U.style.display = "none")), ke.forEach((e) => e.ariaExpanded = "false"), j.ariaExpanded = "false", I.close();
 }
 function ws() {
   const t = j.value.toLowerCase().trim();
@@ -3077,9 +3077,9 @@ Ve.length > 0 && X && (async () => {
   }, 8e3);
 })();
 const on = document.querySelector("#icon-search-input"), an = document.querySelector("#icon-search-input-reset"), ln = document.querySelector("#icon-search-list");
-on && ln && an && import("./icons-Q15XzCae.js").then(({ default: t }) => t(on, ln, an)).catch(console.error);
+on && ln && an && import("./icons-Clnbh11K.js").then(({ default: t }) => t(on, ln, an)).catch(console.error);
 const Ts = "data-clipboard-value", cn = document.querySelectorAll(`button[${Ts}]`);
-cn.length > 0 && import("./clipboard-CWIHCKUs.js").then(({ default: t }) => t(cn, Ts)).catch(console.error);
+cn.length > 0 && import("./clipboard-ItYSUNQG.js").then(({ default: t }) => t(cn, Ts)).catch(console.error);
 export {
   F as a,
   Ao as r,
