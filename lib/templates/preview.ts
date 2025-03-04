@@ -1,6 +1,6 @@
 import type { StyleguideConfiguration } from '../index.ts'
 import type { in2SecondLevelSection, in2Section } from '../parser.ts'
-import { logicalWriteFile } from '../utils.ts'
+import { logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
 
@@ -519,7 +519,7 @@ export async function generatePreviewFile(data: {
 <!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
-    <title>${data.page.title}</title>
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

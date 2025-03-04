@@ -1,5 +1,5 @@
 import type { StyleguideConfiguration } from '../index.ts'
-import { logicalWriteFile } from '../utils.ts'
+import { logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 export async function generateFullPageFile(data: {
   id: string
@@ -34,8 +34,8 @@ export async function generateFullPageFile(data: {
 <!DOCTYPE html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ''}>
 <head>
-    <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
+    ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">

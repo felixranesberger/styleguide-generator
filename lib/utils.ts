@@ -19,3 +19,15 @@ export async function logicalWriteFile(filepath: string, content: string) {
 
   await fs.writeFile(filepath, content)
 }
+
+/**
+ * Convert special characters to HTML entities
+ */
+export function sanitizeSpecialCharacters(text: string): string {
+  return text
+    .replaceAll('>', '&gt;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('\'', '&#039;')
+}
