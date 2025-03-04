@@ -574,7 +574,10 @@ function getMainContentSectionWrapper(section, html) {
   const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
   const hasSectionExternalFullPage = section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
   return `
-<section id="section-${sanitizeId(section.id)}" class="border-b px-4 py-10 border-b-styleguide-border md:px-10">
+<section 
+  id="section-${sanitizeId(section.id)}" 
+  class="border-b px-4 py-10 border-b-styleguide-border scroll-mt-[50px] md:px-10"
+>
     <div class="flex items-center justify-between gap-6">
         <a class="relative group" href="#section-${sanitizeId(section.id)}">
             <svg class="absolute top-1/2 -left-6 -translate-y-1/2 opacity-0 transition size-[18px] group-hover:opacity-100 group-focus:opacity-100"
