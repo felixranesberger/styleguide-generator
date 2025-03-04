@@ -3,7 +3,8 @@ import path from 'node:path'
 import { parentPort } from 'node:worker_threads'
 // @ts-expect-error - ignore
 import toDiffableHtml from 'diffable-html'
-import pug from 'pug'
+// @ts-expect-error - ignore
+import pug from 'pug-monorepo/packages/pug/lib/index.js'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g
