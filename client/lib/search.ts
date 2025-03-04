@@ -93,8 +93,8 @@ async function closeDialog() {
     await animate(searchBackdrop!, { opacity: 0 }, { duration: 0.3, ease: 'easeOut' })
   }
   else {
-    animate(dialog!, { opacity: 0 }, { duration: 0.3, ease: 'easeOut' })
-    await animate(searchBackdrop!, { opacity: 0 }, { duration: 0.4, ease: 'easeOut' })
+    animate(dialog!, { opacity: 0, scale: [1, 0.98] }, { duration: 0.3, ease: 'easeOut' })
+    await animate(searchBackdrop!, { opacity: 0 }, { duration: 0.3, ease: 'linear' })
       .then(() => searchBackdrop!.style.display = 'none')
   }
 
