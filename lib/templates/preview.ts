@@ -478,6 +478,8 @@ export function getSearchHtml(sections: {
         No results found
     </p>
 </dialog>
+
+<div class="search-backdrop"></div>
 `.trim()
 }
 
