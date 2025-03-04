@@ -18,7 +18,7 @@ const u = {
   ].join(";")
 };
 let i;
-function x(o, r) {
+function y(o, r) {
   console.group("%cValidation Error", u.header), console.info(
     "%c%o",
     u.elementStyle,
@@ -29,36 +29,40 @@ function x(o, r) {
     o
   ), console.groupEnd();
 }
-async function y() {
+async function v() {
   const { HtmlValidate: o, StaticConfigLoader: r } = await import("./browser-ChRpqXa8.js");
   if (i)
     return i;
   const s = new r();
   return i = new o(s), i;
 }
-function h(o) {
+function b(o) {
   return o.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-async function k(o, r) {
+async function S(o, r) {
+  var m;
   const s = o.getAttribute("data-code-audit-iframe");
   if (!s)
     throw new Error("No code audit template selector provided");
   const c = document.querySelector(`#${s}`);
   if (!c)
     throw new Error("Code audit template not found");
-  const m = await y(), b = await (await fetch(c.src)).text(), d = r.querySelector(".audit-results");
+  const w = await v(), p = (m = c.contentDocument) == null ? void 0 : m.documentElement.outerHTML;
+  if (!p)
+    throw new Error("No HTML content found in code audit template");
+  const d = r.querySelector(".audit-results");
   if (!d)
     throw new Error("No audit results list found");
-  const { results: p, valid: f } = await m.validateString(b, {
+  const { results: f, valid: g } = await w.validateString(p, {
     rules: {
       "no-trailing-whitespace": "off",
       "no-inline-style": "off"
     }
   });
-  if (f || p.length === 0)
+  if (g || f.length === 0)
     return { isValid: !0 };
-  const w = p[0].messages.sort((t, e) => t.severity - e.severity).reduce((t, e) => {
-    const l = t.find((a) => a.ruleId === e.ruleId);
+  const x = f[0].messages.sort((t, e) => t.severity - e.severity).reduce((t, e) => {
+    const l = t.find((n) => n.ruleId === e.ruleId);
     return l ? (e.selector && !l.selectors.includes(e.selector) && l.selectors.push(e.selector), t) : (t.push({
       // escape possible html entities
       ruleId: e.ruleId.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
@@ -69,7 +73,7 @@ async function k(o, r) {
     }), t);
   }, []);
   return d.innerHTML = `
-    ${w.map((t) => `
+    ${x.map((t) => `
         <li class="border-b border-styleguide-border first:border-t last:border-none">
             <details class="group">
                 <summary class="flex cursor-pointer justify-start items-center px-6 py-4 text-sm bg-styleguide-bg transition hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)]">
@@ -77,7 +81,7 @@ async function k(o, r) {
                         <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path>
                     </svg>
                     <span>
-                        <span class="font-semibold mr-1">${t.ruleId}:</span><span>${h(t.message)}</span>
+                        <span class="font-semibold mr-1">${t.ruleId}:</span><span>${b(t.message)}</span>
                     </span>
                 </summary>
                 
@@ -98,7 +102,7 @@ async function k(o, r) {
                             <li>
                                 <button 
                                     class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer text-left"
-                                    data-iframe-selector="${h(`${t.ruleId}: ${t.message}`)}"
+                                    data-iframe-selector="${b(`${t.ruleId}: ${t.message}`)}"
                                   >
                                     ${e}
                                 </button>
@@ -116,21 +120,21 @@ async function k(o, r) {
     if (!e)
       throw new Error("No message found");
     t.addEventListener("click", () => {
-      var g;
+      var h;
       r.close();
       const l = t.textContent;
       if (!l)
         throw new Error("No selector found");
-      const a = (g = c.contentDocument) == null ? void 0 : g.querySelectorAll(l);
-      if (!a)
+      const n = (h = c.contentDocument) == null ? void 0 : h.querySelectorAll(l);
+      if (!n)
         throw new Error("No elements found");
-      a.forEach((n) => {
-        x(e, n), n.style.outline = "2px solid red", n.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => n.style.outline = "", 5e3);
+      n.forEach((a) => {
+        y(e, a), a.style.outline = "2px solid red", a.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => a.style.outline = "", 5e3);
       });
     });
-  }), { isValid: f };
+  }), { isValid: g };
 }
 export {
-  k as auditCode,
-  y as createHtmlValidator
+  S as auditCode,
+  v as createHtmlValidator
 };
