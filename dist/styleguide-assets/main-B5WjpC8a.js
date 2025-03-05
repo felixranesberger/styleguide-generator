@@ -2894,9 +2894,9 @@ const Mo = async (t) => {
     });
   }), window.addEventListener("resize", () => {
     t.forEach((e) => He(e));
-  }), console.log(1741112827387, window.location.hash), window.location.hash) {
+  }), window.location.hash) {
     const e = document.querySelector(window.location.hash);
-    e && (console.log(1741112603667, e), await new Promise((n) => setTimeout(n, 200)), e.scrollIntoView());
+    e && (await new Promise((n) => setTimeout(n, 200)), e.scrollIntoView());
   }
   fs();
 }, We = "in2theme", Ve = {
@@ -3082,9 +3082,9 @@ Ae.length > 0 && X && (async () => {
   }, 8e3);
 })();
 const on = document.querySelector("#icon-search-input"), an = document.querySelector("#icon-search-input-reset"), ln = document.querySelector("#icon-search-list");
-on && ln && an && import("./icons-D4u5-VS4.js").then(({ default: t }) => t(on, ln, an)).catch(console.error);
+on && ln && an && import("./icons-Cw71swAE.js").then(({ default: t }) => t(on, ln, an)).catch(console.error);
 const Ts = "data-clipboard-value", cn = document.querySelectorAll(`button[${Ts}]`);
-cn.length > 0 && import("./clipboard-BmBvl60H.js").then(({ default: t }) => t(cn, Ts)).catch(console.error);
+cn.length > 0 && import("./clipboard-CgHq56g5.js").then(({ default: t }) => t(cn, Ts)).catch(console.error);
 export {
   F as a,
   Vo as r,
