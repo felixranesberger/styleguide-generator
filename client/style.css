@@ -140,9 +140,17 @@ pre.shiki.shiki-themes {
 }
 
 .search::backdrop {
-  background-color: rgba(0 0 0 / 70%);
+  display: none;
+}
+
+.search-backdrop {
+  display: none;
+  position: absolute;
+  backdrop-filter: blur(3px);
+  inset: 0;
+  opacity: 0;
   pointer-events: none;
-  opacity: 50%;
+  z-index: 100;
 }
 
 .search-category {
