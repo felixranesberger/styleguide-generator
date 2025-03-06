@@ -51,7 +51,7 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
         { duration: 0.5, delay: 0.2, type: spring, bounce: 0.4 },
       )
 
-      await new Promise(resolve => setTimeout(resolve, 1200))
+      await new Promise(resolve => setTimeout(resolve, 800))
 
       animate(copyIcon, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 })
 
