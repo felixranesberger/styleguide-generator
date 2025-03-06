@@ -77,6 +77,16 @@ export default async (iframes: HTMLIFrameElement[]) => {
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         window.dispatchEvent(new Event('styleguideOpenSearch'))
       }
+
+      // right arrow key
+      if (event.key === 'ArrowRight') {
+        window.dispatchEvent(new Event('styleguideNext'))
+      }
+
+      // left arrow key
+      if (event.key === 'ArrowLeft') {
+        window.dispatchEvent(new Event('styleguidePrevious'))
+      }
     })
   })
 

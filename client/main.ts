@@ -134,3 +134,34 @@ if (copyButtons.length > 0) {
     .then(({ default: init }) => init(copyButtons, copyAttribute))
     .catch(console.error)
 }
+
+const previousLink = document.querySelector<HTMLButtonElement>('#styleguide-previous')
+const nextLink = document.querySelector<HTMLButtonElement>('#styleguide-next')
+
+if (previousLink) {
+  window.addEventListener('styleguidePrevious', () => previousLink.click())
+}
+
+if (nextLink) {
+  window.addEventListener('styleguideNext', () => nextLink.click())
+}
+
+if (previousLink || nextLink) {
+  if (previousLink) {
+    window.addEventListener('styleguidePrevious', () => previousLink.click())
+  }
+
+  if (nextLink) {
+    window.addEventListener('styleguideNext', () => nextLink.click())
+  }
+
+  window.addEventListener('keydown', (event) => {
+    if (previousLink && event.key === 'ArrowLeft') {
+      previousLink.click()
+    }
+
+    if (nextLink && event.key === 'ArrowRight') {
+      nextLink.click()
+    }
+  })
+}
