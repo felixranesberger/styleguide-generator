@@ -165,14 +165,6 @@ pre.shiki.shiki-themes {
   display: block;
 }
 
-.c-tabs__item {
-  @apply font-semibold transition;
-}
-
-.c-tabs__item--active {
-  @apply text-styleguide-highlight font-semibold
-}
-
 .icon-search-list__item-copy-icon {
   @apply opacity-0 pointer-events-none absolute left-1/2 -translate-x-1/2;
 }
