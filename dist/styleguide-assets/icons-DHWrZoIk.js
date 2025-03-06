@@ -1,4 +1,4 @@
-import { a as r, s as l } from "./main-B5WjpC8a.js";
+import { a as r, s as l } from "./main-CTqY78fk.js";
 const p = (c, s, a) => {
   c.addEventListener("input", () => {
     const e = c.value.toLowerCase();
@@ -24,7 +24,7 @@ const p = (c, s, a) => {
         t,
         { scale: [0, 1], opacity: [0, 1] },
         { duration: 0.5, delay: 0.2, type: l, bounce: 0.4 }
-      ), await new Promise((d) => setTimeout(d, 1200)), r(t, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 }), r(
+      ), await new Promise((d) => setTimeout(d, 800)), r(t, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 }), r(
         o,
         { scale: [0, 1], opacity: [0, 1] },
         { duration: 1, delay: 0.1, type: l, bounce: 0.2 }
