@@ -215,7 +215,7 @@ summary::-webkit-details-marker {
 
 /* Markdown specific styling */
 .markdown-container {
-  @apply leading-6 max-w-[65ch];
+  @apply leading-6;
 
   /* Increase spacing to headline for all elements other than paragraphs */
   > :first-child:not(p) {
@@ -273,7 +273,7 @@ summary::-webkit-details-marker {
 
   /* markdown code block */
   :is(.shiki, pre:not(.shiki)) {
-    @apply inline-block max-w-full px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border overflow-x-auto;
+    @apply inline-block min-w-[83ch] max-w-full px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border overflow-x-auto;
   }
 
   /* markdown inline code */
