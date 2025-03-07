@@ -203,6 +203,7 @@ if (markdownFolded.length > 0) {
       }, { duration: 0.5 })
         .then(() => {
           markdownContainer.classList.remove('max-h-[400px]')
+          markdownContainer.style.maxHeight = ''
         })
 
       animate(showMoreContainer, {

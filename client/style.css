@@ -215,8 +215,19 @@ summary::-webkit-details-marker {
 
 /* Markdown specific styling */
 .markdown-container {
+  @apply leading-6 max-w-[65ch];
 
-  > *:not(:last-child) {
+  /* Increase spacing to headline for all elements other than paragraphs */
+  > :first-child:not(p) {
+    @apply mt-[1em];
+  }
+
+  /* Add max with for everything but code blocks */
+  > :not(pre) {
+      @apply max-w-[65ch];
+  }
+
+  > :not(:last-child) {
     @apply mb-4;
   }
 
@@ -226,6 +237,10 @@ summary::-webkit-details-marker {
 
   :is(h1, h2, h3, h4, h5, h6):has(+ p) {
     @apply !mb-1.5;
+  }
+
+  :is(h1,h2,h3,h4,h5,h6):not(:first-child) {
+    @apply mt-[1.5em];
   }
 
   :is(h1, h2) {
@@ -256,11 +271,13 @@ summary::-webkit-details-marker {
     @apply list-decimal;
   }
 
+  /* markdown code block */
   :is(.shiki, pre:not(.shiki)) {
-    @apply px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+    @apply inline-block max-w-full px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border overflow-x-auto;
   }
 
+  /* markdown inline code */
   :not(:is(pre)) > code {
-    @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] text-styleguide-highlight rounded-md;
+    @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
   }
 }

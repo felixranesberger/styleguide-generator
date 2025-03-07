@@ -156,7 +156,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
 
     if (section.hasMarkdownDescription) {
       return `
-        <div class="markdown-container-folded relative">
+        <div class="markdown-container-folded relative mb-8">
             <div class="markdown-container mt-2 max-h-[400px] overflow-hidden">
                 ${section.description}
             </div>
@@ -170,7 +170,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
       `
     }
 
-    return `<p class="mt-2 font-mono${section.sectionLevel === 'second' ? ' text-xl' : ''}">${section.description}</p>`
+    return `<p class="mt-2${section.sectionLevel === 'second' ? ' text-xl' : ''}">${section.description}</p>`
   }
 
   return `
