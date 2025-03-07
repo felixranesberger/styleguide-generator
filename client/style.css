@@ -118,7 +118,7 @@ summary::-webkit-details-marker {
 }
 
 /* Disable shiki background color */
-pre.shiki.shiki-themes {
+.code-highlight pre.shiki.shiki-themes {
   background-color: transparent !important;
 }
 
@@ -213,3 +213,54 @@ pre.shiki.shiki-themes {
     after:w-full;
 }
 
+/* Markdown specific styling */
+.markdown-container {
+
+  > *:not(:last-child) {
+    @apply mb-4;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6, strong) {
+    @apply font-semibold text-styleguide-highlight;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6):has(+ p) {
+    @apply !mb-1.5;
+  }
+
+  :is(h1, h2) {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  h4 {
+    @apply text-base;
+  }
+
+  :is(h5, h6) {
+    @apply text-sm;
+  }
+
+  a {
+    @apply text-styleguide-highlight;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+
+  :is(.shiki, pre:not(.shiki)) {
+    @apply px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+  }
+
+  :not(:is(pre)) > code {
+    @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] text-styleguide-highlight rounded-md;
+  }
+}

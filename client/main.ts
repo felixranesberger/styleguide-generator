@@ -1,3 +1,5 @@
+import { animate } from 'motion'
+import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
 import { renderAlert } from './lib/alerts.ts'
 import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
 import initThemeSelect from './lib/theme-select.ts'
@@ -163,5 +165,50 @@ if (previousLink || nextLink) {
     if (nextLink && event.key === 'ArrowRight') {
       nextLink.click()
     }
+  })
+}
+
+const markdownFolded = document.querySelectorAll<HTMLElement>('.markdown-container-folded')
+if (markdownFolded.length > 0) {
+  markdownFolded.forEach((container) => {
+    const markdownContainer = container.querySelector<HTMLElement>('.markdown-container')
+    if (!markdownContainer)
+      throw new Error('No markdown container found')
+
+    const showMoreContainer = container.querySelector('.markdown-show-more-container')
+    if (!showMoreContainer)
+      throw new Error('No show more container found')
+
+    const showMoreButton = container.querySelector<HTMLButtonElement>('.markdown-show-more')
+    if (!showMoreButton)
+      throw new Error('No show more button found')
+
+    console.log(1741347582795, markdownContainer)
+    const { $isOverflowingVertically } = useElementHorizontalOverflow(container)
+    const handleOverflow = () => {
+      // detect if content inside markdownContainer is larger than maxWidth
+      const newIsOverflowing = markdownContainer.scrollHeight > markdownContainer.clientHeight
+      showMoreContainer.classList.toggle('hidden', !newIsOverflowing)
+    }
+
+    handleOverflow()
+    const cleanup = $isOverflowingVertically.effect(handleOverflow)
+
+    showMoreButton.addEventListener('click', async () => {
+      cleanup()
+
+      const markdownContainerHeight = markdownContainer.scrollHeight
+      animate(markdownContainer, {
+        maxHeight: `${markdownContainerHeight}px`,
+      }, { duration: 0.5 })
+        .then(() => {
+          markdownContainer.classList.remove('max-h-[400px]')
+        })
+
+      animate(showMoreContainer, {
+        opacity: 0,
+      }, { duration: 0.5 })
+        .then(() => showMoreContainer.classList.add('hidden'))
+    })
   })
 }

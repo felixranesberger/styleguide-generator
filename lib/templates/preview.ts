@@ -150,6 +150,29 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
     && (section.icons === undefined || section.icons.length === 0)
     && (section.colors === undefined || section.colors.length === 0)
 
+  const computeDescription = () => {
+    if (!section.description)
+      return ''
+
+    if (section.hasMarkdownDescription) {
+      return `
+        <div class="markdown-container-folded relative">
+            <div class="markdown-container mt-2 max-h-[400px] overflow-hidden">
+                ${section.description}
+            </div>
+            
+            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent">
+                <button class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10">
+                    Show more
+                </button>
+            </div>
+        </div>
+      `
+    }
+
+    return `<p class="mt-2 font-mono${section.sectionLevel === 'second' ? ' text-xl' : ''}">${section.description}</p>`
+  }
+
   return `
 <section 
   id="section-${sanitizeId(section.id)}" 
@@ -167,16 +190,16 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
 
         ${hasSectionExternalFullPage
           ? `
-          <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
+          <a class="p-2 group hover:text-styleguide-highlight focus:text-styleguide-highlight" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
                 <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
-                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
+                <path class="transition" d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
             </svg>
           </a>
         `
           : ''}
     </div>
-    ${section.description ? `<p class="mt-2 font-mono${section.sectionLevel === 'second' ? ' text-xl' : ''}">${section.description}</p>` : ''}
+    ${computeDescription()}
 ${html ?? ''}
 </section>
   `

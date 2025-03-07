@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { parseMarkdown } from './markdown.ts'
 
 interface FileObject {
   base?: string
@@ -478,11 +479,33 @@ function hasPrefix(description: string, prefix: string): boolean {
   return new RegExp(`^\\s*${prefix}\\:`, 'gim').test(description)
 }
 
+function extractMarkdownPath(input: string): string | null {
+  // Normalize the input by trimming and ensuring consistent spacing
+  const normalizedInput = input.trim()
+
+  // Check if the string starts with "Markdown:" (with optional space after the colon)
+  const markdownPrefix = /^Markdown:\s*/i
+  if (!markdownPrefix.test(normalizedInput)) {
+    return null
+  }
+
+  // Extract the path by removing the prefix
+  const path = normalizedInput.replace(markdownPrefix, '').trim()
+
+  // Check if the path ends with .md
+  if (!path.endsWith('.md')) {
+    return null
+  }
+
+  return path
+}
+
 export interface in2Section {
   id: string
   sectionLevel: 'first' | 'second' | 'third'
   header: string
   description: string
+  hasMarkdownDescription: boolean
   markup: string
   modifiers: {
     value: string
@@ -505,7 +528,7 @@ export interface in2SecondLevelSection extends in2Section {
   sections: in2Section[]
 }
 
-export function parse(text: string) {
+export async function parse(text: string) {
   const data = kssParser(text).sections.filter(section => Boolean(section.reference))
 
   // sort by reference id
@@ -515,7 +538,21 @@ export function parse(text: string) {
 
   let output: in2FirstLevelSection[] = []
 
-  sortedData.forEach((section) => {
+  async function computeDescription(description: string) {
+    if (!description)
+      return { description, hasMarkdownDescription: false }
+
+    const markdownPath = extractMarkdownPath(description)
+    if (!markdownPath)
+      return { description, hasMarkdownDescription: false }
+
+    return {
+      description: await parseMarkdown(markdownPath),
+      hasMarkdownDescription: true,
+    }
+  }
+
+  for await (const section of sortedData) {
     if (!section.reference)
       return
 
@@ -523,12 +560,15 @@ export function parse(text: string) {
     const sectionIds = section.reference.split('.')
     const isFirstLevelSection = sectionIds.length < 2 || (sectionIds.length === 2 && sectionIds[1] === '0')
 
+    const { description, hasMarkdownDescription } = await computeDescription(section.description)
+
     if (isFirstLevelSection) {
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: 'first',
         header: section.header,
-        description: section.description,
+        description,
+        hasMarkdownDescription,
         markup: section.markup,
         sections: [],
         modifiers: section.modifiers.map(modifier => ({
@@ -557,11 +597,14 @@ export function parse(text: string) {
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`)
 
+        const { description, hasMarkdownDescription } = await computeDescription(section.description)
+
         secondLevelParentSection.sections[sectionIds[2]] = {
           id: section.reference,
           sectionLevel: 'third',
           header: section.header,
-          description: section.description,
+          description,
+          hasMarkdownDescription,
           markup: section.markup,
           modifiers: section.modifiers.map(modifier => ({
             value: modifier.name,
@@ -578,11 +621,14 @@ export function parse(text: string) {
       }
       // e.g. components => accordion (6.1)
       else {
+        const { description, hasMarkdownDescription } = await computeDescription(section.description)
+
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,
           sectionLevel: 'second',
           header: section.header,
-          description: section.description,
+          description,
+          hasMarkdownDescription,
           markup: section.markup,
           modifiers: section.modifiers.map(modifier => ({
             value: modifier.name,
@@ -599,7 +645,7 @@ export function parse(text: string) {
         }
       }
     }
-  })
+  }
 
   // filter out empty sections
   output = output.filter(section => Boolean(section))

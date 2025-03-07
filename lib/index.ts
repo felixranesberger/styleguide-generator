@@ -62,7 +62,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
   const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
 
-  const parsedContent = parse(styleguideContent)
+  const parsedContent = await parse(styleguideContent)
+  if (!parsedContent)
+    throw new Error('Could not parse content')
 
   // ensure clean output directory and delete all html files
   if (config.mode === 'production' && await fs.exists(config.outDir)) {

@@ -3,10 +3,68 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
 import { glob } from 'tinyglobby';
+import { fromAsyncCodeToHtml } from '@shikijs/markdown-it/async';
+import MarkdownItAsync from 'markdown-it-async';
+import { codeToHtml } from 'shiki';
 import os from 'node:os';
 import { Worker } from 'node:worker_threads';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
+
+function log(message, style = "important") {
+  const computedMessage = style === "important" ? `\x1B[38;2;63;94;90m${(/* @__PURE__ */ new Date()).toLocaleTimeString()} \x1B[38;2;32;252;143m[Styleguide]\x1B[0m ${message}` : `\x1B[38;2;63;94;90m${(/* @__PURE__ */ new Date()).toLocaleTimeString()} \x1B[38;2;32;252;143m[Styleguide]\x1B[0m \x1B[38;2;63;94;90m${message}`;
+  console.log(computedMessage);
+}
+async function logicalWriteFile(filepath, content) {
+  const dir = path.dirname(filepath);
+  await fs.ensureDir(dir);
+  const isFileExisting = await fs.exists(filepath);
+  if (isFileExisting) {
+    const oldContent = await fs.readFile(filepath, "utf-8");
+    if (oldContent === content) {
+      return;
+    }
+  }
+  await fs.writeFile(filepath, content);
+}
+function fixAccessibilityIssues(html) {
+  let parsedMarkup = html;
+  const omitValue = ["required", "disabled", "checked", "selected", "multiple", "readonly"];
+  omitValue.forEach((value) => {
+    parsedMarkup = parsedMarkup.replaceAll(`${value}="${value}"`, value).replaceAll(`${value}=""`, value);
+  });
+  return parsedMarkup;
+}
+function sanitizeSpecialCharacters(text) {
+  return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+let md;
+async function parseMarkdown(filePath) {
+  const doesFileExist = fs.existsSync(filePath);
+  if (!doesFileExist) {
+    log(`Error: Markdown file not found: "${filePath}"`, "important");
+    return '<p class="font-bold text-red-600">Error: Markdown file not found!</p>';
+  }
+  if (!md) {
+    md = MarkdownItAsync({ linkify: true, typographer: true });
+    md.use(
+      fromAsyncCodeToHtml(
+        // @ts-expect-error - ignore
+        codeToHtml,
+        {
+          themes: {
+            light: "github-light-default",
+            dark: "aurora-x"
+          }
+        }
+      )
+    );
+  }
+  let fileContent = fs.readFileSync(filePath, "utf8");
+  fileContent = fileContent.replaceAll("# ", "## ");
+  return await md.renderAsync(fileContent);
+}
 
 function parseColors(text) {
   text = text.trim();
@@ -303,23 +361,48 @@ function processProperty(paragraphs, propertyName, processValue) {
 function hasPrefix(description, prefix) {
   return new RegExp(`^\\s*${prefix}\\:`, "gim").test(description);
 }
-function parse(text) {
+function extractMarkdownPath(input) {
+  const normalizedInput = input.trim();
+  const markdownPrefix = /^Markdown:\s*/i;
+  if (!markdownPrefix.test(normalizedInput)) {
+    return null;
+  }
+  const path2 = normalizedInput.replace(markdownPrefix, "").trim();
+  if (!path2.endsWith(".md")) {
+    return null;
+  }
+  return path2;
+}
+async function parse(text) {
   const data = kssParser(text).sections.filter((section) => Boolean(section.reference));
   const sortedData = data.sort((a, b) => {
     return a.reference.localeCompare(b.reference);
   });
   let output = [];
-  sortedData.forEach((section) => {
+  async function computeDescription(description) {
+    if (!description)
+      return { description, hasMarkdownDescription: false };
+    const markdownPath = extractMarkdownPath(description);
+    if (!markdownPath)
+      return { description, hasMarkdownDescription: false };
+    return {
+      description: await parseMarkdown(markdownPath),
+      hasMarkdownDescription: true
+    };
+  }
+  for await (const section of sortedData) {
     if (!section.reference)
       return;
     const sectionIds = section.reference.split(".");
     const isFirstLevelSection = sectionIds.length < 2 || sectionIds.length === 2 && sectionIds[1] === "0";
+    const { description, hasMarkdownDescription } = await computeDescription(section.description);
     if (isFirstLevelSection) {
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: "first",
         header: section.header,
-        description: section.description,
+        description,
+        hasMarkdownDescription,
         markup: section.markup,
         sections: [],
         modifiers: section.modifiers.map((modifier) => ({
@@ -343,11 +426,13 @@ function parse(text) {
         const secondLevelParentSection = firstLevelParentSection.sections[sectionIds[1]];
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`);
+        const { description: description2, hasMarkdownDescription: hasMarkdownDescription2 } = await computeDescription(section.description);
         secondLevelParentSection.sections[sectionIds[2]] = {
           id: section.reference,
           sectionLevel: "third",
           header: section.header,
-          description: section.description,
+          description: description2,
+          hasMarkdownDescription: hasMarkdownDescription2,
           markup: section.markup,
           modifiers: section.modifiers.map((modifier) => ({
             value: modifier.name,
@@ -362,11 +447,13 @@ function parse(text) {
           fullpageFileName: `fullpage-${section.reference}.html`
         };
       } else {
+        const { description: description2, hasMarkdownDescription: hasMarkdownDescription2 } = await computeDescription(section.description);
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,
           sectionLevel: "second",
           header: section.header,
-          description: section.description,
+          description: description2,
+          hasMarkdownDescription: hasMarkdownDescription2,
           markup: section.markup,
           modifiers: section.modifiers.map((modifier) => ({
             value: modifier.name,
@@ -383,7 +470,7 @@ function parse(text) {
         };
       }
     }
-  });
+  }
   output = output.filter((section) => Boolean(section));
   output.forEach((firstLevelSection) => {
     firstLevelSection.sections = firstLevelSection.sections.filter((section) => Boolean(section));
@@ -392,30 +479,6 @@ function parse(text) {
     });
   });
   return output;
-}
-
-async function logicalWriteFile(filepath, content) {
-  const dir = path.dirname(filepath);
-  await fs.ensureDir(dir);
-  const isFileExisting = await fs.exists(filepath);
-  if (isFileExisting) {
-    const oldContent = await fs.readFile(filepath, "utf-8");
-    if (oldContent === content) {
-      return;
-    }
-  }
-  await fs.writeFile(filepath, content);
-}
-function fixAccessibilityIssues(html) {
-  let parsedMarkup = html;
-  const omitValue = ["required", "disabled", "checked", "selected", "multiple", "readonly"];
-  omitValue.forEach((value) => {
-    parsedMarkup = parsedMarkup.replaceAll(`${value}="${value}"`, value).replaceAll(`${value}=""`, value);
-  });
-  return parsedMarkup;
-}
-function sanitizeSpecialCharacters(text) {
-  return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
 async function generateFullPageFile(data) {
@@ -573,6 +636,26 @@ function getMainContentSectionWrapper(section, html) {
   const headingTag = section.sectionLevel === "second" ? "h1" : "h2";
   const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
   const hasSectionExternalFullPage = section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
+  const computeDescription = () => {
+    if (!section.description)
+      return "";
+    if (section.hasMarkdownDescription) {
+      return `
+        <div class="markdown-container-folded relative">
+            <div class="markdown-container mt-2 max-h-[400px] overflow-hidden">
+                ${section.description}
+            </div>
+            
+            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent">
+                <button class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10">
+                    Show more
+                </button>
+            </div>
+        </div>
+      `;
+    }
+    return `<p class="mt-2 font-mono${section.sectionLevel === "second" ? " text-xl" : ""}">${section.description}</p>`;
+  };
   return `
 <section 
   id="section-${sanitizeId(section.id)}" 
@@ -589,15 +672,15 @@ function getMainContentSectionWrapper(section, html) {
         </a>
 
         ${hasSectionExternalFullPage ? `
-          <a class="p-2 group" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
+          <a class="p-2 group hover:text-styleguide-highlight focus:text-styleguide-highlight" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
                 <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
-                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
+                <path class="transition" d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
             </svg>
           </a>
         ` : ""}
     </div>
-    ${section.description ? `<p class="mt-2 font-mono${section.sectionLevel === "second" ? " text-xl" : ""}">${section.description}</p>` : ""}
+    ${computeDescription()}
 ${html ?? ""}
 </section>
   `;
@@ -1020,24 +1103,21 @@ async function compilePugMarkup(mode, contentDir, repository) {
   return clonedRepository;
 }
 
-let isChokidarReady = false;
 function watchForFileContentChanges(path, regex, callback) {
   if (typeof callback !== "function") {
     throw new TypeError("styleguide watch requires a callback function");
   }
   const regexFileContents = /* @__PURE__ */ new Map();
-  const registerFileContentMatches = (filePath) => {
+  const registerCSSFileContentMatches = (filePath) => {
     const currentFileContent = readFileSync(filePath, "utf8");
     const currentFileMatches = currentFileContent.match(regex);
     if (currentFileMatches === null) {
       return;
     }
     regexFileContents.set(filePath, currentFileMatches);
-    if (isChokidarReady) {
-      callback();
-    }
+    callback();
   };
-  const handleContentChanges = (filePath) => {
+  const handleCSSContentChanges = (filePath) => {
     const previousFileMatches = regexFileContents.get(filePath);
     const hasFileBeenReadBefore = previousFileMatches !== undefined;
     const currentFileContent = readFileSync(filePath, "utf8");
@@ -1057,21 +1137,25 @@ function watchForFileContentChanges(path, regex, callback) {
     regexFileContents.set(filePath, currentFileMatches);
     callback();
   };
-  const handleFileRemoval = (filePath) => {
+  const handleCSSFileRemoval = (filePath) => {
     regexFileContents.delete(filePath);
     callback();
   };
-  const validFileTypes = [".css", ".scss", ".sass", ".less"];
-  const watcher = chokidar.watch(path, {
+  const validCSSFileTypes = [".css", ".scss", ".sass", ".less"];
+  chokidar.watch(path, {
+    ignoreInitial: true,
     // @ts-expect-error - chokidar types seem to be incomplete, ignore
     ignored: (path2, stats) => {
-      return stats?.isFile() && !validFileTypes.some((type) => path2.endsWith(type));
+      return stats?.isFile() && !validCSSFileTypes.some((type) => path2.endsWith(type));
     }
-  }).on("add", registerFileContentMatches).on("change", handleContentChanges).on("unlink", handleFileRemoval).on("ready", () => isChokidarReady = true);
-  process.on("SIGINT", watcher.close);
-  process.on("SIGTERM", watcher.close);
-  process.on("SIGHUP", watcher.close);
-  process.on("exit", watcher.close);
+  }).on("add", registerCSSFileContentMatches).on("change", handleCSSContentChanges).on("unlink", handleCSSFileRemoval);
+  chokidar.watch(path, {
+    ignoreInitial: true,
+    // @ts-expect-error - chokidar types seem to be incomplete, ignore
+    ignored: (path2, stats) => {
+      return stats?.isFile() && !path2.endsWith(".md");
+    }
+  }).on("add", callback).on("change", callback).on("unlink", callback);
 }
 function watchStyleguideForChanges(path, callback) {
   const kssSectionRegex = /\/\*{1,2}[\s\S]*?Styleguide[\s\S]*?\*\//g;
@@ -1087,7 +1171,9 @@ async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`);
   const styleguideContent = (await Promise.all(styleguideContentPaths.map((file) => fs.readFile(file, "utf-8")))).join("\n");
-  const parsedContent = parse(styleguideContent);
+  const parsedContent = await parse(styleguideContent);
+  if (!parsedContent)
+    throw new Error("Could not parse content");
   if (config.mode === "production" && await fs.exists(config.outDir)) {
     const files = await glob(`${config.outDir}/**/*.html`);
     await Promise.all(files.map((file) => fs.unlink(file)));
