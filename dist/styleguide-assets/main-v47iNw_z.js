@@ -3091,9 +3091,9 @@ Ee.length > 0 && Q && (async () => {
   }, 8e3);
 })();
 const ln = document.querySelector("#icon-search-input"), cn = document.querySelector("#icon-search-input-reset"), un = document.querySelector("#icon-search-list");
-ln && un && cn && import("./icons-BdOjiGRu.js").then(({ default: t }) => t(ln, un, cn)).catch(console.error);
+ln && un && cn && import("./icons-P4K35_PI.js").then(({ default: t }) => t(ln, un, cn)).catch(console.error);
 const Vs = "data-clipboard-value", dn = document.querySelectorAll(`button[${Vs}]`);
-dn.length > 0 && import("./clipboard-AxUXzFwP.js").then(({ default: t }) => t(dn, Vs)).catch(console.error);
+dn.length > 0 && import("./clipboard-CjLMrdIX.js").then(({ default: t }) => t(dn, Vs)).catch(console.error);
 const $ = document.querySelector("#styleguide-previous"), W = document.querySelector("#styleguide-next");
 $ && window.addEventListener("styleguidePrevious", () => $.click());
 W && window.addEventListener("styleguideNext", () => W.click());
@@ -3124,7 +3124,7 @@ fn.length > 0 && fn.forEach((t) => {
     D(e, {
       maxHeight: `${a}px`
     }, { duration: 0.5 }).then(() => {
-      e.classList.remove("max-h-[400px]");
+      e.classList.remove("max-h-[400px]"), e.style.maxHeight = "";
     }), D(n, {
       opacity: 0
     }, { duration: 0.5 }).then(() => n.classList.add("hidden"));
