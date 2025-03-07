@@ -273,7 +273,11 @@ summary::-webkit-details-marker {
 
   /* markdown code block */
   :is(.shiki, pre:not(.shiki)) {
-    @apply inline-block min-w-[83ch] max-w-full px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border overflow-x-auto;
+    @apply max-w-[83ch] overflow-x-auto px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+
+    > code {
+      @apply inline-block;
+    }
   }
 
   /* markdown inline code */
