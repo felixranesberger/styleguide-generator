@@ -105,6 +105,12 @@ summary::-webkit-details-marker {
   color-scheme: only dark;
 }
 
+/* Hide elements based on OS */
+body:not([data-os='mac']) .mac-only,
+body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
+  display: none;
+}
+
 .theme-dark {
   .shiki,
   .shiki span {

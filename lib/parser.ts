@@ -538,16 +538,24 @@ export async function parse(text: string) {
 
   let output: in2FirstLevelSection[] = []
 
-  async function computeDescription(description: string) {
-    if (!description)
+  async function computeDescription(description: string, rootHeadingLevel: 1 | 2) {
+    // make sure description specifies that it's markdown content
+    if (!description || !description.includes('Markdown:'))
       return { description, hasMarkdownDescription: false }
 
     const markdownPath = extractMarkdownPath(description)
-    if (!markdownPath)
-      return { description, hasMarkdownDescription: false }
+
+    // when we can't extract a markdown path from the description,
+    // we assume the description is markdown content
+    if (!markdownPath) {
+      return {
+        description: await parseMarkdown({ markdownContent: description, rootHeadingLevel }),
+        hasMarkdownDescription: true,
+      }
+    }
 
     return {
-      description: await parseMarkdown(markdownPath),
+      description: await parseMarkdown({ filePath: markdownPath, rootHeadingLevel }),
       hasMarkdownDescription: true,
     }
   }
@@ -558,11 +566,11 @@ export async function parse(text: string) {
 
     // first level sections always are in the format of "1.0", "2.0", etc
     const sectionIds = section.reference.split('.')
-    const isFirstLevelSection = sectionIds.length < 2 || (sectionIds.length === 2 && sectionIds[1] === '0')
-
-    const { description, hasMarkdownDescription } = await computeDescription(section.description)
+    const isFirstLevelSection = sectionIds.length === 1 || (sectionIds.length === 2 && sectionIds[1] === '0')
 
     if (isFirstLevelSection) {
+      const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
+
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: 'first',
@@ -597,7 +605,7 @@ export async function parse(text: string) {
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`)
 
-        const { description, hasMarkdownDescription } = await computeDescription(section.description)
+        const { description, hasMarkdownDescription } = await computeDescription(section.description, 2)
 
         secondLevelParentSection.sections[sectionIds[2]] = {
           id: section.reference,
@@ -621,7 +629,7 @@ export async function parse(text: string) {
       }
       // e.g. components => accordion (6.1)
       else {
-        const { description, hasMarkdownDescription } = await computeDescription(section.description)
+        const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
 
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,

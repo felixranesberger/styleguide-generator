@@ -3,6 +3,7 @@ import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
 import { renderAlert } from './lib/alerts.ts'
 import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
 import initThemeSelect from './lib/theme-select.ts'
+import './accessibility.ts'
 import './style.css'
 import './lib/menu.ts'
 import './lib/search.ts'
@@ -137,37 +138,6 @@ if (copyButtons.length > 0) {
     .catch(console.error)
 }
 
-const previousLink = document.querySelector<HTMLButtonElement>('#styleguide-previous')
-const nextLink = document.querySelector<HTMLButtonElement>('#styleguide-next')
-
-if (previousLink) {
-  window.addEventListener('styleguidePrevious', () => previousLink.click())
-}
-
-if (nextLink) {
-  window.addEventListener('styleguideNext', () => nextLink.click())
-}
-
-if (previousLink || nextLink) {
-  if (previousLink) {
-    window.addEventListener('styleguidePrevious', () => previousLink.click())
-  }
-
-  if (nextLink) {
-    window.addEventListener('styleguideNext', () => nextLink.click())
-  }
-
-  window.addEventListener('keydown', (event) => {
-    if (previousLink && event.key === 'ArrowLeft') {
-      previousLink.click()
-    }
-
-    if (nextLink && event.key === 'ArrowRight') {
-      nextLink.click()
-    }
-  })
-}
-
 const markdownFolded = document.querySelectorAll<HTMLElement>('.markdown-container-folded')
 if (markdownFolded.length > 0) {
   markdownFolded.forEach((container) => {
@@ -183,7 +153,6 @@ if (markdownFolded.length > 0) {
     if (!showMoreButton)
       throw new Error('No show more button found')
 
-    console.log(1741347582795, markdownContainer)
     const { $isOverflowingVertically } = useElementHorizontalOverflow(container)
     const handleOverflow = () => {
       // detect if content inside markdownContainer is larger than maxWidth

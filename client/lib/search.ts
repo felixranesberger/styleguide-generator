@@ -133,18 +133,7 @@ function handleSearchFilter() {
 searchInput.addEventListener('input', handleSearchFilter)
 openSearchTriggers.forEach(button => button.addEventListener('click', showDialog))
 
-// open modal with cmd + k
-async function handleKeydownEvent(event: KeyboardEvent) {
-  if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-    event.preventDefault()
-    await showDialog()
-  }
-}
-
-window.addEventListener('keydown', handleKeydownEvent)
-
-// detect custom event dispatched from iframe
-// when cmd + k is pressed inside iframe
+// detect custom event to open search
 window.addEventListener('styleguideOpenSearch', showDialog)
 
 // detect closes using escape and execute custom animation sequence instead

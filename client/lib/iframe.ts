@@ -70,24 +70,6 @@ export default async (iframes: HTMLIFrameElement[]) => {
 
     const observer = new ResizeObserver(() => calculateIframeHeight(iframe))
     observer.observe(iframeWindow.document.body)
-
-    // when user presses cmd+k or ctrl+k inside iframe,
-    // dispatch event to open search in parent window
-    iframeWindow.addEventListener('keydown', (event) => {
-      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-        window.dispatchEvent(new Event('styleguideOpenSearch'))
-      }
-
-      // right arrow key
-      if (event.key === 'ArrowRight') {
-        window.dispatchEvent(new Event('styleguideNext'))
-      }
-
-      // left arrow key
-      if (event.key === 'ArrowLeft') {
-        window.dispatchEvent(new Event('styleguidePrevious'))
-      }
-    })
   })
 
   // calculate new when window size changes

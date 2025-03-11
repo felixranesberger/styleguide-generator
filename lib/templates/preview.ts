@@ -1,5 +1,6 @@
 import type { StyleguideConfiguration } from '../index.ts'
 import type { in2SecondLevelSection, in2Section } from '../parser.ts'
+import { objectEntries } from '@antfu/utils'
 import { logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
@@ -13,7 +14,8 @@ export function getHeaderHtml() {
 
     <div class="flex grow items-center justify-end py-4 md:justify-between">
         <button
-            class="inline-flex items-center cursor-pointer justify-between gap-2 rounded-full border p-2 text-sm transition border-styleguide-border hover:text-styleguide-highlight focus:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] md:py-1.5 md:rounded-md md:px-2"
+            class="inline-flex items-center cursor-pointer justify-between gap-2 rounded-full border p-2 text-sm transition border-styleguide-border hover:text-styleguide-highlight focus:text-styleguide-highlight active:scale-[0.96] md:py-1.5 md:rounded-md md:px-2"
+            type="button"
             aria-controls="search-dialog"
             aria-expanded="false"
             data-open-search=""
@@ -24,9 +26,10 @@ export function getHeaderHtml() {
                 <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
             </svg>
 
-            <kbd class="relative hidden items-center gap-1 rounded-md border font-semibold text-[10px] border-styleguide-border px-1.5 md:inline-flex">
-                <span class="inline-block text-[12px]">⌘</span>
-                <span>K</span>
+            <kbd class="relative hidden items-center gap-1 rounded-md border font-semibold text-[10px] border-styleguide-border px-1.5 pt-[4px] pb-[3px] md:inline-flex">
+                <span class="winlinux-only inline-block text-[10px] leading-[10px]">Ctrl</span>
+                <span class="mac-only inline-block text-[12px] leading-[12px]">⌘</span>
+                <span class="leading-[10px]">K</span>
             </kbd>
         </button>
 
@@ -162,7 +165,10 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
             </div>
             
             <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent after:pointer-events-none">
-                <button class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10">
+                <button
+                    type="button" 
+                    class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10"
+                >
                     Show more
                 </button>
             </div>
@@ -190,7 +196,12 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
 
         ${hasSectionExternalFullPage
           ? `
-          <a class="p-2 group hover:text-styleguide-highlight focus:text-styleguide-highlight" href="/${section.fullpageFileName}" target="_blank" title="Open ${section.header} in fullpage">
+          <a 
+            class="p-2 group hover:text-styleguide-highlight focus:text-styleguide-highlight" 
+            href="/${section.fullpageFileName}" 
+            target="_blank" 
+            title="Open ${section.header} in fullpage"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
                 <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
                 <path class="transition" d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
@@ -234,6 +245,7 @@ function getMainContentRegular(section: in2Section): string {
                 <span class="flex items-center">
                     <button
                         class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight transition duration-200" 
+                        type="button"
                         data-code-audit-iframe="preview-fullpage-${sanitizeId(section.id)}"
                         aria-controls="code-audit-dialog"
                         aria-expanded="false"
@@ -272,10 +284,11 @@ ${section.markup}
                             <h4 class="font-semibold text-styleguide-highlight">${modifier.description}</h4>
     
                             <button
-                                  class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
-                                  title="Copy content"
-                                  data-clipboard-value="${modifier.value}"
-                                  data-clipboard-alert-message="${modifier.value.split('.').length === 0 ? 'Copied class name to clipboard!' : 'Copied class names to clipboard!'}"
+                                class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
+                                type="button"
+                                title="Copy content"
+                                data-clipboard-value="${modifier.value}"
+                                data-clipboard-alert-message="${modifier.value.split('.').length === 0 ? 'Copied class name to clipboard!' : 'Copied class names to clipboard!'}"
                             >
                                 ${modifier.value}
                             </button>
@@ -312,6 +325,7 @@ function getMainContentColors(section: in2Section): string {
           color => `<li>
             <button 
                 class="relative w-full rounded-2xl px-4 py-6 cursor-copy" 
+                type="button"
                 style="background-color: ${color.color}"
                 data-clipboard-value="${color.color}"
                 data-clipboard-alert-message="Copied color to clipboard!"
@@ -387,8 +401,9 @@ function getMainContentIcons(section: in2Section): string {
                   </div>
                   <p class="text-center font-mono text-sm font-semibold hyphens-auto break-all">${icon.name}</p>
                   <button
-                      class="absolute inset-0 cursor-copy bg-transparent icon-search-list__item-copy"
-                      title="Copy svg content"
+                    class="absolute inset-0 cursor-copy bg-transparent icon-search-list__item-copy"
+                    type="button"
+                    title="Copy svg content"
                   ></button>
               </li>
             `).join('\n')}
@@ -409,7 +424,7 @@ export function getNextPageControlsHtml(data: {
 }) {
   return `
 <nav class="flex w-full justify-between px-4 py-10 md:px-10">
-    <div>
+    <div>    
         ${data.before
           ? `
           <a id="styleguide-previous" class="flex items-center gap-1 group" href="${data.before.href}">
@@ -531,7 +546,7 @@ export async function generatePreviewFile(data: {
   const computedScriptTags = data.js
     .filter(entry => entry.type === 'overwriteStyleguide')
     .map((js) => {
-      const additionalAttributes = js.additionalAttributes ? Object.entries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(' ') : ''
+      const additionalAttributes = js.additionalAttributes ? objectEntries(js.additionalAttributes).map(([key, value]) => `${key}="${value}"`).join(' ') : ''
       return `<script src="${js.src}" ${additionalAttributes}></script>`
     })
     .join('\n')
