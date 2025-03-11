@@ -26,10 +26,12 @@ function detectPageArrowNavigation() {
 
   const handleKeydown = (event: KeyboardEvent) => {
     if (previousLink && event.key === 'ArrowLeft') {
+      event.preventDefault()
       previousLink.click()
     }
 
     if (nextLink && event.key === 'ArrowRight') {
+      event.preventDefault()
       nextLink.click()
     }
   }
@@ -55,6 +57,7 @@ function openSearchShortcut() {
 
   const handleKeydown = (event: KeyboardEvent) => {
     if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
       window.dispatchEvent(new Event('styleguideOpenSearch'))
     }
   }
