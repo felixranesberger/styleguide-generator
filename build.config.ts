@@ -304,5 +304,5 @@ export default defineBuildConfig({
   entries: ['./lib/index', './lib/vite-pug/worker'],
   declaration: true,
   failOnWarn: false,
-  externals: shikiExternalPackages,
+  externals: ['@antfu/utils', ...shikiExternalPackages],
 })
