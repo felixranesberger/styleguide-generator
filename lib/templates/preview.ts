@@ -164,7 +164,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
                 ${section.description}
             </div>
             
-            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent after:pointer-events-none">
+            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center max-w-[65ch] after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent after:pointer-events-none">
                 <button
                     type="button" 
                     class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10"
@@ -473,6 +473,7 @@ export function getSearchHtml(sections: {
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">
+        <label for="search-input" class="sr-only">Search styleguide</label>
         <input
             id="search-input"
             class="w-full bg-transparent text-[18px] h-[28px] focus:outline-hidden"
