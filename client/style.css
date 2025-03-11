@@ -152,7 +152,7 @@ body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
 .search-backdrop {
   display: none;
   position: absolute;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px) brightness(0.7);
   inset: 0;
   opacity: 0;
   pointer-events: none;

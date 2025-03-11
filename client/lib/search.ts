@@ -59,13 +59,13 @@ async function showDialog() {
   const isMobileScreen = getIsMobileScreen()
   if (isMobileScreen) {
     dialog!.style.overflowY = 'hidden' // avoid showing ugly scrollbar directly
-    searchInput!.inert = true // avoid focusing search input directly
+    searchInput!.setAttribute('inert', '') // avoid focusing search input directly
 
     animate(dialog!, { opacity: [0, 1], y: [250, 0] }, { duration: 0.3, ease: 'easeOut' })
     await animate(searchBackdrop!, { opacity: [0, 1] }, { duration: 0.3, ease: 'easeOut' })
 
     dialog!.style.overflowY = 'auto'
-    searchInput!.inert = false
+    searchInput!.removeAttribute('inert')
   }
   else {
     animate(dialog!, { opacity: [0, 1], scale: [0.98, 1] }, { duration: 0.3, ease: 'easeOut' })
