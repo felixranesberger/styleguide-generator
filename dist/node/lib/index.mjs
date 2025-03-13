@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import { fromAsyncCodeToHtml } from '@shikijs/markdown-it/async';
 import MarkdownItAsync from 'markdown-it-async';
 import { codeToHtml } from 'shiki';
+import { objectEntries } from '@antfu/utils';
 import os from 'node:os';
 import { Worker } from 'node:worker_threads';
 import { readFileSync } from 'node:fs';
@@ -541,10 +542,6 @@ async function generateFullPageFile(data) {
   await logicalWriteFile(data.filePath, content);
 }
 
-function objectEntries(obj) {
-  return Object.entries(obj);
-}
-
 const sanitizeId = (id) => id.toLowerCase().replaceAll(".", "-");
 function getHeaderHtml() {
   return `
@@ -682,7 +679,7 @@ function getMainContentSectionWrapper(section, html) {
                 ${section.description}
             </div>
             
-            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent after:pointer-events-none">
+            <div class="markdown-show-more-container hidden absolute inset-x-0 bottom-0 flex justify-center max-w-[65ch] after:absolute after:inset-x-0 after:bottom-0 after:h-[120px] after:bg-gradient-to-t after:from-styleguide-bg after:to-transparent after:pointer-events-none">
                 <button
                     type="button" 
                     class="markdown-show-more px-2 py-1 bg-styleguide-bg-highlight rounded-2xl cursor-pointer border border-styleguide-border hover:text-styleguide-highlight active:scale-[0.96] md:min-w-[150px] z-10"
@@ -959,10 +956,11 @@ function getSearchHtml(sections) {
   return `
 <dialog
     id="search-dialog"
-    class="fixed -inset-x-0 top-auto bottom-0 z-30 -mb-px w-full opacity-0 max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+    class="fixed -inset-x-px top-auto bottom-0 z-30 -mb-px w-full opacity-0 max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">
+        <label for="search-input" class="sr-only">Search styleguide</label>
         <input
             id="search-input"
             class="w-full bg-transparent text-[18px] h-[28px] focus:outline-hidden"
