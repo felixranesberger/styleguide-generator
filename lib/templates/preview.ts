@@ -5,6 +5,12 @@ import { logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
 
+function getHasSectionExternalFullpage(section: in2Section) {
+  return section.markup.length > 0
+    && (section.icons === undefined || section.icons.length === 0)
+    && (section.colors === undefined || section.colors.length === 0)
+}
+
 export function getHeaderHtml() {
   return `
 <header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1600px] border-styleguide-border bg-styleguide-bg-highlight">
@@ -149,9 +155,6 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection) {
 function getMainContentSectionWrapper(section: in2Section, html?: string): string {
   const headingTag = section.sectionLevel === 'second' ? 'h1' : 'h2'
   const headingClass = section.sectionLevel === 'second' ? 'text-4xl' : 'text-2xl'
-  const hasSectionExternalFullPage = section.markup.length > 0
-    && (section.icons === undefined || section.icons.length === 0)
-    && (section.colors === undefined || section.colors.length === 0)
 
   const computeDescription = () => {
     if (!section.description)
@@ -182,7 +185,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
   return `
 <section 
   id="section-${sanitizeId(section.id)}" 
-  class="border-b px-4 py-10 border-b-styleguide-border scroll-mt-[50px] md:px-10"
+  class="styleguide-section border-b px-4 py-10 border-b-styleguide-border scroll-mt-[50px] md:px-10"
 >
     <div class="flex items-center justify-between gap-6">
         <a class="relative group" href="#section-${sanitizeId(section.id)}">
@@ -194,7 +197,7 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
             <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
         </a>
 
-        ${hasSectionExternalFullPage
+        ${getHasSectionExternalFullpage(section)
           ? `
           <a 
             class="p-2 group hover:text-styleguide-highlight focus:text-styleguide-highlight" 
@@ -253,6 +256,22 @@ function getMainContentRegular(section: in2Section): string {
                         <svg class="h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.88" aria-hidden="true"><title>accessibility</title><path fill="currentcolor" d="M61.44,0A61.46,61.46,0,1,1,18,18,61.21,61.21,0,0,1,61.44,0Zm-.39,74.18L52.1,98.91a4.94,4.94,0,0,1-2.58,2.83A5,5,0,0,1,42.7,95.5l6.24-17.28a26.3,26.3,0,0,0,1.17-4,40.64,40.64,0,0,0,.54-4.18c.24-2.53.41-5.27.54-7.9s.22-5.18.29-7.29c.09-2.63-.62-2.8-2.73-3.3l-.44-.1-18-3.39A5,5,0,0,1,27.08,46a5,5,0,0,1,5.05-7.74l19.34,3.63c.77.07,1.52.16,2.31.25a57.64,57.64,0,0,0,7.18.53A81.13,81.13,0,0,0,69.9,42c.9-.1,1.75-.21,2.6-.29l18.25-3.42A5,5,0,0,1,94.5,39a5,5,0,0,1,1.3,7,5,5,0,0,1-3.21,2.09L75.15,51.37c-.58.13-1.1.22-1.56.29-1.82.31-2.72.47-2.61,3.06.08,1.89.31,4.15.61,6.51.35,2.77.81,5.71,1.29,8.4.31,1.77.6,3.19,1,4.55s.79,2.75,1.39,4.42l6.11,16.9a5,5,0,0,1-6.82,6.24,4.94,4.94,0,0,1-2.58-2.83L63,74.23,62,72.4l-1,1.78Zm.39-53.52a8.83,8.83,0,1,1-6.24,2.59,8.79,8.79,0,0,1,6.24-2.59Zm36.35,4.43a51.42,51.42,0,1,0,15,36.35,51.27,51.27,0,0,0-15-36.35Z"/></svg>
                         <span class="hidden md:inline-block">Audit</span>
                     </button>
+                    
+                    ${getHasSectionExternalFullpage(section)
+                      ? `
+                       <a
+                            class="hidden [.styleguide-section--large_&]:inline-block -mr-2 px-2 py-4 group/externallink hover:text-styleguide-highlight focus:text-styleguide-highlight"
+                            href="/${section.fullpageFileName}"
+                            target="_blank"
+                            title="Open ${section.header} in fullpage"
+                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
+                            <path class="transition group-hover/externallink:translate-x-px group-hover/externallink:-translate-y-px group-focus/externallink:translate-x-px group/externallink-focus:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
+                            <path class="transition" d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"/>
+                        </svg>
+                      </a>
+                    `
+                      : ''}
                 </span>
             </summary>
 

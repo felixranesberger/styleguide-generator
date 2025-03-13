@@ -21,6 +21,14 @@ if (themeSelectForm) {
   initThemeSelect(themeSelectForm)
 }
 
+const styleguideSections = document.querySelectorAll<HTMLElement>('.styleguide-section')
+styleguideSections.forEach((section) => {
+  new ResizeObserver(() => {
+    const isLargeSection = section.scrollHeight > 600
+    section.classList.toggle('styleguide-section--large', isLargeSection)
+  }).observe(section)
+})
+
 const codeDetails = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
 if (codeDetails.length > 0) {
   codeDetails.forEach((detail) => {
