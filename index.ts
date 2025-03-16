@@ -19,6 +19,9 @@ import { watchStyleguide } from './lib/index';
         js: [],
       },
     },
+    launchInEditor: {
+      rootDir: '/Users/franesberger/Documents/workspace/styleguide-rewrite/',
+    },
   }, () => {
     console.log('Styleguide has been rebuilt')
   })

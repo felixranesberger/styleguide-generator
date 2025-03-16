@@ -34,6 +34,9 @@ export interface StyleguideConfiguration {
   contentDir: `${string}/`
   projectTitle: string
   deactivateDarkMode?: boolean
+  launchInEditor?: boolean | {
+    rootDir: string
+  }
   html: {
     lang: string
     assets: {
@@ -62,7 +65,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
   const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
 
-  const parsedContent = await parse(styleguideContent)
+  const parsedContent = await parse(styleguideContent, config)
   if (!parsedContent)
     throw new Error('Could not parse content')
 
@@ -261,7 +264,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
               menuSectionMapping,
               secondLevelSection.previewFileName,
             ),
-            mainContent: getMainContentHtml(secondLevelSection),
+            mainContent: getMainContentHtml(secondLevelSection, config),
             nextPageControls: getNextPageControlsHtml(nextPageControlsData),
             search: searchHtml,
             codeAuditDialog: getCodeAuditDialog(),

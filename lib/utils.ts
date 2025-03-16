@@ -62,3 +62,7 @@ export function sanitizeSpecialCharacters(text: string): string {
     .replaceAll('"', '&quot;')
     .replaceAll('\'', '&#039;')
 }
+
+export function ensureStartingSlash(input: string): string {
+  return input.startsWith('/') ? input : `/${input}`
+}

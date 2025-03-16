@@ -79,6 +79,10 @@ function openSearchShortcut() {
 const os = detectOS()
 document.body.setAttribute('data-os', os)
 
+// detect if the device is a mobile device
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+document.body.setAttribute('data-is-mobile', String(isMobile))
+
 // navigate using arrow left and right keys
 detectPageArrowNavigation()
 

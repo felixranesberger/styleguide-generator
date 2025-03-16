@@ -111,6 +111,11 @@ body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
   display: none;
 }
 
+body[data-is-mobile='true'] .desktop-device-only {
+  display: none;
+}
+
+
 .theme-dark {
   .shiki,
   .shiki span {

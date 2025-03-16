@@ -1,3 +1,4 @@
+import type { StyleguideConfiguration } from './index.ts'
 import path from 'node:path'
 import { parseMarkdown } from './markdown.ts'
 
@@ -516,6 +517,7 @@ export interface in2Section {
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
+  sourceFileName: string
   previewFileName: string
   fullpageFileName: string
 }
@@ -528,7 +530,7 @@ export interface in2SecondLevelSection extends in2Section {
   sections: in2Section[]
 }
 
-export async function parse(text: string) {
+export async function parse(text: string, config: StyleguideConfiguration) {
   const data = kssParser(text).sections.filter(section => Boolean(section.reference))
 
   // sort by reference id
@@ -555,7 +557,7 @@ export async function parse(text: string) {
     }
 
     return {
-      description: await parseMarkdown({ filePath: markdownPath, rootHeadingLevel }),
+      description: await parseMarkdown({ filePath: path.join(config.contentDir, markdownPath), rootHeadingLevel }),
       hasMarkdownDescription: true,
     }
   }
@@ -588,6 +590,7 @@ export async function parse(text: string) {
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
+        sourceFileName: section.source.filename,
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`,
       }
@@ -623,6 +626,7 @@ export async function parse(text: string) {
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         }
@@ -648,6 +652,7 @@ export async function parse(text: string) {
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
           sections: [],
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         }
