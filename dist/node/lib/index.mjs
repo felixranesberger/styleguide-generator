@@ -736,7 +736,7 @@ ${html ?? ""}
 }
 function getMainContentRegular(section, config) {
   let sourceFilePath = "";
-  if (config.launchInEditor && section.markup.includes('<pug src="')) {
+  if (config.mode === "development" && config.launchInEditor && section.markup.includes('<pug src="')) {
     const regexModifierLine = /<pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/pug>/g;
     const vitePugTags = section.markup.match(regexModifierLine);
     if (!vitePugTags)
@@ -748,10 +748,10 @@ function getMainContentRegular(section, config) {
       }
       sourceFilePath = pugSourcePath;
     });
-  } else if (section.sourceFileName) {
+  } else if (config.mode === "development" && section.sourceFileName) {
     sourceFilePath = path.join(config.contentDir, section.sourceFileName);
   }
-  const shouldLaunchInEditor = config.launchInEditor && sourceFilePath;
+  const shouldLaunchInEditor = config.mode === "development" && config.launchInEditor && sourceFilePath;
   let openInEditorPathPhpStorm = "";
   let openInEditorPathVscode = "";
   if (shouldLaunchInEditor) {
