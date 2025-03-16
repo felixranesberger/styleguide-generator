@@ -224,7 +224,7 @@ ${html ?? ''}
 function getMainContentRegular(section: in2Section, config: StyleguideConfiguration): string {
   let sourceFilePath = ''
 
-  if (config.launchInEditor && section.markup.includes('<pug src="')) {
+  if (config.mode === 'development' && config.launchInEditor && section.markup.includes('<pug src="')) {
     // eslint-disable-next-line regexp/no-super-linear-backtracking
     const regexModifierLine = /<pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/pug>/g
     const vitePugTags = section.markup.match(regexModifierLine)
@@ -240,11 +240,13 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
       sourceFilePath = pugSourcePath
     })
   }
-  else if (section.sourceFileName) {
+  else if (config.mode === 'development' && section.sourceFileName) {
     sourceFilePath = path.join(config.contentDir, section.sourceFileName)
   }
 
-  const shouldLaunchInEditor = config.launchInEditor && sourceFilePath
+  const shouldLaunchInEditor = config.mode === 'development'
+    && config.launchInEditor
+    && sourceFilePath
 
   let openInEditorPathPhpStorm = ''
   let openInEditorPathVscode = ''
