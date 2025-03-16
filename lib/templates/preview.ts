@@ -321,7 +321,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                                 src="styleguide-assets/icons/vscode.svg"
                                 width="100" 
                                 height="100" 
-                                class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
+                                class="size-4 saturate-0 group-hover/vscode:saturate-100 transition" 
                                 alt="VsCode Logo" 
                                 aria-hidden="true" 
                             >
