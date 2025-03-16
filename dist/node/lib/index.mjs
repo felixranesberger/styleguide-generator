@@ -1132,7 +1132,7 @@ async function generatePreviewFile(data) {
         </nav>
       </aside>
       
-      <div class="order-2 w-full xl:w-[calc(100%-260px)]">
+      <div class="order-2 w-full md:w-[calc(100%-260px)]">
         ${data.html.mainContent}
         ${data.html.nextPageControls}
       </div>
