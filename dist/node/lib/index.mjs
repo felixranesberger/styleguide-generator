@@ -736,7 +736,6 @@ ${html ?? ""}
 }
 function getMainContentRegular(section, config) {
   let sourceFilePath = "";
-  console.log(1741939251719, section.markup);
   if (config.launchInEditor && section.markup.includes('<pug src="')) {
     const regexModifierLine = /<pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/pug>/g;
     const vitePugTags = section.markup.match(regexModifierLine);
@@ -814,7 +813,7 @@ function getMainContentRegular(section, config) {
                                 src="styleguide-assets/icons/vscode.svg"
                                 width="100" 
                                 height="100" 
-                                class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
+                                class="size-4 saturate-0 group-hover/vscode:saturate-100 transition" 
                                 alt="VsCode Logo" 
                                 aria-hidden="true" 
                             >
