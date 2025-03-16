@@ -8,6 +8,9 @@ interface StyleguideConfiguration {
     contentDir: `${string}/`;
     projectTitle: string;
     deactivateDarkMode?: boolean;
+    launchInEditor?: boolean | {
+        rootDir: string;
+    };
     html: {
         lang: string;
         assets: {

@@ -368,7 +368,7 @@ function Gs(t, { defaultTransition: e = {}, ...n } = {}, s, r) {
     h.at !== void 0 && (d = Ft(d, h.at, c, u));
     let w = 0;
     const V = (x, m, S, M = 0, T = 0) => {
-      const A = Us(x), { delay: F = 0, times: O = yn(A), type: Be = "keyframes", repeat: ve, repeatType: Bo, repeatDelay: No = 0, ...As } = m;
+      const A = Us(x), { delay: F = 0, times: O = yn(A), type: Be = "keyframes", repeat: ve, repeatType: No, repeatDelay: Ko = 0, ...As } = m;
       let { ease: K = e.ease || "easeOut", duration: R } = m;
       const bt = typeof F == "function" ? F(M, T) : F, Tt = A.length, St = Oe(Be) ? Be : r == null ? void 0 : r[Be];
       if (Tt <= 2 && St) {
@@ -560,7 +560,7 @@ function tr(t, e) {
       o[Te[w]].cancel(h);
   }, state: r, steps: o };
 }
-const { schedule: L, cancel: ze, state: Ce, steps: qo } = tr(typeof requestAnimationFrame < "u" ? requestAnimationFrame : j, !0);
+const { schedule: L, cancel: ze, state: Ce, steps: _o } = tr(typeof requestAnimationFrame < "u" ? requestAnimationFrame : j, !0);
 let xe;
 function nr() {
   xe = void 0;
@@ -2968,9 +2968,11 @@ function Ro() {
 }
 const Io = Do();
 document.body.setAttribute("data-os", Io);
+const Oo = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+document.body.setAttribute("data-is-mobile", String(Oo));
 Fo();
 Ro();
-function Oo() {
+function Lo() {
   const t = document.querySelector("header");
   if (!t)
     throw new Error("No header found");
@@ -2979,7 +2981,7 @@ function Oo() {
     document.documentElement.style.setProperty("--header-height", `${e()}px`);
   });
 }
-function Lo() {
+function ko() {
   const t = document.querySelector("aside");
   if (!t)
     throw new Error("No aside menu found");
@@ -2996,8 +2998,8 @@ function Lo() {
   }
   window.addEventListener("resize", e), e();
 }
-Oo();
 Lo();
+ko();
 const I = document.querySelector("#search-dialog");
 if (!I)
   throw new Error("No search dialog found");
@@ -3061,8 +3063,8 @@ const nn = Array.from(document.querySelectorAll(".preview-iframe"));
 nn.length > 0 ? Co(nn).catch(console.error) : hs();
 const sn = document.querySelector(".theme-select");
 sn && Po(sn);
-const ko = document.querySelectorAll(".styleguide-section");
-ko.forEach((t) => {
+const Bo = document.querySelectorAll(".styleguide-section");
+Bo.forEach((t) => {
   new ResizeObserver(() => {
     const e = t.scrollHeight > 600;
     t.classList.toggle("styleguide-section--large", e);
@@ -3118,9 +3120,9 @@ Ve.length > 0 && X && (async () => {
   }, 8e3);
 })();
 const rn = document.querySelector("#icon-search-input"), on = document.querySelector("#icon-search-input-reset"), an = document.querySelector("#icon-search-list");
-rn && an && on && import("./icons-sWU2ReYu.js").then(({ default: t }) => t(rn, an, on)).catch(console.error);
+rn && an && on && import("./icons-DcJNv6Vd.js").then(({ default: t }) => t(rn, an, on)).catch(console.error);
 const Ss = "data-clipboard-value", ln = document.querySelectorAll(`button[${Ss}]`);
-ln.length > 0 && import("./clipboard-C3XBT-Tp.js").then(({ default: t }) => t(ln, Ss)).catch(console.error);
+ln.length > 0 && import("./clipboard-D-_gCJnm.js").then(({ default: t }) => t(ln, Ss)).catch(console.error);
 const cn = document.querySelectorAll(".markdown-container-folded");
 cn.length > 0 && cn.forEach((t) => {
   const e = t.querySelector(".markdown-container");

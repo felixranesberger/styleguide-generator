@@ -39,6 +39,9 @@ function fixAccessibilityIssues(html) {
 function sanitizeSpecialCharacters(text) {
   return text.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
+function ensureStartingSlash(input) {
+  return input.startsWith("/") ? input : `/${input}`;
+}
 
 let md;
 function shiftHeadingLevels(markdownContent, rootHeadingLevel) {
@@ -400,7 +403,7 @@ function extractMarkdownPath(input) {
   }
   return path2;
 }
-async function parse(text) {
+async function parse(text, config) {
   const data = kssParser(text).sections.filter((section) => Boolean(section.reference));
   const sortedData = data.sort((a, b) => {
     return a.reference.localeCompare(b.reference);
@@ -417,7 +420,7 @@ async function parse(text) {
       };
     }
     return {
-      description: await parseMarkdown({ filePath: markdownPath, rootHeadingLevel }),
+      description: await parseMarkdown({ filePath: path.join(config.contentDir, markdownPath), rootHeadingLevel }),
       hasMarkdownDescription: true
     };
   }
@@ -445,6 +448,7 @@ async function parse(text) {
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
+        sourceFileName: section.source.filename,
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`
       };
@@ -474,6 +478,7 @@ async function parse(text) {
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`
         };
@@ -496,6 +501,7 @@ async function parse(text) {
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
           sections: [],
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`
         };
@@ -652,7 +658,7 @@ function getCodeAuditDialog() {
     </dialog>
   `;
 }
-function getMainContentHtml(secondLevelSection) {
+function getMainContentHtml(secondLevelSection, config) {
   let output = "";
   function renderSection(section) {
     if (section.colors && section.colors.length > 0) {
@@ -660,7 +666,7 @@ function getMainContentHtml(secondLevelSection) {
     } else if (section.icons && section.icons.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentIcons(section));
     } else {
-      const content = section.markup ? getMainContentRegular(section) : undefined;
+      const content = section.markup ? getMainContentRegular(section, config) : undefined;
       output += getMainContentSectionWrapper(section, content);
     }
   }
@@ -728,7 +734,33 @@ ${html ?? ""}
 </section>
   `;
 }
-function getMainContentRegular(section) {
+function getMainContentRegular(section, config) {
+  let sourceFilePath = "";
+  console.log(1741939251719, section.markup);
+  if (config.launchInEditor && section.markup.includes('<pug src="')) {
+    const regexModifierLine = /<pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/pug>/g;
+    const vitePugTags = section.markup.match(regexModifierLine);
+    if (!vitePugTags)
+      throw new Error("No Vite Pug tags found");
+    vitePugTags.forEach((vitePugTag) => {
+      const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1];
+      if (!pugSourcePath || !pugSourcePath.endsWith(".pug")) {
+        throw new Error("No or invalid Pug source path found");
+      }
+      sourceFilePath = pugSourcePath;
+    });
+  } else if (section.sourceFileName) {
+    sourceFilePath = path.join(config.contentDir, section.sourceFileName);
+  }
+  const shouldLaunchInEditor = config.launchInEditor && sourceFilePath;
+  let openInEditorPathPhpStorm = "";
+  let openInEditorPathVscode = "";
+  if (shouldLaunchInEditor) {
+    const computedRootPath = config.launchInEditor && typeof config.launchInEditor === "object" && "rootDir" in config.launchInEditor ? config.launchInEditor.rootDir : process.cwd();
+    const computedFilePath = ensureStartingSlash(path.join(computedRootPath, sourceFilePath));
+    openInEditorPathPhpStorm = shouldLaunchInEditor ? `phpstorm://open?file=${computedFilePath}` : "";
+    openInEditorPathVscode = shouldLaunchInEditor ? `vscode://file//${computedFilePath}` : "";
+  }
   return `
     <!-- Preview Box -->
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
@@ -749,14 +781,48 @@ function getMainContentRegular(section) {
                     <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                         <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
                     </svg>
-      
+
                     <span class="group-open:hidden">Show code</span>
                     <span class="group-open:block hidden">Hide code</span>
                 </span>
                 
-                <span class="flex items-center">
+                <span class="flex items-center"> 
+                    ${openInEditorPathPhpStorm ? `<a
+                            class="inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                            href="${openInEditorPathPhpStorm}"
+                        >
+                            <span class="hidden md:inline-block">Open in</span>
+                            <span class="sr-only">PHPStorm</span>
+                            <img 
+                                src="styleguide-assets/icons/phpstorm.svg"
+                                width="70" 
+                                height="70" 
+                                class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
+                                alt="PHPStorm Logo" 
+                                aria-hidden="true" 
+                            >
+                        </a>
+                      ` : ""}
+                    
+                    ${openInEditorPathVscode ? `<a
+                            class="inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                            href="${openInEditorPathVscode}"
+                        >
+                            <span class="hidden md:inline-block">Open in</span>
+                            <span class="sr-only">VsCode</span>
+                            <img 
+                                src="styleguide-assets/icons/vscode.svg"
+                                width="100" 
+                                height="100" 
+                                class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
+                                alt="VsCode Logo" 
+                                aria-hidden="true" 
+                            >
+                        </a>
+                      ` : ""}
+
                     <button
-                        class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight transition duration-200" 
+                        class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                         type="button"
                         data-code-audit-iframe="preview-fullpage-${sanitizeId(section.id)}"
                         aria-controls="code-audit-dialog"
@@ -905,10 +971,10 @@ function getMainContentIcons(section) {
         </button>
     </form>
 
-    <div class="min-h-[400px] md:min-h-[250px]">
+    <div class="@container min-h-[400px] md:min-h-[250px]">
         <ul
             id="icon-search-list"
-            class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+            class="grid grid-cols-2 gap-4 @lg:grid-cols-3 @xl:grid-cols-4"
         >
             ${section.icons?.map((icon) => `
               <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 duration-700 items icon-search-list__item bg-styleguide-bg-highlight transition hover:border-styleguide-border focus:border-styleguide-border">
@@ -1059,7 +1125,7 @@ async function generatePreviewFile(data) {
   
     <main class="relative flex h-full min-h-screen min-[1222px]:border-x min-[1220px]:mx-auto max-w-[1600px] border-styleguide-border">
       <aside
-          class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 xl:flex"
+          class="sticky order-1 hidden flex-col overflow-y-auto border-r z-100 w-[260px] border-styleguide-border shrink-0 md:flex"
           style="top: var(--header-height); max-height: calc(100vh - var(--header-height))"
       >
         <nav>
@@ -1233,7 +1299,7 @@ async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`);
   const styleguideContent = (await Promise.all(styleguideContentPaths.map((file) => fs.readFile(file, "utf-8")))).join("\n");
-  const parsedContent = await parse(styleguideContent);
+  const parsedContent = await parse(styleguideContent, config);
   if (!parsedContent)
     throw new Error("Could not parse content");
   if (config.mode === "production" && await fs.exists(config.outDir)) {
@@ -1376,7 +1442,7 @@ async function buildStyleguide(config) {
               menuSectionMapping,
               secondLevelSection.previewFileName
             ),
-            mainContent: getMainContentHtml(secondLevelSection),
+            mainContent: getMainContentHtml(secondLevelSection, config),
             nextPageControls: getNextPageControlsHtml(nextPageControlsData),
             search: searchHtml,
             codeAuditDialog: getCodeAuditDialog(),
