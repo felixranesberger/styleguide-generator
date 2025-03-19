@@ -1,12 +1,12 @@
-import { animate } from 'motion'
+import { useDialog } from '../hooks/use-dialog.ts'
 
 const dialog = document.querySelector<HTMLDialogElement>('#search-dialog')
 if (!dialog)
   throw new Error('No search dialog found')
 
-const searchBackdrop = document.querySelector<HTMLElement>('.search-backdrop')
-if (!searchBackdrop)
-  throw new Error('No search backdrop found')
+const dialogBackdrop = document.querySelector<HTMLElement>('.dialog-backdrop')
+if (!dialogBackdrop)
+  throw new Error('No dialog backdrop found')
 
 const openSearchTriggers = document.querySelectorAll<HTMLButtonElement>('[data-open-search]')
 if (openSearchTriggers.length === 0)
@@ -28,80 +28,36 @@ const searchNoResults = document.querySelector('#search-no-results')
 if (!searchNoResults)
   throw new Error('No search no results element found')
 
-const getIsMobileScreen = () => window.matchMedia('(max-width: 768px)').matches
-
-async function closeDialogOnOutsideClick(event: MouseEvent) {
-  // Use closest() to check if the click target is inside the dialog
-  const clickedElement = event.target
-  if (!(clickedElement instanceof HTMLElement))
-    throw new Error('Clicked element is not an HTMLElement')
-
-  const isClickInsideDialog = clickedElement.closest('dialog') !== null
-
-  if (!isClickInsideDialog) {
-    await closeDialog()
-  }
-}
+const { show, close } = useDialog(dialog, dialogBackdrop)
 
 async function showDialog() {
-  const yScrollPos = window.scrollY
-  dialog!.showModal()
+  await show(
+    (isMobileScreen) => {
+      if (isMobileScreen) {
+        searchInput!.setAttribute('inert', '') // avoid focusing search input directly
+      }
+    },
+    (isMobileScreen) => {
+      if (isMobileScreen) {
+        searchInput!.removeAttribute('inert')
+      }
 
-  await new Promise(resolve => setTimeout(resolve, 50))
+      openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'true')
+      searchInput!.ariaExpanded = 'true'
 
-  // reset scroll position to avoid jumping
-  window.scrollTo(0, yScrollPos)
-  setTimeout(() => window.scrollTo(0, yScrollPos), 0)
-  setTimeout(() => window.scrollTo(0, yScrollPos), 50)
-
-  searchBackdrop!.style.display = 'block'
-
-  const isMobileScreen = getIsMobileScreen()
-  if (isMobileScreen) {
-    dialog!.style.overflowY = 'hidden' // avoid showing ugly scrollbar directly
-    searchInput!.setAttribute('inert', '') // avoid focusing search input directly
-
-    animate(dialog!, { opacity: [0, 1], y: [250, 0] }, { duration: 0.3, ease: 'easeOut' })
-    await animate(searchBackdrop!, { opacity: [0, 1] }, { duration: 0.3, ease: 'easeOut' })
-
-    dialog!.style.overflowY = 'auto'
-    searchInput!.removeAttribute('inert')
-  }
-  else {
-    animate(dialog!, { opacity: [0, 1], scale: [0.98, 1] }, { duration: 0.3, ease: 'easeOut' })
-    animate(searchBackdrop!, { opacity: [0, 1] }, { duration: 0.3, ease: 'easeOut' })
-  }
-
-  openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'true')
-  searchInput!.ariaExpanded = 'true'
-
-  handleSearchFilter()
-
-  // wrap in timeout to prevent immediate closing of dialog
-  setTimeout(() => document.addEventListener('click', closeDialogOnOutsideClick), 0)
+      handleSearchFilter()
+    },
+  )
 }
 
 async function closeDialog() {
-  if (!dialog!.open)
-    return
-
-  document.removeEventListener('click', closeDialogOnOutsideClick)
-
-  const isMobileScreen = getIsMobileScreen()
-  if (isMobileScreen) {
-    animate(dialog!, { opacity: 0, y: [0, 250] }, { duration: 0.3, ease: 'easeOut' })
-    await animate(searchBackdrop!, { opacity: 0 }, { duration: 0.3, ease: 'easeOut' })
-  }
-  else {
-    animate(dialog!, { opacity: 0, scale: [1, 0.98] }, { duration: 0.3, ease: 'easeOut' })
-    await animate(searchBackdrop!, { opacity: 0 }, { duration: 0.3, ease: 'linear' })
-      .then(() => searchBackdrop!.style.display = 'none')
-  }
-
-  openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'false')
-  searchInput!.ariaExpanded = 'false'
-
-  dialog!.close()
+  await close(
+    undefined,
+    () => {
+      openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'false')
+      searchInput!.ariaExpanded = 'false'
+    },
+  )
 }
 
 function handleSearchFilter() {
@@ -135,12 +91,3 @@ openSearchTriggers.forEach(button => button.addEventListener('click', showDialog
 
 // detect custom event to open search
 window.addEventListener('styleguideOpenSearch', showDialog)
-
-// detect closes using escape and execute custom animation sequence instead
-dialog!.addEventListener('keydown', async (event) => {
-  if (event.key !== 'Escape')
-    return
-
-  event.preventDefault()
-  await closeDialog()
-})

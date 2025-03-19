@@ -707,7 +707,7 @@ export function getSearchHtml(sections: {
     </p>
 </dialog>
 
-<div class="search-backdrop"></div>
+<div class="dialog-backdrop"></div>
 `.trim()
 }
 
