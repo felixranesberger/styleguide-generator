@@ -1,3 +1,23 @@
+import {
+  focusGroupKeyUX,
+  focusGroupPolyfill,
+  hiddenKeyUX,
+  hotkeyKeyUX,
+  hotkeyMacCompat,
+  jumpKeyUX,
+  startKeyUX,
+} from 'keyux'
+
+const mac = hotkeyMacCompat()
+
+startKeyUX(window, [
+  hotkeyKeyUX([mac]),
+  focusGroupKeyUX(),
+  focusGroupPolyfill(),
+  jumpKeyUX(),
+  hiddenKeyUX(),
+])
+
 function detectOS(): 'mac' | 'linux' | 'windows' | 'unknown' {
   const userAgent = navigator.userAgent.toLowerCase()
 
@@ -25,6 +45,13 @@ function detectPageArrowNavigation() {
   const nextLink = document.querySelector<HTMLButtonElement>('#styleguide-next')
 
   const handleKeydown = (event: KeyboardEvent) => {
+    // don't do anything if a button is focused
+    // because the user might be in a tab trigger element and using arrow keys
+    // to change button
+    const isButtonFocused = document.activeElement instanceof HTMLButtonElement
+    if (isButtonFocused)
+      return
+
     if (previousLink && event.key === 'ArrowLeft') {
       event.preventDefault()
       previousLink.click()

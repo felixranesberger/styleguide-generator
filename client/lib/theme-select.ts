@@ -57,6 +57,22 @@ export default (themeSelectForm: HTMLFormElement) => {
     // Update body classes
     removeClasses(document.body)
     addClasses(document.body)
+
+    // reload figma iframes, because they don't autodetect theme changes
+    Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe'))
+      .filter(iframe => iframe.src.includes('embed.figma.com'))
+      .forEach((iframe) => {
+        const url = new URL(iframe.src)
+
+        if (currentTheme === 'normal') {
+          url.searchParams.set('theme', 'system')
+        }
+        else {
+          url.searchParams.set('theme', currentTheme)
+        }
+
+        iframe.src = url.href
+      })
   }
 
   // Handle system theme changes when normal theme is selected

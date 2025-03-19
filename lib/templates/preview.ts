@@ -3,7 +3,7 @@ import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import path from 'node:path'
 import process from 'node:process'
 import { objectEntries } from '@antfu/utils'
-import { ensureStartingSlash, logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
+import { ensureStartingSlash, generateId, logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
 
@@ -129,6 +129,48 @@ export function getCodeAuditDialog() {
           
           <ul class="audit-results"></ul>
     </dialog>
+  `
+}
+
+function renderTab(data: { title: string, content: string, icon?: string }[]) {
+  const tabId = generateId()
+
+  return `
+    <div class="tabs">
+        <div
+            class="inline-flex relative justify-start flex-wrap rounded-md p-0.5 bg-styleguide-bg-highlight" 
+            role="tablist"
+        >
+            <div
+                class="tab-trigger-background absolute inset-y-0.5 left-0 bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] rounded"
+            ></div>
+        
+            ${data.map((tab, index) => `
+                <button 
+                    id="tab-trigger-${tabId}-${index}"
+                    role="tab"
+                    aria-selected="${(index === 0).toString()}"
+                    aria-controls="tab-panel-${tabId}-${index}" 
+                    class="inline-flex gap-1 items-center relative px-4 py-2 text-sm cursor-pointer aria-selected:text-styleguide-highlight transition duration-400"
+                >
+                    ${tab.icon ?? ''}
+                    ${tab.title}
+                </button>
+            `).join('\n')}
+        </div>
+        
+        ${data.map((tab, index) => `
+            <div
+                id="tab-panel-${tabId}-${index}"
+                class="${index === 0 ? '' : 'hidden'}"
+                role="tabpanel"
+                aria-labelledby="tab-trigger-${tabId}-${index}"
+                tabindex="${index === 0 ? '0' : '-1'}"
+              >
+                ${tab.content}
+            </div>
+        `).join('\n')}
+    </div>
   `
 }
 
@@ -267,7 +309,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
       : ''
   }
 
-  return `
+  const codePreviewMarkup = `
     <!-- Preview Box -->
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
@@ -420,6 +462,46 @@ ${section.markup}
     `
       : ''}
   `
+
+  if (section.figma) {
+    const computedFigmaUrl = new URL(section.figma)
+    computedFigmaUrl.searchParams.append('theme', 'system') // theme will also be overwritten by theme-selector
+    computedFigmaUrl.searchParams.append('footer', 'false')
+    computedFigmaUrl.searchParams.append('mode', 'dev')
+    computedFigmaUrl.searchParams.append('page-selector', 'false')
+
+    return `
+      <div class="mt-4">
+        ${renderTab([
+          {
+            title: 'Preview',
+            content: codePreviewMarkup,
+          },
+          {
+            title: 'Design',
+            icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
+            content: `
+              <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
+                  <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
+                      <iframe 
+                        width="800" 
+                        height="450" 
+                        src="${computedFigmaUrl.href}"
+                        class="aspect-video size-full"
+                        title="${section.header} Figma Design Preview" 
+                        allowfullscreen
+                        loading="lazy"
+                      ></iframe>
+                  </div>
+              </div>
+            `,
+          },
+        ])}
+      </div>
+    `
+  }
+
+  return codePreviewMarkup
 }
 
 function getMainContentColors(section: in2Section): string {

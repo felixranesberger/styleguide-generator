@@ -66,3 +66,21 @@ export function sanitizeSpecialCharacters(text: string): string {
 export function ensureStartingSlash(input: string): string {
   return input.startsWith('/') ? input : `/${input}`
 }
+
+/**
+ * Generate unique IDs
+ */
+function* idGenerator(): Generator<number, never, unknown> {
+  let id = 0
+
+  while (true) {
+    yield id++
+  }
+}
+
+const idGen = idGenerator()
+
+export function generateId(): number {
+  const { value } = idGen.next()
+  return value
+}

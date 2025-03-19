@@ -2,6 +2,7 @@ import { animate } from 'motion'
 import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
 import { renderAlert } from './lib/alerts.ts'
 import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
+import initTabs from './lib/tabs.ts'
 import initThemeSelect from './lib/theme-select.ts'
 import './accessibility.ts'
 import './style.css'
@@ -28,6 +29,11 @@ styleguideSections.forEach((section) => {
     section.classList.toggle('styleguide-section--large', isLargeSection)
   }).observe(section)
 })
+
+const tabs = document.querySelectorAll<HTMLElement>('.tabs')
+if (tabs.length > 0) {
+  initTabs(tabs)
+}
 
 const codeDetails = document.querySelectorAll<HTMLDetailsElement>('details:has(.code-highlight)')
 if (codeDetails.length > 0) {
