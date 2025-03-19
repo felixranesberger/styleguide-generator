@@ -1,4 +1,4 @@
-import { animate } from 'motion'
+import { animate, spring } from 'motion'
 
 export default function tabs(tabs: NodeListOf<HTMLElement>) {
   tabs.forEach((tab) => {
@@ -21,8 +21,10 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
           width,
           x: `${offset}px`,
         }, {
-          duration: 0.2,
+          duration: 0.3,
           easing: 'ease-out',
+          type: spring,
+          bounce: 0.1,
         })
       }
       else {
