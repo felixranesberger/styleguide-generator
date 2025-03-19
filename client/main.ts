@@ -196,3 +196,18 @@ if (markdownFolded.length > 0) {
     })
   })
 }
+
+let isScrollingTimeout: Timer | undefined
+window.addEventListener('scroll', () => {
+  if (isScrollingTimeout) {
+    clearTimeout(isScrollingTimeout)
+    isScrollingTimeout = undefined
+  }
+
+  if (!document.body.classList.contains('is-scrolling'))
+    document.body.classList.add('is-scrolling')
+
+  isScrollingTimeout = setTimeout(() => {
+    document.body.classList.remove('is-scrolling')
+  }, 250)
+})

@@ -84,6 +84,10 @@ body.js-loaded {
   @apply visible;
 }
 
+body.is-scrolling iframe {
+  @apply pointer-events-none;
+}
+
 summary {
   list-style: none;
 }
