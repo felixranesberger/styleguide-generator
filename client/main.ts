@@ -1,4 +1,5 @@
 import { animate } from 'motion'
+import { useDialog } from './hooks/use-dialog.ts'
 import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
 import { renderAlert } from './lib/alerts.ts'
 import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
@@ -72,16 +73,17 @@ if (codeDetails.length > 0) {
 
 const codeAuditButtons = document.querySelectorAll<HTMLButtonElement>('[data-code-audit-iframe]')
 const codeAuditDialog = document.querySelector<HTMLDialogElement>('#code-audit-dialog')
-if (codeAuditButtons.length > 0 && codeAuditDialog) {
+const dialogBackdrop = document.querySelector<HTMLElement>('.dialog-backdrop')
+if (codeAuditButtons.length > 0 && codeAuditDialog && dialogBackdrop) {
   (async () => {
     const { createHtmlValidator, auditCode } = await import('./lib/html-validator.ts')
+    const { show: showDialog, close: closeDialog } = useDialog(codeAuditDialog, dialogBackdrop)
 
     codeAuditButtons.forEach(button => button.addEventListener('click', async () => {
       codeAuditButtons.forEach(button => button.setAttribute('aria-expanded', 'false'))
-
       button.setAttribute('disabled', '')
 
-      const { isValid } = await auditCode(button, codeAuditDialog)
+      const { isValid } = await auditCode(button, codeAuditDialog, closeDialog)
       if (isValid) {
         button.classList.add('text-green-500', '!cursor-not-allowed')
         renderAlert(
@@ -98,35 +100,17 @@ if (codeAuditButtons.length > 0 && codeAuditDialog) {
         button.setAttribute('aria-expanded', 'true')
         button.removeAttribute('disabled')
         button.classList.add('text-red-500')
-        codeAuditDialog.showModal()
+        await showDialog(
+          undefined,
+          () => {
+            codeAuditButtons.forEach((button) => {
+              button.setAttribute('aria-expanded', 'false')
+              setTimeout(() => button.classList.remove('text-red-500'), 2500)
+            })
+          },
+        )
       }
     }))
-
-    new MutationObserver(() => {
-      const closeDialogOnOutsideClick = (event: MouseEvent) => {
-        // Use closest() to check if the click target is inside the dialog
-        const clickedElement = event.target
-        if (!(clickedElement instanceof Element))
-          return
-
-        const isClickInsideDialog = clickedElement.closest('dialog') !== null
-
-        if (!isClickInsideDialog) {
-          codeAuditDialog.close()
-        }
-      }
-
-      if (codeAuditDialog.open) {
-        document.addEventListener('click', closeDialogOnOutsideClick)
-      }
-      else {
-        document.removeEventListener('click', closeDialogOnOutsideClick)
-        codeAuditButtons.forEach((button) => {
-          button.setAttribute('aria-expanded', 'false')
-          setTimeout(() => button.classList.remove('text-red-500'), 2500)
-        })
-      }
-    }).observe(codeAuditDialog, { attributes: true, attributeFilter: ['open'] })
 
     setTimeout(() => {
       requestIdleCallback(createHtmlValidator)

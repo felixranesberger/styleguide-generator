@@ -63,7 +63,7 @@ function escapeHtml(text: string) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResultDialog: HTMLDialogElement) {
+export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResultDialog: HTMLDialogElement, closeDialog: () => Promise<void>) {
   const codeAuditIframeSelector = codeAuditTrigger.getAttribute('data-code-audit-iframe')
   if (!codeAuditIframeSelector)
     throw new Error('No code audit template selector provided')
@@ -175,8 +175,8 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
     if (!message)
       throw new Error('No message found')
 
-    selector.addEventListener('click', () => {
-      auditResultDialog.close()
+    selector.addEventListener('click', async () => {
+      await closeDialog()
 
       const selectorContent = selector.textContent
       if (!selectorContent)
