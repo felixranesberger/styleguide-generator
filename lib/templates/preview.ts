@@ -197,8 +197,19 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection, co
 }
 
 function getMainContentSectionWrapper(section: in2Section, html?: string): string {
-  const headingTag = section.sectionLevel === 'second' ? 'h1' : 'h2'
-  const headingClass = section.sectionLevel === 'second' ? 'text-4xl' : 'text-2xl'
+  let headingTag = ''
+  let headingClass = ''
+
+  if (section.sectionLevel === 'second') {
+    headingTag = 'h1'
+    headingClass = 'text-4xl'
+  }
+  else if (section.sectionLevel === 'third') {
+    const isDeplyNested = section.id.split('.').length > 3
+
+    headingTag = isDeplyNested ? 'h3' : 'h2'
+    headingClass = isDeplyNested ? 'text-xl' : 'text-2xl'
+  }
 
   const computeDescription = () => {
     if (!section.description)

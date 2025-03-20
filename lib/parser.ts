@@ -605,7 +605,8 @@ export async function parse(text: string, config: StyleguideConfiguration) {
         throw new Error(`First level parent section ${firstLevelParentSection} not found for section ${section.reference}`)
 
       // e.g. components => accordion => accordion purple (6.1.1)
-      const isThirdLevelSection = sectionIds.length === 3
+      const isThirdLevelSection = sectionIds.length >= 3
+
       if (isThirdLevelSection) {
         const secondLevelParentSection = firstLevelParentSection.sections[sectionIds[1]]
 
@@ -614,7 +615,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
 
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 2)
 
-        secondLevelParentSection.sections[sectionIds[2]] = {
+        secondLevelParentSection.sections.push({
           id: section.reference,
           sectionLevel: 'third',
           header: section.header,
@@ -634,7 +635,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
           sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
-        }
+        })
       }
       // e.g. components => accordion (6.1)
       else {
@@ -671,7 +672,9 @@ export async function parse(text: string, config: StyleguideConfiguration) {
   output.forEach((firstLevelSection) => {
     firstLevelSection.sections = firstLevelSection.sections.filter(section => Boolean(section))
     firstLevelSection.sections.forEach((secondLevelSection) => {
-      secondLevelSection.sections = secondLevelSection.sections.filter(section => Boolean(section))
+      secondLevelSection.sections = secondLevelSection.sections
+        .filter(section => Boolean(section))
+        .sort((a, b) => a.id.localeCompare(b.id))
     })
   })
 
