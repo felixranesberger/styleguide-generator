@@ -42,6 +42,17 @@ function sanitizeSpecialCharacters(text) {
 function ensureStartingSlash(input) {
   return input.startsWith("/") ? input : `/${input}`;
 }
+function* idGenerator() {
+  let id = 0;
+  while (true) {
+    yield id++;
+  }
+}
+const idGen = idGenerator();
+function generateId() {
+  const { value } = idGen.next();
+  return value;
+}
 
 let md;
 function shiftHeadingLevels(markdownContent, rootHeadingLevel) {
@@ -194,6 +205,7 @@ function kssParser(input, options = {}) {
       processProperty.call(newSection, paragraphs, "htmlclass", (x) => x.trim());
       processProperty.call(newSection, paragraphs, "bodyclass", (x) => x.trim());
       processProperty.call(newSection, paragraphs, "Icons", parseIcons);
+      processProperty.call(newSection, paragraphs, "Figma", (x) => x.trim());
       processProperty.call(newSection, paragraphs, "Markup");
       processProperty.call(newSection, paragraphs, "Weight", toFloat);
       for (const customProperty of options.custom) {
@@ -445,6 +457,7 @@ async function parse(text, config) {
         })),
         colors: section.colors,
         icons: section.icons,
+        figma: section.figma,
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
@@ -475,6 +488,7 @@ async function parse(text, config) {
           })),
           colors: section.colors,
           icons: section.icons,
+          figma: section.figma,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
@@ -497,6 +511,7 @@ async function parse(text, config) {
           })),
           colors: section.colors,
           icons: section.icons,
+          figma: section.figma,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
@@ -658,6 +673,46 @@ function getCodeAuditDialog() {
     </dialog>
   `;
 }
+function renderTab(data) {
+  const tabId = generateId();
+  return `
+    <div class="tabs">
+        <div
+            class="inline-flex relative justify-start flex-wrap rounded-md p-0.5 bg-styleguide-bg-highlight" 
+            role="tablist"
+        >
+            <div
+                class="tab-trigger-background absolute inset-y-0.5 left-0 bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] rounded"
+            ></div>
+        
+            ${data.map((tab, index) => `
+                <button 
+                    id="tab-trigger-${tabId}-${index}"
+                    role="tab"
+                    aria-selected="${(index === 0).toString()}"
+                    aria-controls="tab-panel-${tabId}-${index}" 
+                    class="inline-flex gap-1 items-center relative px-4 py-2 text-sm cursor-pointer aria-selected:text-styleguide-highlight transition duration-400"
+                >
+                    ${tab.icon ?? ""}
+                    ${tab.title}
+                </button>
+            `).join("\n")}
+        </div>
+        
+        ${data.map((tab, index) => `
+            <div
+                id="tab-panel-${tabId}-${index}"
+                class="${index === 0 ? "" : "hidden"}"
+                role="tabpanel"
+                aria-labelledby="tab-trigger-${tabId}-${index}"
+                tabindex="${index === 0 ? "0" : "-1"}"
+              >
+                ${tab.content}
+            </div>
+        `).join("\n")}
+    </div>
+  `;
+}
 function getMainContentHtml(secondLevelSection, config) {
   let output = "";
   function renderSection(section) {
@@ -760,7 +815,7 @@ function getMainContentRegular(section, config) {
     openInEditorPathPhpStorm = shouldLaunchInEditor ? `phpstorm://open?file=${computedFilePath}` : "";
     openInEditorPathVscode = shouldLaunchInEditor ? `vscode://file//${computedFilePath}` : "";
   }
-  return `
+  const codePreviewMarkup = `
     <!-- Preview Box -->
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
@@ -776,7 +831,7 @@ function getMainContentRegular(section, config) {
         <!-- Code -->
         <details class="group">
            <summary class="flex cursor-pointer justify-between items-center rounded-b-2xl px-6 text-sm font-light bg-styleguide-bg">
-                <span class="flex gap-2 items-center py-4">
+                <span class="flex gap-2 items-center py-4 select-none">
                     <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                         <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
                     </svg>
@@ -905,6 +960,43 @@ ${section.markup}
       </ul>
     ` : ""}
   `;
+  if (section.figma) {
+    const computedFigmaUrl = new URL(section.figma);
+    computedFigmaUrl.searchParams.append("theme", "system");
+    computedFigmaUrl.searchParams.append("footer", "false");
+    computedFigmaUrl.searchParams.append("mode", "dev");
+    computedFigmaUrl.searchParams.append("page-selector", "false");
+    return `
+      <div class="mt-4">
+        ${renderTab([
+      {
+        title: "Preview",
+        content: codePreviewMarkup
+      },
+      {
+        title: "Design",
+        icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
+        content: `
+              <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
+                  <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
+                      <iframe 
+                        width="800" 
+                        height="450" 
+                        src="${computedFigmaUrl.href}"
+                        class="aspect-video size-full"
+                        title="${section.header} Figma Design Preview" 
+                        allowfullscreen
+                        loading="lazy"
+                      ></iframe>
+                  </div>
+              </div>
+            `
+      }
+    ])}
+      </div>
+    `;
+  }
+  return codePreviewMarkup;
 }
 function getMainContentColors(section) {
   return `
@@ -1089,7 +1181,7 @@ function getSearchHtml(sections) {
     </p>
 </dialog>
 
-<div class="search-backdrop"></div>
+<div class="dialog-backdrop"></div>
 `.trim();
 }
 async function generatePreviewFile(data) {
