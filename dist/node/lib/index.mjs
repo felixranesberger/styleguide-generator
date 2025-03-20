@@ -469,13 +469,13 @@ async function parse(text, config) {
       const firstLevelParentSection = output[sectionIds[0]];
       if (!firstLevelParentSection)
         throw new Error(`First level parent section ${firstLevelParentSection} not found for section ${section.reference}`);
-      const isThirdLevelSection = sectionIds.length === 3;
+      const isThirdLevelSection = sectionIds.length >= 3;
       if (isThirdLevelSection) {
         const secondLevelParentSection = firstLevelParentSection.sections[sectionIds[1]];
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`);
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 2);
-        secondLevelParentSection.sections[sectionIds[2]] = {
+        secondLevelParentSection.sections.push({
           id: section.reference,
           sectionLevel: "third",
           header: section.header,
@@ -495,7 +495,7 @@ async function parse(text, config) {
           sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`
-        };
+        });
       } else {
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 1);
         firstLevelParentSection.sections[sectionIds[1]] = {
@@ -527,7 +527,7 @@ async function parse(text, config) {
   output.forEach((firstLevelSection) => {
     firstLevelSection.sections = firstLevelSection.sections.filter((section) => Boolean(section));
     firstLevelSection.sections.forEach((secondLevelSection) => {
-      secondLevelSection.sections = secondLevelSection.sections.filter((section) => Boolean(section));
+      secondLevelSection.sections = secondLevelSection.sections.filter((section) => Boolean(section)).sort((a, b) => a.id.localeCompare(b.id));
     });
   });
   return output;
@@ -730,8 +730,16 @@ function getMainContentHtml(secondLevelSection, config) {
   return output;
 }
 function getMainContentSectionWrapper(section, html) {
-  const headingTag = section.sectionLevel === "second" ? "h1" : "h2";
-  const headingClass = section.sectionLevel === "second" ? "text-4xl" : "text-2xl";
+  let headingTag = "";
+  let headingClass = "";
+  if (section.sectionLevel === "second") {
+    headingTag = "h1";
+    headingClass = "text-4xl";
+  } else if (section.sectionLevel === "third") {
+    const isDeplyNested = section.id.split(".").length > 3;
+    headingTag = isDeplyNested ? "h3" : "h2";
+    headingClass = isDeplyNested ? "text-xl" : "text-2xl";
+  }
   const computeDescription = () => {
     if (!section.description)
       return "";
