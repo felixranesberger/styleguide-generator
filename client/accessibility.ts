@@ -52,6 +52,10 @@ function detectPageArrowNavigation() {
     if (isButtonFocused)
       return
 
+    // make sure the user is not holding cmd or ctrl key
+    if (event.metaKey || event.ctrlKey)
+      return
+
     if (previousLink && event.key === 'ArrowLeft') {
       event.preventDefault()
       previousLink.click()
