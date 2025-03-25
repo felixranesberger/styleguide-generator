@@ -9,6 +9,7 @@ export default {
       colors: {
         'styleguide': 'var(--styleguide-color-regular)',
         'styleguide-highlight': 'var(--styleguide-color-highlight)',
+        'styleguide-theme-highlight': 'var(--styleguide-color-theme-highlight)',
         'styleguide-bg': 'var(--styleguide-color-background)',
         'styleguide-bg-highlight': 'var(--styleguide-color-background-highlight)',
         'styleguide-border': 'var(--styleguide-color-border)',

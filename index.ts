@@ -23,8 +23,8 @@ import { watchStyleguide } from './lib/index';
       rootDir: '/Users/franesberger/Documents/workspace/styleguide-rewrite/',
     },
     theme: {
-      light: '#ff2f2f',
-      dark: '#2efd8f',
+      light: '#005075',
+      dark: '#ffffff',
     },
   }, () => {
     console.log('Styleguide has been rebuilt')
