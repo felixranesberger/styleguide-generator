@@ -1,4 +1,5 @@
 import { animate } from 'motion'
+import { highlightCode } from './code-highlight'
 import { useDialog } from './hooks/use-dialog.ts'
 import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
 import { renderAlert } from './lib/alerts.ts'
@@ -43,32 +44,8 @@ if (codeDetails.length > 0) {
     if (!codeElement)
       throw new Error('No code element found')
 
-    const triggerButton = detail.querySelector<HTMLButtonElement>('summary')
-    if (!triggerButton)
-      throw new Error('No trigger button found')
-
-    triggerButton.addEventListener('click', async () => {
-      const { createShikiHighlighter, highlightCode } = await import('./lib/code.ts')
-      await createShikiHighlighter()
-      await highlightCode(codeElement)
-    })
+    highlightCode(codeElement).catch(console.error)
   })
-
-  // highlight code in when browser is not busy and some time has passed
-  setTimeout(() => {
-    requestIdleCallback(async () => {
-      const { createShikiHighlighter, highlightCode } = await import('./lib/code.ts')
-      await createShikiHighlighter()
-
-      codeDetails.forEach((detail) => {
-        const codeElement = detail.querySelector<HTMLElement>('.code-highlight')
-        if (!codeElement)
-          throw new Error('No code element found')
-
-        highlightCode(codeElement).catch(console.error)
-      })
-    })
-  }, 5000)
 }
 
 const codeAuditButtons = document.querySelectorAll<HTMLButtonElement>('[data-code-audit-iframe]')
