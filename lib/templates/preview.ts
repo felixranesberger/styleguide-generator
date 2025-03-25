@@ -740,6 +740,7 @@ export async function generatePreviewFile(data: {
     codeAuditDialog: string
     alerts: string
   }
+  theme: StyleguideConfiguration['theme']
 }) {
   const computedScriptTags = data.js
     .filter(entry => entry.type === 'overwriteStyleguide')
@@ -765,7 +766,17 @@ export async function generatePreviewFile(data: {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
+    ${typeof data.theme === 'object' && 'dark' in data.theme && 'light' in data.theme
+      ? `
+          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
+          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/preview-light.svg?raw">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/preview-dark.svg?raw">
+      `
+      : `
+        <meta name="theme-color" content="${data.theme}">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg?raw">
+      `}
     <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css?raw">
     <script type="module" src="/styleguide-assets/client.js?raw"></script>
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
@@ -774,6 +785,11 @@ export async function generatePreviewFile(data: {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedStyleTags}
+    <style>
+        :root {
+            --styleguide-color-highlight: ${typeof data.theme === 'string' ? data.theme : `light-dark(${data.theme.light}, ${data.theme.dark})`};
+        }
+    </style>
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? ' theme-light' : ''}">
     ${data.html.header}

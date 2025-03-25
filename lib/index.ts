@@ -4,6 +4,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
+import { generateFaviconFiles } from './favicon.ts'
 import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
@@ -36,6 +37,10 @@ export interface StyleguideConfiguration {
   deactivateDarkMode?: boolean
   launchInEditor?: boolean | {
     rootDir: string
+  }
+  theme: string | {
+    light: string
+    dark: string
   }
   html: {
     lang: string
@@ -105,6 +110,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       css: config.html.assets.css,
       js: config.html.assets.js,
       html: htmlMarkup,
+      theme: config.theme,
     })
   }
 
@@ -270,6 +276,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
             codeAuditDialog: getCodeAuditDialog(),
             alerts: getAlerts(),
           },
+          theme: config.theme,
         }),
       )
     })
@@ -291,6 +298,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath)
+    await generateFaviconFiles(assetsDirectoryOutputPath, config.theme)
   }
 
   // make sure all files have been written before resolving

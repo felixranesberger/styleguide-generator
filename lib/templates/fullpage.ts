@@ -14,6 +14,7 @@ export async function generateFullPageFile(data: {
   css: StyleguideConfiguration['html']['assets']['css']
   js: StyleguideConfiguration['html']['assets']['js']
   html: string
+  theme: StyleguideConfiguration['theme']
 }) {
   const computedScriptTags = data.js
     .filter(entry => entry.type !== 'overwriteStyleguide')
@@ -39,7 +40,17 @@ export async function generateFullPageFile(data: {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
+    ${typeof data.theme === 'object' && 'dark' in data.theme && 'light' in data.theme
+      ? `
+          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
+          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/fullpage-dark.svg?raw">
+      `
+      : `
+        <meta name="theme-color" content="${data.theme}">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+      `}
     <script type="module" src="/styleguide-assets/client-fullpage.js?raw"></script>
     ${computedStyleTags}
 </head>
