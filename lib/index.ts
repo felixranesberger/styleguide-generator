@@ -102,7 +102,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
-        description: data.description,
+        description: !data.hasMarkdownDescription ? data.description : undefined,
         lang: config.html.lang,
         htmlclass: data.htmlclass,
         bodyclass: data.bodyclass,
