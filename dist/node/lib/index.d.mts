@@ -11,6 +11,10 @@ interface StyleguideConfiguration {
     launchInEditor?: boolean | {
         rootDir: string;
     };
+    theme: string | {
+        light: string;
+        dark: string;
+    };
     html: {
         lang: string;
         assets: {

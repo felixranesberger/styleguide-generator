@@ -12,6 +12,97 @@ import { Worker } from 'node:worker_threads';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
 
+function isValidHexColor(hexCode) {
+  return /^#[0-9A-F]{6}$/i.test(hexCode);
+}
+function shadeColor(hexColor, percent) {
+  let color = hexColor;
+  color = color.replace(/^\s*#|\s*$/g, "");
+  if (color.length === 3) {
+    color = color.replace(/(.)/g, "$1$1");
+  }
+  const hexR = color.substring(0, 2);
+  const hexG = color.substring(2, 4);
+  const hexB = color.substring(4, 6);
+  let r = Number.parseInt(hexR, 16);
+  let g = Number.parseInt(hexG, 16);
+  let b = Number.parseInt(hexB, 16);
+  if (Number.isNaN(r))
+    r = 0;
+  if (Number.isNaN(g))
+    g = 0;
+  if (Number.isNaN(b))
+    b = 0;
+  const lightness = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+  const adjust = lightness > 0.4 ? -1 : 1;
+  const newR = Math.min(255, Math.max(0, r + adjust * (percent * 255 / 100)));
+  const newG = Math.min(255, Math.max(0, g + adjust * (percent * 255 / 100)));
+  const newB = Math.min(255, Math.max(0, b + adjust * (percent * 255 / 100)));
+  const newHexRColor = `${newR.toString(16)}`.padStart(2, "0");
+  const newHexGColor = `${newG.toString(16)}`.padStart(2, "0");
+  const newHexBColor = `${newB.toString(16)}`.padStart(2, "0");
+  return `#${newHexRColor}${newHexGColor}${newHexBColor}`;
+}
+async function createFaviconPreviewFile(type, outputPath, themeColor) {
+  const faviconFilePath = path.resolve(outputPath, `favicon/preview-${type}.svg`);
+  const doesFileExist = await fs.pathExists(faviconFilePath);
+  if (doesFileExist)
+    return;
+  const faviconContent = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+      <g fill="none" fill-rule="nonzero">
+        <path fill="${themeColor}" d="M4.5 0C5.32842712 0 6 .67157287 6 1.5V13c0 1.6568542-1.34314575 3-3 3s-3-1.3431458-3-3V1.5C0 .67157287.67157287 0 1.5 0ZM3 11c-1.1045695 0-2 .8954305-2 2s.8954305 2 2 2 2-.8954305 2-2-.8954305-2-2-2Z" />
+        <path fill="${shadeColor(themeColor, 20)}" d="M7.5 12.743V4.257l1.51-1.51c.28133215-.28151251.6630087-.43967977 1.061-.43967977.3979913 0 .7796678.15816726 1.061.43967977l2.121 2.121c.2815125.28133215.4396798.6630087.4396798 1.061 0 .3979913-.1581673.77966785-.4396798 1.061L7.5 12.743Z" />
+        <path fill="${shadeColor(themeColor, 40)}" d="M6.364 16H14.5c.8284271 0 1.5-.6715729 1.5-1.5v-3c0-.8284271-.6715729-1.5-1.5-1.5h-2.136l-6 6Z" />
+      </g>
+    </svg>
+  `;
+  await fs.outputFile(faviconFilePath, faviconContent);
+}
+async function createFaviconFullPageFile(type, outputPath, themeColor) {
+  const faviconFilePath = path.resolve(outputPath, `favicon/fullpage-${type}.svg`);
+  const doesFileExist = await fs.pathExists(faviconFilePath);
+  if (doesFileExist)
+    return;
+  const faviconContent = `    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="${themeColor}" class="size-4">
+      <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+      <path fill-rule="evenodd" d="M1.38 8.28a.87.87 0 0 1 0-.566 7.003 7.003 0 0 1 13.238.006.87.87 0 0 1 0 .566A7.003 7.003 0 0 1 1.379 8.28ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" clip-rule="evenodd" />
+    </svg>
+  `;
+  await fs.outputFile(faviconFilePath, faviconContent);
+}
+async function generateFaviconFiles(outputPath, theme) {
+  await fs.ensureDir(path.resolve(outputPath, "favicon"));
+  const hasLightDarkTheme = typeof theme === "object" && theme.light && theme.dark;
+  if (hasLightDarkTheme) {
+    const isValidLightColor = isValidHexColor(theme.light);
+    if (!isValidLightColor) {
+      throw new Error(`Invalid light theme color ${theme.light} provided. Please provide a valid hex color code.`);
+    }
+    const isValidDarkColor = isValidHexColor(theme.dark);
+    if (!isValidDarkColor) {
+      throw new Error(`Invalid dark theme color ${theme.dark} provided. Please provide a valid hex color code.`);
+    }
+    await Promise.all([
+      createFaviconPreviewFile("light", outputPath, theme.light),
+      createFaviconFullPageFile("light", outputPath, theme.light),
+      createFaviconPreviewFile("dark", outputPath, theme.dark),
+      createFaviconFullPageFile("dark", outputPath, theme.dark)
+    ]);
+  } else {
+    const color = theme;
+    const isValidThemeColor = isValidHexColor(color);
+    if (!isValidThemeColor) {
+      throw new Error(`Invalid theme color ${color} provided. Please provide a valid hex color code or an object with light and dark theme colors.`);
+    }
+    await Promise.all([
+      createFaviconPreviewFile("light", outputPath, color),
+      createFaviconFullPageFile("light", outputPath, color)
+    ]);
+  }
+}
+
 function log(message, style = "important") {
   const computedMessage = style === "important" ? `\x1B[38;2;63;94;90m${(/* @__PURE__ */ new Date()).toLocaleTimeString()} \x1B[38;2;32;252;143m[Styleguide]\x1B[0m ${message}` : `\x1B[38;2;63;94;90m${(/* @__PURE__ */ new Date()).toLocaleTimeString()} \x1B[38;2;32;252;143m[Styleguide]\x1B[0m \x1B[38;2;63;94;90m${message}`;
   console.log(computedMessage);
@@ -550,7 +641,15 @@ async function generateFullPageFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
+    ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
+          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
+          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/fullpage-dark.svg?raw">
+      ` : `
+        <meta name="theme-color" content="${data.theme}">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+      `}
     <script type="module" src="/styleguide-assets/client-fullpage.js?raw"><\/script>
     ${computedStyleTags}
 </head>
@@ -570,7 +669,7 @@ function getHasSectionExternalFullpage(section) {
 function getHeaderHtml() {
   return `
 <header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1600px] border-styleguide-border bg-styleguide-bg-highlight">
-    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-highlight" href="/">
+    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-theme-highlight" href="/">
         ${globalThis.styleguideConfiguration.projectTitle}
     </a>
 
@@ -641,7 +740,7 @@ function getSidebarMenuHtml(sections, activePageHref) {
 <ul class="grid gap-6 px-3 py-6">
     ${sections.map((section) => `
         <li>
-            <span class="block rounded-md px-3 text-sm font-semibold text-styleguide-highlight">
+            <span class="block rounded-md px-3 text-sm font-semibold text-styleguide-theme-highlight">
                 ${section.title}
             </span>
             <ul class="mt-3 grid gap-2">
@@ -775,7 +874,7 @@ function getMainContentSectionWrapper(section, html) {
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
                 <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/>
             </svg>
-            <${headingTag} class="${headingClass} font-semibold text-styleguide-highlight">${section.header}</${headingTag}>
+            <${headingTag} class="${headingClass} font-semibold text-styleguide-theme-highlight">${section.header}</${headingTag}>
         </a>
 
         ${getHasSectionExternalFullpage(section) ? `
@@ -922,7 +1021,7 @@ ${section.markup}
     
     ${section.modifiers?.length > 0 ? `
        <!-- Modifiers List -->
-      <h3 class="mt-6 flex items-center text-xl font-semibold text-styleguide-highlight gap-1.5">
+      <h3 class="mt-6 flex items-center text-xl font-semibold text-styleguide-theme-highlight gap-1.5">
           ${section.header} Modifiers
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 text-styleguide">
               <path d="M7.25 1.75a.75.75 0 0 1 1.5 0v1.5a.75.75 0 0 1-1.5 0v-1.5ZM11.536 2.904a.75.75 0 1 1 1.06 1.06l-1.06 1.061a.75.75 0 0 1-1.061-1.06l1.06-1.061ZM14.5 7.5a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .75-.75ZM4.464 9.975a.75.75 0 0 1 1.061 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061ZM4.5 7.5a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 .75-.75ZM5.525 3.964a.75.75 0 0 1-1.06 1.061l-1.061-1.06a.75.75 0 0 1 1.06-1.061l1.061 1.06ZM8.779 7.438a.75.75 0 0 0-1.368.366l-.396 5.283a.75.75 0 0 0 1.212.646l.602-.474.288 1.074a.75.75 0 1 0 1.449-.388l-.288-1.075.759.11a.75.75 0 0 0 .726-1.165L8.78 7.438Z" />
@@ -934,7 +1033,7 @@ ${section.markup}
                 <div>
                     <div class="flex items-center justify-between gap-6">
                         <div class="flex items-center gap-3">
-                            <h4 class="font-semibold text-styleguide-highlight">${modifier.description}</h4>
+                            <h4 class="font-semibold text-styleguide-theme-highlight">${modifier.description}</h4>
     
                             <button
                                 class="inline-block rounded-md cursor-copy border py-1 font-mono font-semibold transition duration-500 text-[10px] border-styleguide-border px-2.5 bg-styleguide-bg-highlight hover:text-styleguide-highlight focus:text-styleguide-highlight"
@@ -1209,7 +1308,15 @@ async function generatePreviewFile(data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
+    ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
+          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
+          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/preview-light.svg?raw">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/preview-dark.svg?raw">
+      ` : `
+        <meta name="theme-color" content="${data.theme}">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg?raw">
+      `}
     <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css?raw">
     <script type="module" src="/styleguide-assets/client.js?raw"><\/script>
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
@@ -1218,6 +1325,11 @@ async function generatePreviewFile(data) {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedStyleTags}
+    <style>
+        :root {
+            --styleguide-color-theme-highlight: ${typeof data.theme === "string" ? data.theme : `light-dark(${data.theme.light}, ${data.theme.dark})`};
+        }
+    </style>
 </head>
 <body class="relative min-h-screen antialiased text-styleguide${globalThis.styleguideConfiguration.deactivateDarkMode ? " theme-light" : ""}">
     ${data.html.header}
@@ -1429,7 +1541,8 @@ async function buildStyleguide(config) {
       },
       css: config.html.assets.css,
       js: config.html.assets.js,
-      html: htmlMarkup
+      html: htmlMarkup,
+      theme: config.theme
     });
   };
   const searchSectionMapping = [];
@@ -1546,7 +1659,8 @@ async function buildStyleguide(config) {
             search: searchHtml,
             codeAuditDialog: getCodeAuditDialog(),
             alerts: getAlerts()
-          }
+          },
+          theme: config.theme
         })
       );
     });
@@ -1564,6 +1678,7 @@ async function buildStyleguide(config) {
   const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0;
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath);
+    await generateFaviconFiles(assetsDirectoryOutputPath, config.theme);
   }
   await Promise.all(fileWriteTasks);
 }
