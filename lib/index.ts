@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
 import { generateFaviconFiles } from './favicon.ts'
-import { createHtaccessFile } from './htaccess.ts'
 import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
@@ -322,10 +321,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }
 
   // make sure all files have been written before resolving
-  await Promise.all([
-    ...fileWriteTasks,
-    createHtaccessFile(config),
-  ])
+  await Promise.all(fileWriteTasks)
 }
 
 /**
