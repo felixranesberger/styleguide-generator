@@ -26,6 +26,19 @@ import { watchStyleguide } from './lib/index';
       light: '#005075',
       dark: '#ffffff',
     },
+    plugins: {
+      ogImage: (section) => {
+        const url = new URL('https://via.placeholder.com/1200x630.png')
+        url.searchParams.append('header', section.header)
+        url.searchParams.append('theme', '#005075')
+
+        if (!section.hasMarkdownDescription && section.description) {
+          url.searchParams.append('description', section.description)
+        }
+
+        return url.href
+      },
+    },
   }, () => {
     console.log('Styleguide has been rebuilt')
   })

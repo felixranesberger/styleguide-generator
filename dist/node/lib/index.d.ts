@@ -1,3 +1,34 @@
+interface ColorObject {
+    name?: string;
+    color: string;
+    description?: string;
+}
+interface IconObject {
+    name: string;
+    svg: string;
+}
+interface in2Section {
+    id: string;
+    sectionLevel: 'first' | 'second' | 'third';
+    header: string;
+    description: string;
+    hasMarkdownDescription: boolean;
+    markup: string;
+    modifiers: {
+        value: string;
+        description: string;
+    }[];
+    colors?: ColorObject[];
+    icons?: IconObject[];
+    figma?: string;
+    wrapper?: string;
+    htmlclass?: string;
+    bodyclass?: string;
+    sourceFileName: string;
+    previewFileName: string;
+    fullpageFileName: string;
+}
+
 declare global {
     var isWatchMode: boolean;
     var styleguideConfiguration: StyleguideConfiguration;
@@ -28,6 +59,9 @@ interface StyleguideConfiguration {
                 additionalAttributes?: Record<string, string>;
             }[];
         };
+    };
+    plugins?: {
+        ogImage?: (section: in2Section) => string;
     };
 }
 /**

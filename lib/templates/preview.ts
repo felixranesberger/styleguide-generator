@@ -741,6 +741,7 @@ export async function generatePreviewFile(data: {
     alerts: string
   }
   theme: StyleguideConfiguration['theme']
+  ogImageUrl?: string
 }) {
   const computedScriptTags = data.js
     .filter(entry => entry.type === 'overwriteStyleguide')
@@ -784,6 +785,7 @@ export async function generatePreviewFile(data: {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
     ${computedStyleTags}
     <style>
         :root {

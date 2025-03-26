@@ -56,6 +56,9 @@ export interface StyleguideConfiguration {
       }[]
     }
   }
+  plugins?: {
+    ogImage?: (section: in2Section) => string
+  }
 }
 
 /**
@@ -111,6 +114,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       js: config.html.assets.js,
       html: htmlMarkup,
       theme: config.theme,
+      ogImageUrl: config.plugins?.ogImage
+        ? config.plugins.ogImage(data)
+        : undefined,
     })
   }
 
@@ -277,6 +283,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
             alerts: getAlerts(),
           },
           theme: config.theme,
+          ogImageUrl: config.plugins?.ogImage
+            ? config.plugins.ogImage(secondLevelSection)
+            : undefined,
         }),
       )
     })

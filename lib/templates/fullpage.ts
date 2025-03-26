@@ -15,6 +15,7 @@ export async function generateFullPageFile(data: {
   js: StyleguideConfiguration['html']['assets']['js']
   html: string
   theme: StyleguideConfiguration['theme']
+  ogImageUrl?: string
 }) {
   const computedScriptTags = data.js
     .filter(entry => entry.type !== 'overwriteStyleguide')
@@ -51,6 +52,7 @@ export async function generateFullPageFile(data: {
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
       `}
+    ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
     <script type="module" src="/styleguide-assets/client-fullpage.js?raw"></script>
     ${computedStyleTags}
 </head>

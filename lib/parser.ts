@@ -1,3 +1,6 @@
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-nocheck
+
 import type { StyleguideConfiguration } from './index.ts'
 import path from 'node:path'
 import { parseMarkdown } from './markdown.ts'

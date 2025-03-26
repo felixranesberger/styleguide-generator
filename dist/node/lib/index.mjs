@@ -650,6 +650,7 @@ async function generateFullPageFile(data) {
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
       `}
+    ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ""}
     <script type="module" src="/styleguide-assets/client-fullpage.js?raw"><\/script>
     ${computedStyleTags}
 </head>
@@ -1324,6 +1325,7 @@ async function generatePreviewFile(data) {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ""}
     ${computedStyleTags}
     <style>
         :root {
@@ -1534,7 +1536,7 @@ async function buildStyleguide(config) {
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
-        description: data.description,
+        description: !data.hasMarkdownDescription ? data.description : undefined,
         lang: config.html.lang,
         htmlclass: data.htmlclass,
         bodyclass: data.bodyclass
@@ -1542,7 +1544,8 @@ async function buildStyleguide(config) {
       css: config.html.assets.css,
       js: config.html.assets.js,
       html: htmlMarkup,
-      theme: config.theme
+      theme: config.theme,
+      ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(data) : undefined
     });
   };
   const searchSectionMapping = [];
@@ -1660,7 +1663,8 @@ async function buildStyleguide(config) {
             codeAuditDialog: getCodeAuditDialog(),
             alerts: getAlerts()
           },
-          theme: config.theme
+          theme: config.theme,
+          ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(secondLevelSection) : undefined
         })
       );
     });
