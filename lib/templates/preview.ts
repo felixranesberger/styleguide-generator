@@ -739,6 +739,7 @@ export async function generatePreviewFile(data: {
     search: string
     codeAuditDialog: string
     alerts: string
+    preloadIframes: string[]
   }
   theme: StyleguideConfiguration['theme']
   ogImageUrl?: string
@@ -756,6 +757,10 @@ export async function generatePreviewFile(data: {
     .map((css) => {
       return `<link rel="stylesheet" type="text/css" href="${css.src}">`
     })
+    .join('\n')
+
+  const computedPreloadIframes = data.html.preloadIframes
+    .map(url => `<link rel="preload" href="${url}" as="document">`)
     .join('\n')
 
   const content = `
@@ -785,6 +790,7 @@ export async function generatePreviewFile(data: {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    ${computedPreloadIframes}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
     ${computedStyleTags}
     <style>

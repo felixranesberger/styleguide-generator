@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
 import { generateFaviconFiles } from './favicon.ts'
+import { createHtaccessFile } from './htaccess.ts'
 import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
@@ -245,8 +246,6 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       } = {}
 
       if (sectionBefore) {
-        // TODO: calculate href correctly (index.html)
-        const href = indexFirstLevel === 0 && indexSecondLevel === 0 ? '/index.html' : `/${secondLevelSection.previewFileName}`
         nextPageControlsData.before = {
           label: sectionBefore.header,
           href: sectionBefore.previewFileName,
@@ -259,6 +258,17 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
           href: sectionAfter.previewFileName,
         }
       }
+
+      const preloadIframes: string[] = []
+      if (secondLevelSection.markup) {
+        preloadIframes.push(secondLevelSection.fullpageFileName)
+      }
+
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (thirdLevelSection.markup) {
+          preloadIframes.push(thirdLevelSection.fullpageFileName)
+        }
+      })
 
       fileWriteTasks.push(
         generatePreviewFile({
@@ -281,6 +291,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
             search: searchHtml,
             codeAuditDialog: getCodeAuditDialog(),
             alerts: getAlerts(),
+            preloadIframes,
           },
           theme: config.theme,
           ogImageUrl: config.plugins?.ogImage
@@ -311,7 +322,10 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   }
 
   // make sure all files have been written before resolving
-  await Promise.all(fileWriteTasks)
+  await Promise.all([
+    ...fileWriteTasks,
+    createHtaccessFile(config),
+  ])
 }
 
 /**
