@@ -41,6 +41,7 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
       throw new Error('No copy icon found')
 
     copyButton.addEventListener('click', async () => {
+      copyButton.setAttribute('disabled', '')
       await navigator.clipboard.writeText(iconContent).catch(console.error)
 
       animate(icon, { scale: [1, 0.5], opacity: [1, 0] }, { duration: 0.3 })
@@ -60,6 +61,8 @@ export default (input: HTMLInputElement, list: HTMLUListElement, inputReset: HTM
         { scale: [0, 1], opacity: [0, 1] },
         { duration: 1, delay: 0.1, type: spring, bounce: 0.2 },
       )
+
+      copyButton.removeAttribute('disabled')
     })
   })
 }
