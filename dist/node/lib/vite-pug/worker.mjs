@@ -35,7 +35,6 @@ async function compilePug(contentDir, mode, html) {
       });
       const pugOutput = pugFn(pugLocals);
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
-      console.log(1745328029899, "called");
       markupOutput = await format(markupOutput, {
         parser: "html",
         singleAttributePerLine: true,
