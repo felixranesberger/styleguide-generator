@@ -53,7 +53,6 @@ export async function compilePug(contentDir: `${string}/`, mode: StyleguideConfi
 
       // prettify html output only in production mode,
       // since the function breaks the vite <pug> tag detection
-      console.log(1745328029899, 'called')
       markupOutput = await format(markupOutput, {
         parser: 'html',
         singleAttributePerLine: true,
