@@ -2705,12 +2705,12 @@ async function Oo(t) {
 async function Ko(t, e) {
   if (t.getAttribute(on) === "true")
     return;
-  const s = t.querySelector('[data-type="code"]');
+  let s = t.getAttribute("data-source-code");
   if (!s)
-    throw new Error("No source element found");
-  let r = s.innerHTML.trim();
-  const i = await Oo(r);
-  t.querySelectorAll("pre").forEach((a) => a.remove()), t.insertAdjacentHTML("beforeend", i), t.setAttribute(on, "true");
+    throw new Error("No source code provided");
+  s = decodeURIComponent(s).trim(), console.log(1745329302893, s);
+  const r = await Oo(s);
+  t.insertAdjacentHTML("beforeend", r), t.setAttribute(on, "true");
 }
 const ln = () => window.matchMedia("(max-width: 768px)").matches;
 function xs(t, e) {
@@ -3506,9 +3506,9 @@ Ee.length > 0 && ze && yn && (async () => {
   }, 8e3);
 })();
 const bn = document.querySelector("#icon-search-input"), vn = document.querySelector("#icon-search-input-reset"), wn = document.querySelector("#icon-search-list");
-bn && wn && vn && import("./icons-Dq-_sEb6.js").then(({ default: t }) => t(bn, wn, vn)).catch(console.error);
+bn && wn && vn && import("./icons-BwDvAIRH.js").then(({ default: t }) => t(bn, wn, vn)).catch(console.error);
 const Os = "data-clipboard-value", Tn = document.querySelectorAll(`button[${Os}]`);
-Tn.length > 0 && import("./clipboard-CWa8kCc9.js").then(({ default: t }) => t(Tn, Os)).catch(console.error);
+Tn.length > 0 && import("./clipboard-BtqN9AnY.js").then(({ default: t }) => t(Tn, Os)).catch(console.error);
 const Sn = document.querySelectorAll(".markdown-container-folded");
 Sn.length > 0 && Sn.forEach((t) => {
   const e = t.querySelector(".markdown-container");

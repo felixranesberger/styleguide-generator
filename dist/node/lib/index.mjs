@@ -1011,11 +1011,11 @@ function getMainContentRegular(section, config) {
             </summary>
 
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
-                <div id="code-fullpage-${sanitizeId(section.id)}" class="overflow-x-auto w-full code-highlight">
-                  <template data-type="code">
-${section.markup}
-                  </template>
-              </div>
+                <div 
+                  id="code-fullpage-${sanitizeId(section.id)}" 
+                  class="overflow-x-auto w-full code-highlight"
+                  data-source-code="${encodeURIComponent(section.markup)}"
+                ></div>
             </div>
         </details>
     </div>

@@ -1,19 +1,19 @@
 import path from 'node:path';
 import { parentPort } from 'node:worker_threads';
-import toDiffableHtml from 'diffable-html';
+import { format } from 'prettier';
 import pug from 'pug';
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
-function compilePug(contentDir, mode, html) {
+async function compilePug(contentDir, mode, html) {
   const vitePugTags = html.match(regexModifierLine);
   if (!vitePugTags) {
     return html;
   }
   let markupOutput = html;
-  vitePugTags.forEach((vitePugTag) => {
+  await Promise.all(vitePugTags.map(async (vitePugTag) => {
     const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1];
     if (!pugSourcePath) {
-      return;
+      return undefined;
     }
     const pugModifierClass = vitePugTag.match(/modifierClass="(.+?)"/);
     let pugLocals = {};
@@ -35,21 +35,28 @@ function compilePug(contentDir, mode, html) {
       });
       const pugOutput = pugFn(pugLocals);
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
-      markupOutput = toDiffableHtml(markupOutput);
+      console.log(1745328029899, "called");
+      markupOutput = await format(markupOutput, {
+        parser: "html",
+        singleAttributePerLine: true,
+        bracketSameLine: false,
+        htmlWhitespaceSensitivity: "ignore"
+        // This can help force more line breaks
+      });
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replaceAll(vitePugTag, pugTag);
     }
-  });
+  }));
   return markupOutput;
 }
 if (!parentPort) {
   throw new Error("This file must be run as a worker thread");
 }
-parentPort.on("message", (data) => {
+parentPort.on("message", async (data) => {
   const { id, mode, html, contentDir } = data;
   try {
-    const result = compilePug(contentDir, mode, html);
+    const result = await compilePug(contentDir, mode, html);
     parentPort.postMessage({ id, html: result });
   } catch (error) {
     parentPort.postMessage({
