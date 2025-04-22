@@ -1,8 +1,7 @@
 import type { StyleguideConfiguration } from '../index'
 import path from 'node:path'
 import { parentPort } from 'node:worker_threads'
-// @ts-expect-error - ignore
-import toDiffableHtml from 'diffable-html'
+import { format } from 'prettier'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -12,7 +11,7 @@ const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s
  * Replaces all <insert-vite-pug src="path/to/file.pug" modifierClass="modifier"> tags with the pug file content
  * depending on the mode provided
  */
-export function compilePug(contentDir: `${string}/`, mode: StyleguideConfiguration['mode'], html: string) {
+export async function compilePug(contentDir: `${string}/`, mode: StyleguideConfiguration['mode'], html: string) {
   const vitePugTags = html.match(regexModifierLine)
   if (!vitePugTags) {
     return html
@@ -20,10 +19,10 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
 
   let markupOutput = html
 
-  vitePugTags.forEach((vitePugTag) => {
+  await Promise.all(vitePugTags.map(async (vitePugTag) => {
     const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1]
     if (!pugSourcePath) {
-      return
+      return undefined
     }
 
     const pugModifierClass = vitePugTag.match(/modifierClass="(.+?)"/)
@@ -54,7 +53,13 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
 
       // prettify html output only in production mode,
       // since the function breaks the vite <pug> tag detection
-      markupOutput = toDiffableHtml(markupOutput)
+      console.log(1745328029899, 'called')
+      markupOutput = await format(markupOutput, {
+        parser: 'html',
+        singleAttributePerLine: true,
+        bracketSameLine: false,
+        htmlWhitespaceSensitivity: 'ignore', // This can help force more line breaks
+      })
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
     else {
@@ -64,7 +69,7 @@ export function compilePug(contentDir: `${string}/`, mode: StyleguideConfigurati
 
       markupOutput = markupOutput.replaceAll(vitePugTag, pugTag)
     }
-  })
+  }))
 
   return markupOutput
 }
@@ -84,11 +89,11 @@ if (!parentPort) {
   throw new Error('This file must be run as a worker thread')
 }
 
-parentPort.on('message', (data: PugWorkerInput) => {
+parentPort.on('message', async (data: PugWorkerInput) => {
   const { id, mode, html, contentDir } = data
 
   try {
-    const result = compilePug(contentDir, mode, html)
+    const result = await compilePug(contentDir, mode, html)
     parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
   }
   catch (error) {

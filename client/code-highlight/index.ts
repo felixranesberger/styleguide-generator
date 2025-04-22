@@ -52,11 +52,13 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
   if (isAlreadyHighlighted)
     return
 
-  const sourceElement = element.querySelector<HTMLTemplateElement>('[data-type="code"]')
-  if (!sourceElement)
-    throw new Error('No source element found')
+  let source = element.getAttribute('data-source-code')
+  if (!source)
+    throw new Error('No source code provided')
 
-  let source = sourceElement.innerHTML.trim()
+  source = decodeURIComponent(source).trim()
+
+  console.log(1745329302893, source)
 
   // if modifier is provided, replace the modifier class
   if (modifierClass) {
@@ -64,10 +66,6 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
   }
 
   const code = await runShiki(source)
-
-  // remove might pre-existing code
-  const preElements = element.querySelectorAll('pre')
-  preElements.forEach(pre => pre.remove())
 
   // add code to the element
   element.insertAdjacentHTML('beforeend', code)
