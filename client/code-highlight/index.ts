@@ -58,8 +58,6 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
 
   source = decodeURIComponent(source).trim()
 
-  console.log(1745329302893, source)
-
   // if modifier is provided, replace the modifier class
   if (modifierClass) {
     source = source.replaceAll('{{modifier_class}}', modifierClass)
