@@ -2,6 +2,7 @@ import type { StyleguideConfiguration } from '../index'
 import path from 'node:path'
 import { parentPort } from 'node:worker_threads'
 import { format } from 'prettier'
+import prettierOrganizeAttributes from 'prettier-plugin-organize-attributes'
 import pug from 'pug'
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -55,9 +56,10 @@ export async function compilePug(contentDir: `${string}/`, mode: StyleguideConfi
       // since the function breaks the vite <pug> tag detection
       markupOutput = await format(markupOutput, {
         parser: 'html',
-        singleAttributePerLine: true,
-        bracketSameLine: false,
-        htmlWhitespaceSensitivity: 'ignore', // This can help force more line breaks
+        htmlWhitespaceSensitivity: 'ignore',
+        plugins: [
+          prettierOrganizeAttributes,
+        ],
       })
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin

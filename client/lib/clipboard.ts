@@ -2,9 +2,14 @@ import { renderAlert } from './alerts.ts'
 
 export default (buttons: NodeListOf<HTMLButtonElement>, attribute: string) => {
   buttons.forEach((button) => {
-    const value = button.getAttribute(attribute)
+    let value = button.getAttribute(attribute)
     if (!value)
       return
+
+    const isUriEncoded = button.getAttribute('data-clipboard-uri-encoded') === 'true'
+    if (isUriEncoded) {
+      value = decodeURIComponent(value)
+    }
 
     button.addEventListener('click', async () => {
       await navigator.clipboard.writeText(value).catch(console.error)

@@ -22,6 +22,7 @@
     "markdown-it-async": "^2.1.0",
     "motion": "^12.4.7",
     "prettier": "^3.5.3",
+    "prettier-plugin-organize-attributes": "^1.0.0",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },
