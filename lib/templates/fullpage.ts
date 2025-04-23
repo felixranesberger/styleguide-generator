@@ -1,5 +1,5 @@
 import type { StyleguideConfiguration } from '../index.ts'
-import { logicalWriteFile } from '../utils.ts'
+import { logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
 
 export async function generateFullPageFile(data: {
   id: string
@@ -14,6 +14,8 @@ export async function generateFullPageFile(data: {
   css: StyleguideConfiguration['html']['assets']['css']
   js: StyleguideConfiguration['html']['assets']['js']
   html: string
+  theme: StyleguideConfiguration['theme']
+  ogImageUrl?: string
 }) {
   const computedScriptTags = data.js
     .filter(entry => entry.type !== 'overwriteStyleguide')
@@ -31,15 +33,26 @@ export async function generateFullPageFile(data: {
     .join('\n')
 
   const content = `
-<!doctype html>
+<!DOCTYPE html>
 <html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ''}>
 <head>
-    <title>${data.page.title}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
+    <title>${sanitizeSpecialCharacters(data.page.title)}</title>
+    ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
-    <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
+    ${typeof data.theme === 'object' && 'dark' in data.theme && 'light' in data.theme
+      ? `
+          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
+          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/fullpage-dark.svg?raw">
+      `
+      : `
+        <meta name="theme-color" content="${data.theme}">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+      `}
+    ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
     <script type="module" src="/styleguide-assets/client-fullpage.js?raw"></script>
     ${computedStyleTags}
 </head>

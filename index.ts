@@ -15,27 +15,28 @@ import { watchStyleguide } from './lib/index';
     html: {
       lang: 'de',
       assets: {
-        css: [
-          { src: '/main.css' },
-          { src: '/styleguide-overwrite.css', type: 'overwriteStyleguide' },
-        ],
-        js: [
-          {
-            src: '/main.js',
-            additionalAttributes: {
-              type: 'module',
-              defer: '',
-            },
-          },
-          {
-            src: '/styleguide-overwrite.js',
-            type: 'overwriteStyleguide',
-            additionalAttributes: {
-              type: 'module',
-              defer: '',
-            },
-          },
-        ],
+        css: [],
+        js: [],
+      },
+    },
+    launchInEditor: {
+      rootDir: '/Users/franesberger/Documents/workspace/styleguide-rewrite/',
+    },
+    theme: {
+      light: '#005075',
+      dark: '#ffffff',
+    },
+    plugins: {
+      ogImage: (section) => {
+        const url = new URL('https://via.placeholder.com/1200x630.png')
+        url.searchParams.append('header', section.header)
+        url.searchParams.append('theme', '#005075')
+
+        if (!section.hasMarkdownDescription && section.description) {
+          url.searchParams.append('description', section.description)
+        }
+
+        return url.href
       },
     },
   }, () => {

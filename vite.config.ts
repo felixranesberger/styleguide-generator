@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  base: './',
   build: {
     outDir: 'dist/styleguide-assets',
     emptyOutDir: true,
@@ -22,4 +23,7 @@ export default defineConfig({
     },
   },
   plugins: [tailwindcss()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
 })

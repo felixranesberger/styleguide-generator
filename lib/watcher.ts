@@ -1,13 +1,10 @@
 import { readFileSync } from 'node:fs'
-import process from 'node:process'
 import chokidar from 'chokidar'
 
 /**
  * Type definition for the file watcher callback function
  */
 type WatchCallback = () => void
-
-let isChokidarReady = false
 
 /**
  * Watches for changes in file contents that match a specific regex pattern
@@ -27,7 +24,7 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
    * Register initial file content matches
    * @param filePath - Path to the file being processed
    */
-  const registerFileContentMatches = (filePath: string): void => {
+  const registerCSSFileContentMatches = (filePath: string): void => {
     const currentFileContent = readFileSync(filePath, 'utf8')
     const currentFileMatches = currentFileContent.match(regex)
 
@@ -36,20 +33,14 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
     }
 
     regexFileContents.set(filePath, currentFileMatches)
-
-    // only execute styleguide rebuild if chokidar is ready
-    // because we don't want to rebuild the styleguide on initial setup
-    // everytime a file is added
-    if (isChokidarReady) {
-      callback()
-    }
+    callback()
   }
 
   /**
    * Handle changes in file content
    * @param filePath - Path to the changed file
    */
-  const handleContentChanges = (filePath: string): void => {
+  const handleCSSContentChanges = (filePath: string): void => {
     const previousFileMatches = regexFileContents.get(filePath)
     const hasFileBeenReadBefore = previousFileMatches !== undefined
 
@@ -78,28 +69,35 @@ function watchForFileContentChanges(path: string | string[], regex: RegExp, call
    * Handle file removal
    * @param filePath - Path to the removed file
    */
-  const handleFileRemoval = (filePath: string): void => {
+  const handleCSSFileRemoval = (filePath: string): void => {
     regexFileContents.delete(filePath)
     callback()
   }
 
-  // Set up file watcher
-  const validFileTypes = ['.css', '.scss', '.sass', '.less']
-  const watcher = chokidar.watch(path, {
+  // Set up file watcher for css files
+  const validCSSFileTypes = ['.css', '.scss', '.sass', '.less']
+  chokidar.watch(path, {
+    ignoreInitial: true,
     // @ts-expect-error - chokidar types seem to be incomplete, ignore
     ignored: (path, stats) => {
-      return stats?.isFile() && !validFileTypes.some(type => path.endsWith(type))
+      return stats?.isFile() && !validCSSFileTypes.some(type => path.endsWith(type))
     },
   })
-    .on('add', registerFileContentMatches)
-    .on('change', handleContentChanges)
-    .on('unlink', handleFileRemoval)
-    .on('ready', () => isChokidarReady = true)
+    .on('add', registerCSSFileContentMatches)
+    .on('change', handleCSSContentChanges)
+    .on('unlink', handleCSSFileRemoval)
 
-  process.on('SIGINT', watcher.close) // Ctrl+C
-  process.on('SIGTERM', watcher.close) // Kill command
-  process.on('SIGHUP', watcher.close) // Terminal closed
-  process.on('exit', watcher.close) // Process exit
+  // watch Markdown documents
+  chokidar.watch(path, {
+    ignoreInitial: true,
+    // @ts-expect-error - chokidar types seem to be incomplete, ignore
+    ignored: (path, stats) => {
+      return stats?.isFile() && !path.endsWith('.md')
+    },
+  })
+    .on('add', callback)
+    .on('change', callback)
+    .on('unlink', callback)
 }
 
 /**

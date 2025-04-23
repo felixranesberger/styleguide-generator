@@ -1,6 +1,12 @@
+import { useDialog } from '../hooks/use-dialog.ts'
+
 const dialog = document.querySelector<HTMLDialogElement>('#search-dialog')
 if (!dialog)
   throw new Error('No search dialog found')
+
+const dialogBackdrop = document.querySelector<HTMLElement>('.dialog-backdrop')
+if (!dialogBackdrop)
+  throw new Error('No dialog backdrop found')
 
 const openSearchTriggers = document.querySelectorAll<HTMLButtonElement>('[data-open-search]')
 if (openSearchTriggers.length === 0)
@@ -22,20 +28,51 @@ const searchNoResults = document.querySelector('#search-no-results')
 if (!searchNoResults)
   throw new Error('No search no results element found')
 
-function handleSearchFilter() {
-  const searchValue = searchInput.value.toLowerCase().trim()
+const { show, close } = useDialog(dialog, dialogBackdrop)
 
+async function showDialog() {
+  await show(
+    (isMobileScreen) => {
+      if (isMobileScreen) {
+        searchInput!.setAttribute('inert', '') // avoid focusing search input directly
+      }
+    },
+    (isMobileScreen) => {
+      if (isMobileScreen) {
+        searchInput!.removeAttribute('inert')
+      }
+
+      openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'true')
+      searchInput!.ariaExpanded = 'true'
+
+      handleSearchFilter()
+    },
+  )
+}
+
+async function closeDialog() {
+  await close(
+    undefined,
+    () => {
+      openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'false')
+      searchInput!.ariaExpanded = 'false'
+    },
+  )
+}
+
+function handleSearchFilter() {
+  const searchValue = searchInput!.value.toLowerCase().trim()
   let hasSearchResults = false
 
   searchResults.forEach((result) => {
-    let isValidResult = false
+    let isValidResult: boolean
 
     const searchKeywords = result.getAttribute('data-search-keywords')?.split(',') || []
     if (searchKeywords.length > 0) {
       isValidResult = searchKeywords.some(keyword => keyword.toLowerCase().includes(searchValue))
     }
     else {
-      const resultText = result.innerText?.toLowerCase()
+      const resultText = result.textContent?.toLowerCase() ?? ''
       isValidResult = resultText?.includes(searchValue)
     }
 
@@ -45,51 +82,12 @@ function handleSearchFilter() {
       hasSearchResults = true
   })
 
-  searchList.classList.toggle('hidden', !hasSearchResults)
-  searchNoResults.classList.toggle('hidden', hasSearchResults)
+  searchList!.classList.toggle('hidden', !hasSearchResults)
+  searchNoResults!.classList.toggle('hidden', hasSearchResults)
 }
 
 searchInput.addEventListener('input', handleSearchFilter)
+openSearchTriggers.forEach(button => button.addEventListener('click', showDialog))
 
-openSearchTriggers.forEach((button) => {
-  button.addEventListener('click', () => dialog.showModal())
-})
-
-function closeDialogOnOutsideClick(event) {
-  // Use closest() to check if the click target is inside the dialog
-  const clickedElement = event.target
-  const isClickInsideDialog = clickedElement.closest('dialog') !== null
-
-  if (!isClickInsideDialog) {
-    dialog.close()
-  }
-}
-
-// Register changes to the dialog open state
-new MutationObserver(() => {
-  openSearchTriggers.forEach(
-    trigger => trigger.ariaExpanded = dialog.open.toString(),
-  )
-
-  searchInput.ariaExpanded = dialog.open.toString()
-
-  if (!dialog.open) {
-    document.removeEventListener('click', closeDialogOnOutsideClick)
-    searchInput.value = ''
-    handleSearchFilter()
-  }
-  else {
-    // Small delay to prevent immediate closing
-    setTimeout(() => {
-      document.addEventListener('click', closeDialogOnOutsideClick)
-    }, 0)
-  }
-}).observe(dialog, { attributes: true, attributeFilter: ['open'] })
-
-// open modal with cmd + k
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-    event.preventDefault()
-    dialog.showModal()
-  }
-})
+// detect custom event to open search
+window.addEventListener('styleguideOpenSearch', showDialog)

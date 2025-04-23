@@ -1,6 +1,7 @@
 {
   "name": "styleguide",
   "type": "module",
+  "description": "Modern KSS compatible styleguide generator",
   "main": "./dist/node/lib/index.mjs",
   "types": "./dist/node/lib/index.d.ts",
   "files": [
@@ -8,24 +9,31 @@
   ],
   "scripts": {
     "build": "vite build && unbuild",
-    "watch": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
+    "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@shikijs/markdown-it": "^3.1.0",
     "chokidar": "^4.0.3",
-    "diffable-html": "^5.0.0",
     "fs-extra": "^11.2.0",
+    "keyux": "^0.11.1",
+    "markdown-it-async": "^2.1.0",
+    "motion": "^12.4.7",
+    "prettier": "^3.5.3",
+    "prettier-plugin-organize-attributes": "^1.0.0",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.10"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.1.0",
+    "@antfu/eslint-config": "^4.3.0",
     "@antfu/utils": "^8.1.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
+    "eslint": "^9.21.0",
+    "html-validate": "^9.3.0",
     "shiki": "^2.1.0",
     "unbuild": "^3.2.0",
     "vite": "^6.0.7"

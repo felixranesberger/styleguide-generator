@@ -84,6 +84,14 @@ body.js-loaded {
   @apply visible;
 }
 
+body.is-scrolling iframe {
+  @apply pointer-events-none;
+}
+
+summary {
+  list-style: none;
+}
+
 summary::marker,
 summary::-webkit-details-marker {
   display: none;
@@ -101,6 +109,17 @@ summary::-webkit-details-marker {
   color-scheme: only dark;
 }
 
+/* Hide elements based on OS */
+body:not([data-os='mac']) .mac-only,
+body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
+  display: none;
+}
+
+body[data-is-mobile='true'] .desktop-device-only {
+  display: none;
+}
+
+
 .theme-dark {
   .shiki,
   .shiki span {
@@ -114,7 +133,7 @@ summary::-webkit-details-marker {
 }
 
 /* Disable shiki background color */
-pre.shiki.shiki-themes {
+.code-highlight pre.shiki.shiki-themes {
   background-color: transparent !important;
 }
 
@@ -136,9 +155,17 @@ pre.shiki.shiki-themes {
 }
 
 .search::backdrop {
-  background-color: rgba(0 0 0 / 70%);
+  display: none;
+}
+
+.dialog-backdrop {
+  display: none;
+  position: absolute;
+  backdrop-filter: blur(3px) brightness(0.7);
+  inset: 0;
+  opacity: 0;
   pointer-events: none;
-  opacity: 50%;
+  z-index: 100;
 }
 
 .search-category {
@@ -153,20 +180,8 @@ pre.shiki.shiki-themes {
   display: block;
 }
 
-.c-tabs__item {
-  @apply font-semibold transition;
-}
-
-.c-tabs__item--active {
-  @apply text-styleguide-highlight font-semibold
-}
-
 .icon-search-list__item-copy-icon {
-  @apply opacity-0 pointer-events-none scale-75 transition duration-500 absolute left-1/2 -translate-x-1/2;
-}
-
-.icon-search-list__item-copy-icon--active {
-  @apply opacity-100 scale-100;
+  @apply opacity-0 pointer-events-none absolute left-1/2 -translate-x-1/2;
 }
 
 .menu-item {
@@ -182,4 +197,106 @@ pre.shiki.shiki-themes {
   overflow-y: hidden;
   min-height: 0;
   border: none;
+}
+
+.c-toast {
+  @apply
+    fixed
+    flex
+    items-center
+    gap-2
+    bottom-4
+    right-4
+    left-4
+    md:left-auto
+    justify-center
+    md:justify-start
+    p-4
+    border-1
+    border-styleguide-border
+    bg-styleguide-bg-highlight
+    text-[12px]
+    font-mono
+    [&>span]:text-styleguide-highlight
+    font-semibold
+    rounded-lg
+    shadow-2xl
+    after:absolute
+    after:inset-x-0
+    after:top-[-5px]
+    after:h-[5px]
+    after:w-full;
+}
+
+/* Markdown specific styling */
+.markdown-container {
+  @apply leading-6;
+
+  /* Increase spacing to headline for all elements other than paragraphs */
+  > :first-child:not(p) {
+    @apply mt-[1em];
+  }
+
+  /* Add max with for everything but code blocks */
+  > :not(pre) {
+      @apply max-w-[65ch];
+  }
+
+  > :not(:last-child) {
+    @apply mb-4;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6, strong) {
+    @apply font-semibold text-styleguide-highlight;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6):has(+ p) {
+    @apply !mb-1.5;
+  }
+
+  :is(h1,h2,h3,h4,h5,h6):not(:first-child) {
+    @apply mt-[1.5em];
+  }
+
+  :is(h1, h2) {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  h4 {
+    @apply text-base;
+  }
+
+  :is(h5, h6) {
+    @apply text-sm;
+  }
+
+  a {
+    @apply text-styleguide-highlight;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+
+  /* markdown code block */
+  :is(.shiki, pre:not(.shiki)) {
+    @apply max-w-[83ch] overflow-x-auto px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+
+    > code {
+      @apply inline-block;
+    }
+  }
+
+  /* markdown inline code */
+  :not(:is(pre)) > code {
+    @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
+  }
 }

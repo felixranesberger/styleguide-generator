@@ -4,10 +4,13 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
+import { generateFaviconFiles } from './favicon.ts'
 import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
 import {
   generatePreviewFile,
+  getAlerts,
+  getCodeAuditDialog,
   getHeaderHtml,
   getMainContentHtml,
   getNextPageControlsHtml,
@@ -32,6 +35,13 @@ export interface StyleguideConfiguration {
   contentDir: `${string}/`
   projectTitle: string
   deactivateDarkMode?: boolean
+  launchInEditor?: boolean | {
+    rootDir: string
+  }
+  theme: string | {
+    light: string
+    dark: string
+  }
   html: {
     lang: string
     assets: {
@@ -45,6 +55,9 @@ export interface StyleguideConfiguration {
         additionalAttributes?: Record<string, string>
       }[]
     }
+  }
+  plugins?: {
+    ogImage?: (section: in2Section) => string
   }
 }
 
@@ -60,7 +73,9 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
   const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
 
-  const parsedContent = parse(styleguideContent)
+  const parsedContent = await parse(styleguideContent, config)
+  if (!parsedContent)
+    throw new Error('Could not parse content')
 
   // ensure clean output directory and delete all html files
   if (config.mode === 'production' && await fs.exists(config.outDir)) {
@@ -90,7 +105,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
-        description: data.description,
+        description: !data.hasMarkdownDescription ? data.description : undefined,
         lang: config.html.lang,
         htmlclass: data.htmlclass,
         bodyclass: data.bodyclass,
@@ -98,6 +113,10 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       css: config.html.assets.css,
       js: config.html.assets.js,
       html: htmlMarkup,
+      theme: config.theme,
+      ogImageUrl: config.plugins?.ogImage
+        ? config.plugins.ogImage(data)
+        : undefined,
     })
   }
 
@@ -226,8 +245,6 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
       } = {}
 
       if (sectionBefore) {
-        // TODO: calculate href correctly (index.html)
-        const href = indexFirstLevel === 0 && indexSecondLevel === 0 ? '/index.html' : `/${secondLevelSection.previewFileName}`
         nextPageControlsData.before = {
           label: sectionBefore.header,
           href: sectionBefore.previewFileName,
@@ -240,6 +257,17 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
           href: sectionAfter.previewFileName,
         }
       }
+
+      const preloadIframes: string[] = []
+      if (secondLevelSection.markup) {
+        preloadIframes.push(secondLevelSection.fullpageFileName)
+      }
+
+      secondLevelSection.sections.forEach((thirdLevelSection) => {
+        if (thirdLevelSection.markup) {
+          preloadIframes.push(thirdLevelSection.fullpageFileName)
+        }
+      })
 
       fileWriteTasks.push(
         generatePreviewFile({
@@ -257,10 +285,17 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
               menuSectionMapping,
               secondLevelSection.previewFileName,
             ),
-            mainContent: getMainContentHtml(secondLevelSection),
+            mainContent: getMainContentHtml(secondLevelSection, config),
             nextPageControls: getNextPageControlsHtml(nextPageControlsData),
             search: searchHtml,
+            codeAuditDialog: getCodeAuditDialog(),
+            alerts: getAlerts(),
+            preloadIframes,
           },
+          theme: config.theme,
+          ogImageUrl: config.plugins?.ogImage
+            ? config.plugins.ogImage(secondLevelSection)
+            : undefined,
         }),
       )
     })
@@ -282,6 +317,7 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const isAssetsDirectoryAlreadyCopied = await fs.exists(assetsDirectoryOutputPath) && (await fs.readdir(assetsDirectoryOutputPath)).length > 0
   if (!isAssetsDirectoryAlreadyCopied) {
     await fs.copy(assetsDirectoryPath, assetsDirectoryOutputPath)
+    await generateFaviconFiles(assetsDirectoryOutputPath, config.theme)
   }
 
   // make sure all files have been written before resolving

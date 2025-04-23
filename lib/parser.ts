@@ -1,4 +1,9 @@
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-nocheck
+
+import type { StyleguideConfiguration } from './index.ts'
 import path from 'node:path'
+import { parseMarkdown } from './markdown.ts'
 
 interface FileObject {
   base?: string
@@ -28,6 +33,7 @@ interface Section {
   deprecated?: boolean
   experimental?: boolean
   colors?: ColorObject[]
+  figma?: string
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
@@ -219,6 +225,7 @@ function kssParser(input: string | (string | FileObject)[], options: ParseOption
       processProperty.call(newSection, paragraphs, 'htmlclass', x => x.trim())
       processProperty.call(newSection, paragraphs, 'bodyclass', x => x.trim())
       processProperty.call(newSection, paragraphs, 'Icons', parseIcons)
+      processProperty.call(newSection, paragraphs, 'Figma', x => x.trim())
       processProperty.call(newSection, paragraphs, 'Markup')
       processProperty.call(newSection, paragraphs, 'Weight', toFloat)
 
@@ -478,11 +485,33 @@ function hasPrefix(description: string, prefix: string): boolean {
   return new RegExp(`^\\s*${prefix}\\:`, 'gim').test(description)
 }
 
+function extractMarkdownPath(input: string): string | null {
+  // Normalize the input by trimming and ensuring consistent spacing
+  const normalizedInput = input.trim()
+
+  // Check if the string starts with "Markdown:" (with optional space after the colon)
+  const markdownPrefix = /^Markdown:\s*/i
+  if (!markdownPrefix.test(normalizedInput)) {
+    return null
+  }
+
+  // Extract the path by removing the prefix
+  const path = normalizedInput.replace(markdownPrefix, '').trim()
+
+  // Check if the path ends with .md
+  if (!path.endsWith('.md')) {
+    return null
+  }
+
+  return path
+}
+
 export interface in2Section {
   id: string
   sectionLevel: 'first' | 'second' | 'third'
   header: string
   description: string
+  hasMarkdownDescription: boolean
   markup: string
   modifiers: {
     value: string
@@ -490,9 +519,11 @@ export interface in2Section {
   }[]
   colors?: ColorObject[]
   icons?: IconObject[]
+  figma?: string
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
+  sourceFileName: string
   previewFileName: string
   fullpageFileName: string
 }
@@ -505,7 +536,7 @@ export interface in2SecondLevelSection extends in2Section {
   sections: in2Section[]
 }
 
-export function parse(text: string) {
+export async function parse(text: string, config: StyleguideConfiguration) {
   const data = kssParser(text).sections.filter(section => Boolean(section.reference))
 
   // sort by reference id
@@ -515,20 +546,45 @@ export function parse(text: string) {
 
   let output: in2FirstLevelSection[] = []
 
-  sortedData.forEach((section) => {
+  async function computeDescription(description: string, rootHeadingLevel: 1 | 2) {
+    // make sure description specifies that it's markdown content
+    if (!description || !description.includes('Markdown:'))
+      return { description, hasMarkdownDescription: false }
+
+    const markdownPath = extractMarkdownPath(description)
+
+    // when we can't extract a markdown path from the description,
+    // we assume the description is markdown content
+    if (!markdownPath) {
+      return {
+        description: await parseMarkdown({ markdownContent: description, rootHeadingLevel }),
+        hasMarkdownDescription: true,
+      }
+    }
+
+    return {
+      description: await parseMarkdown({ filePath: path.join(config.contentDir, markdownPath), rootHeadingLevel }),
+      hasMarkdownDescription: true,
+    }
+  }
+
+  for await (const section of sortedData) {
     if (!section.reference)
       return
 
     // first level sections always are in the format of "1.0", "2.0", etc
     const sectionIds = section.reference.split('.')
-    const isFirstLevelSection = sectionIds.length < 2 || (sectionIds.length === 2 && sectionIds[1] === '0')
+    const isFirstLevelSection = sectionIds.length === 1 || (sectionIds.length === 2 && sectionIds[1] === '0')
 
     if (isFirstLevelSection) {
+      const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
+
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: 'first',
         header: section.header,
-        description: section.description,
+        description,
+        hasMarkdownDescription,
         markup: section.markup,
         sections: [],
         modifiers: section.modifiers.map(modifier => ({
@@ -537,9 +593,11 @@ export function parse(text: string) {
         })),
         colors: section.colors,
         icons: section.icons,
+        figma: section.figma,
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
+        sourceFileName: section.source.filename,
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`,
       }
@@ -550,18 +608,22 @@ export function parse(text: string) {
         throw new Error(`First level parent section ${firstLevelParentSection} not found for section ${section.reference}`)
 
       // e.g. components => accordion => accordion purple (6.1.1)
-      const isThirdLevelSection = sectionIds.length === 3
+      const isThirdLevelSection = sectionIds.length >= 3
+
       if (isThirdLevelSection) {
         const secondLevelParentSection = firstLevelParentSection.sections[sectionIds[1]]
 
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`)
 
-        secondLevelParentSection.sections[sectionIds[2]] = {
+        const { description, hasMarkdownDescription } = await computeDescription(section.description, 2)
+
+        secondLevelParentSection.sections.push({
           id: section.reference,
           sectionLevel: 'third',
           header: section.header,
-          description: section.description,
+          description,
+          hasMarkdownDescription,
           markup: section.markup,
           modifiers: section.modifiers.map(modifier => ({
             value: modifier.name,
@@ -569,20 +631,25 @@ export function parse(text: string) {
           })),
           colors: section.colors,
           icons: section.icons,
+          figma: section.figma,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
-        }
+        })
       }
       // e.g. components => accordion (6.1)
       else {
+        const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
+
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,
           sectionLevel: 'second',
           header: section.header,
-          description: section.description,
+          description,
+          hasMarkdownDescription,
           markup: section.markup,
           modifiers: section.modifiers.map(modifier => ({
             value: modifier.name,
@@ -590,23 +657,27 @@ export function parse(text: string) {
           })),
           colors: section.colors,
           icons: section.icons,
+          figma: section.figma,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
           sections: [],
+          sourceFileName: section.source.filename,
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         }
       }
     }
-  })
+  }
 
   // filter out empty sections
   output = output.filter(section => Boolean(section))
   output.forEach((firstLevelSection) => {
     firstLevelSection.sections = firstLevelSection.sections.filter(section => Boolean(section))
     firstLevelSection.sections.forEach((secondLevelSection) => {
-      secondLevelSection.sections = secondLevelSection.sections.filter(section => Boolean(section))
+      secondLevelSection.sections = secondLevelSection.sections
+        .filter(section => Boolean(section))
+        .sort((a, b) => a.id.localeCompare(b.id))
     })
   })
 
