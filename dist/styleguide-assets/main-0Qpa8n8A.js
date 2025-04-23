@@ -3506,9 +3506,9 @@ Ee.length > 0 && ze && yn && (async () => {
   }, 8e3);
 })();
 const bn = document.querySelector("#icon-search-input"), vn = document.querySelector("#icon-search-input-reset"), wn = document.querySelector("#icon-search-list");
-bn && wn && vn && import("./icons-BIsTU11Y.js").then(({ default: t }) => t(bn, wn, vn)).catch(console.error);
+bn && wn && vn && import("./icons-CoWRBSRD.js").then(({ default: t }) => t(bn, wn, vn)).catch(console.error);
 const Os = "data-clipboard-value", Tn = document.querySelectorAll(`button[${Os}]`);
-Tn.length > 0 && import("./clipboard-BOWNoz_D.js").then(({ default: t }) => t(Tn, Os)).catch(console.error);
+Tn.length > 0 && import("./clipboard-VXocAygH.js").then(({ default: t }) => t(Tn, Os)).catch(console.error);
 const Sn = document.querySelectorAll(".markdown-container-folded");
 Sn.length > 0 && Sn.forEach((t) => {
   const e = t.querySelector(".markdown-container");

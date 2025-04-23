@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { parentPort } from 'node:worker_threads';
 import { format } from 'prettier';
+import prettierOrganizeAttributes from 'prettier-plugin-organize-attributes';
 import pug from 'pug';
 
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
@@ -37,10 +38,11 @@ async function compilePug(contentDir, mode, html) {
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
       markupOutput = await format(markupOutput, {
         parser: "html",
-        singleAttributePerLine: true,
-        bracketSameLine: false,
-        htmlWhitespaceSensitivity: "ignore"
-        // This can help force more line breaks
+        htmlWhitespaceSensitivity: "ignore",
+        tabWidth: 2,
+        plugins: [
+          prettierOrganizeAttributes
+        ]
       });
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
