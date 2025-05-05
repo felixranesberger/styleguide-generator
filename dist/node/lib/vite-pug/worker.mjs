@@ -39,7 +39,6 @@ async function compilePug(contentDir, mode, html) {
       markupOutput = await format(markupOutput, {
         parser: "html",
         htmlWhitespaceSensitivity: "ignore",
-        tabWidth: 2,
         plugins: [
           prettierOrganizeAttributes
         ]

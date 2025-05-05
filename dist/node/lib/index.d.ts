@@ -64,15 +64,22 @@ interface StyleguideConfiguration {
         ogImage?: (section: in2Section) => string;
     };
 }
+interface StyleguideBuildOutput {
+    errors?: {
+        overwrittenSectionsIds?: string[];
+    };
+}
 /**
  * Builds the styleguide
  * @param config - The configuration for the styleguide
  */
-declare function buildStyleguide(config: StyleguideConfiguration): Promise<void>;
+declare function buildStyleguide(config: StyleguideConfiguration): Promise<StyleguideBuildOutput>;
 /**
  * Builds the styleguide and watches for changes
  * @param config - The configuration for the styleguide
+ * @param onChange - Optional callback function to call when the styleguide is changed
+ * @param onError - Optional callback function to call when an error occurs while building the styleguide
  */
-declare function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void): Promise<void>;
+declare function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void, onError?: (errorData: StyleguideBuildOutput['errors']) => void): Promise<void>;
 
 export { type StyleguideConfiguration, buildStyleguide, watchStyleguide };

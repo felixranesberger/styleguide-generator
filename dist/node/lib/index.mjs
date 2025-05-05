@@ -508,6 +508,7 @@ function extractMarkdownPath(input) {
 }
 async function parse(text, config) {
   const data = kssParser(text).sections.filter((section) => Boolean(section.reference));
+  const overwrittenSectionsIds = [];
   const sortedData = data.sort((a, b) => {
     return a.reference.localeCompare(b.reference);
   });
@@ -534,6 +535,10 @@ async function parse(text, config) {
     const isFirstLevelSection = sectionIds.length === 1 || sectionIds.length === 2 && sectionIds[1] === "0";
     if (isFirstLevelSection) {
       const { description, hasMarkdownDescription } = await computeDescription(section.description, 1);
+      const isSectionIdDuplicated = !!output[sectionIds[0]];
+      if (isSectionIdDuplicated) {
+        overwrittenSectionsIds.push(section.reference);
+      }
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: "first",
@@ -566,6 +571,10 @@ async function parse(text, config) {
         if (!secondLevelParentSection)
           throw new Error(`Second level parent section ${sectionIds[0]}.${sectionIds[1]} not found for section ${section.reference}`);
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 2);
+        const isSectionIdDuplicated = secondLevelParentSection.sections.some((s) => s.id === section.reference);
+        if (isSectionIdDuplicated) {
+          overwrittenSectionsIds.push(section.reference);
+        }
         secondLevelParentSection.sections.push({
           id: section.reference,
           sectionLevel: "third",
@@ -589,6 +598,10 @@ async function parse(text, config) {
         });
       } else {
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 1);
+        const isSectionIdDuplicated = !!firstLevelParentSection.sections[sectionIds[1]];
+        if (isSectionIdDuplicated) {
+          overwrittenSectionsIds.push(section.reference);
+        }
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,
           sectionLevel: "second",
@@ -621,7 +634,10 @@ async function parse(text, config) {
       secondLevelSection.sections = secondLevelSection.sections.filter((section) => Boolean(section)).sort((a, b) => a.id.localeCompare(b.id));
     });
   });
-  return output;
+  return {
+    content: output,
+    overwrittenSectionsIds
+  };
 }
 
 async function generateFullPageFile(data) {
@@ -937,7 +953,7 @@ function getMainContentRegular(section, config) {
         </div>
 
         <!-- Code -->
-        <details class="group">
+        <details class="group @container">
            <summary class="flex cursor-pointer justify-between items-center rounded-b-2xl px-6 text-sm font-light bg-styleguide-bg">
                 <span class="flex gap-2 items-center py-4 select-none">
                     <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
@@ -953,7 +969,7 @@ function getMainContentRegular(section, config) {
                             class="inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                             href="${openInEditorPathPhpStorm}"
                         >
-                            <span class="hidden md:inline-block">Open in</span>
+                            <span class="hidden @2xl:inline-block">Open in</span>
                             <span class="sr-only">PHPStorm</span>
                             <img 
                                 src="styleguide-assets/icons/phpstorm.svg"
@@ -970,7 +986,7 @@ function getMainContentRegular(section, config) {
                             class="inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                             href="${openInEditorPathVscode}"
                         >
-                            <span class="hidden md:inline-block">Open in</span>
+                            <span class="hidden @2xl:inline-block">Open in</span>
                             <span class="sr-only">VsCode</span>
                             <img 
                                 src="styleguide-assets/icons/vscode.svg"
@@ -994,7 +1010,7 @@ function getMainContentRegular(section, config) {
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                         </svg>
 
-                        <span class="hidden md:inline-block">Copy</span>
+                        <span class="hidden @2xl:inline-block">Copy</span>
                         <span class="sr-only"> Code</span>
                     </button>
 
@@ -1529,9 +1545,10 @@ async function buildStyleguide(config) {
   globalThis.styleguideConfiguration = config;
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`);
   const styleguideContent = (await Promise.all(styleguideContentPaths.map((file) => fs.readFile(file, "utf-8")))).join("\n");
-  const parsedContent = await parse(styleguideContent, config);
-  if (!parsedContent)
+  const rawParsedOutput = await parse(styleguideContent, config);
+  if (!rawParsedOutput)
     throw new Error("Could not parse content");
+  const { content: parsedContent, overwrittenSectionsIds } = rawParsedOutput;
   if (config.mode === "production" && await fs.exists(config.outDir)) {
     const files = await glob(`${config.outDir}/**/*.html`);
     await Promise.all(files.map((file) => fs.unlink(file)));
@@ -1711,16 +1728,29 @@ async function buildStyleguide(config) {
     await generateFaviconFiles(assetsDirectoryOutputPath, config.theme);
   }
   await Promise.all(fileWriteTasks);
+  const errors = {};
+  if (overwrittenSectionsIds.length > 0) {
+    errors.overwrittenSectionsIds = overwrittenSectionsIds;
+  }
+  return {
+    errors: Object.keys(errors).length > 0 ? errors : undefined
+  };
 }
-async function watchStyleguide(config, onChange) {
+async function watchStyleguide(config, onChange, onError) {
   globalThis.isWatchMode = true;
-  await buildStyleguide(config);
+  const initialBuild = await buildStyleguide(config);
+  if (onError && initialBuild.errors) {
+    onError(initialBuild.errors);
+  }
   const contentDirPath = config.contentDir.endsWith("/") ? config.contentDir : `${config.contentDir}/`;
   watchStyleguideForChanges(contentDirPath, () => {
     (async () => {
-      await buildStyleguide(config);
+      const localBuild = await buildStyleguide(config);
       if (onChange)
         onChange();
+      if (onError && localBuild.errors) {
+        onError(localBuild.errors);
+      }
     })();
   });
 }
