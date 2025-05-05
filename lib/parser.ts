@@ -539,6 +539,9 @@ export interface in2SecondLevelSection extends in2Section {
 export async function parse(text: string, config: StyleguideConfiguration) {
   const data = kssParser(text).sections.filter(section => Boolean(section.reference))
 
+  // stores the ids of the sections that are overwritten because the ids are duplicated
+  const overwrittenSectionsIds: string[] = []
+
   // sort by reference id
   const sortedData = data.sort((a, b) => {
     return a.reference!.localeCompare(b.reference!)
@@ -579,6 +582,11 @@ export async function parse(text: string, config: StyleguideConfiguration) {
     if (isFirstLevelSection) {
       const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
 
+      const isSectionIdDuplicated = !!output[sectionIds[0]]
+      if (isSectionIdDuplicated) {
+        overwrittenSectionsIds.push(section.reference)
+      }
+
       output[sectionIds[0]] = {
         id: section.reference,
         sectionLevel: 'first',
@@ -618,6 +626,11 @@ export async function parse(text: string, config: StyleguideConfiguration) {
 
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 2)
 
+        const isSectionIdDuplicated = secondLevelParentSection.sections.some(s => s.id === section.reference)
+        if (isSectionIdDuplicated) {
+          overwrittenSectionsIds.push(section.reference)
+        }
+
         secondLevelParentSection.sections.push({
           id: section.reference,
           sectionLevel: 'third',
@@ -643,6 +656,11 @@ export async function parse(text: string, config: StyleguideConfiguration) {
       // e.g. components => accordion (6.1)
       else {
         const { description, hasMarkdownDescription } = await computeDescription(section.description, 1)
+
+        const isSectionIdDuplicated = !!firstLevelParentSection.sections[sectionIds[1]]
+        if (isSectionIdDuplicated) {
+          overwrittenSectionsIds.push(section.reference)
+        }
 
         firstLevelParentSection.sections[sectionIds[1]] = {
           id: section.reference,
@@ -681,5 +699,8 @@ export async function parse(text: string, config: StyleguideConfiguration) {
     })
   })
 
-  return output
+  return {
+    content: output,
+    overwrittenSectionsIds,
+  }
 }

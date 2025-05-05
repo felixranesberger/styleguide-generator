@@ -41,6 +41,8 @@ import { watchStyleguide } from './lib/index';
     },
   }, () => {
     console.log('Styleguide has been rebuilt')
+  }, (error) => {
+    console.log('Styleguide build error occurred', error)
   })
   console.log(`Built styleguide in ${Date.now() - buildStyleguideStart}ms`)
 

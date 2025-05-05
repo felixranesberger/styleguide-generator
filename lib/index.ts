@@ -61,11 +61,17 @@ export interface StyleguideConfiguration {
   }
 }
 
+interface StyleguideBuildOutput {
+  errors?: {
+    overwrittenSectionsIds?: string[]
+  }
+}
+
 /**
  * Builds the styleguide
  * @param config - The configuration for the styleguide
  */
-export async function buildStyleguide(config: StyleguideConfiguration) {
+export async function buildStyleguide(config: StyleguideConfiguration): Promise<StyleguideBuildOutput> {
   globalThis.styleguideConfiguration = config
 
   // find all files in the content directory that have .css or .scss extension recursive
@@ -73,9 +79,11 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
   const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
 
-  const parsedContent = await parse(styleguideContent, config)
-  if (!parsedContent)
+  const rawParsedOutput = await parse(styleguideContent, config)
+  if (!rawParsedOutput)
     throw new Error('Could not parse content')
+
+  const { content: parsedContent, overwrittenSectionsIds } = rawParsedOutput
 
   // ensure clean output directory and delete all html files
   if (config.mode === 'production' && await fs.exists(config.outDir)) {
@@ -322,24 +330,47 @@ export async function buildStyleguide(config: StyleguideConfiguration) {
 
   // make sure all files have been written before resolving
   await Promise.all(fileWriteTasks)
+
+  const errors: StyleguideBuildOutput['errors'] = {}
+
+  if (overwrittenSectionsIds.length > 0) {
+    errors.overwrittenSectionsIds = overwrittenSectionsIds
+  }
+
+  return {
+    errors: Object.keys(errors).length > 0 ? errors : undefined,
+  }
 }
 
 /**
  * Builds the styleguide and watches for changes
  * @param config - The configuration for the styleguide
+ * @param onChange - Optional callback function to call when the styleguide is changed
+ * @param onError - Optional callback function to call when an error occurs while building the styleguide
  */
-export async function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void) {
+export async function watchStyleguide(
+  config: StyleguideConfiguration,
+  onChange?: () => void,
+  onError?: (errorData: StyleguideBuildOutput['errors']) => void,
+) {
   globalThis.isWatchMode = true
-  await buildStyleguide(config)
+  const initialBuild = await buildStyleguide(config)
+  if (onError && initialBuild.errors) {
+    onError(initialBuild.errors)
+  }
 
   // marke sure content dir ends with /
   const contentDirPath = config.contentDir.endsWith('/') ? config.contentDir : `${config.contentDir}/`
 
   watchStyleguideForChanges(contentDirPath, () => {
     (async () => {
-      await buildStyleguide(config)
+      const localBuild = await buildStyleguide(config)
       if (onChange)
         onChange()
+
+      if (onError && localBuild.errors) {
+        onError(localBuild.errors)
+      }
     })()
   })
 }
