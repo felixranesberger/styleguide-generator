@@ -30,7 +30,7 @@ function y(o, l) {
   ), console.groupEnd();
 }
 async function v() {
-  const { HtmlValidate: o, StaticConfigLoader: l } = await import("./browser-ChRpqXa8.js");
+  const { HtmlValidate: o, StaticConfigLoader: l } = await import("./browser-CD3UD2GK.js");
   if (n)
     return n;
   const i = new l();

@@ -681,7 +681,7 @@ async function generateFullPageFile(data) {
 
 const sanitizeId = (id) => id.toLowerCase().replaceAll(".", "-");
 function getHasSectionExternalFullpage(section) {
-  return section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
+  return section.markup.length > 0 && (section.icons === void 0 || section.icons.length === 0) && (section.colors === void 0 || section.colors.length === 0);
 }
 function getHeaderHtml() {
   return `
@@ -837,7 +837,7 @@ function getMainContentHtml(secondLevelSection, config) {
     } else if (section.icons && section.icons.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentIcons(section));
     } else {
-      const content = section.markup ? getMainContentRegular(section, config) : undefined;
+      const content = section.markup ? getMainContentRegular(section, config) : void 0;
       output += getMainContentSectionWrapper(section, content);
     }
   }
@@ -1438,7 +1438,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
       name: `pug-worker-${index}`
     }),
     busy: false,
-    currentTaskId: undefined
+    currentTaskId: void 0
   }));
   workerPool.forEach((workerNode) => {
     workerNode.worker.on("message", (result) => {
@@ -1493,7 +1493,7 @@ function watchForFileContentChanges(path, regex, callback) {
   };
   const handleCSSContentChanges = (filePath) => {
     const previousFileMatches = regexFileContents.get(filePath);
-    const hasFileBeenReadBefore = previousFileMatches !== undefined;
+    const hasFileBeenReadBefore = previousFileMatches !== void 0;
     const currentFileContent = readFileSync(filePath, "utf8");
     const currentFileMatches = currentFileContent.match(regex);
     if (!hasFileBeenReadBefore) {
@@ -1559,7 +1559,7 @@ async function buildStyleguide(config) {
     return isHtmlIndexPage ? path.join(baseDirectory, "index.html") : path.join(baseDirectory, fileName);
   };
   const handleGenerateFullPage = async (data) => {
-    if (data.markup === undefined || data.markup.length === 0)
+    if (data.markup === void 0 || data.markup.length === 0)
       return;
     let htmlMarkup = data.markup;
     if (data.wrapper) {
@@ -1570,7 +1570,7 @@ async function buildStyleguide(config) {
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
-        description: !data.hasMarkdownDescription ? data.description : undefined,
+        description: !data.hasMarkdownDescription ? data.description : void 0,
         lang: config.html.lang,
         htmlclass: data.htmlclass,
         bodyclass: data.bodyclass
@@ -1579,7 +1579,7 @@ async function buildStyleguide(config) {
       js: config.html.assets.js,
       html: htmlMarkup,
       theme: config.theme,
-      ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(data) : undefined
+      ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(data) : void 0
     });
   };
   const searchSectionMapping = [];
@@ -1707,7 +1707,7 @@ async function buildStyleguide(config) {
             preloadIframes
           },
           theme: config.theme,
-          ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(secondLevelSection) : undefined
+          ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(secondLevelSection) : void 0
         })
       );
     });
@@ -1733,7 +1733,7 @@ async function buildStyleguide(config) {
     errors.overwrittenSectionsIds = overwrittenSectionsIds;
   }
   return {
-    errors: Object.keys(errors).length > 0 ? errors : undefined
+    errors: Object.keys(errors).length > 0 ? errors : void 0
   };
 }
 async function watchStyleguide(config, onChange, onError) {
