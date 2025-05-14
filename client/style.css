@@ -278,6 +278,10 @@ body[data-is-mobile='true'] .desktop-device-only {
     @apply text-styleguide-highlight;
   }
 
+  :is(ul, ol) {
+    @apply pl-5;
+  }
+
   ul {
     @apply list-disc;
   }
