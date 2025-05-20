@@ -602,7 +602,7 @@ function getMainContentIcons(section: in2Section): string {
             class="grid grid-cols-2 gap-4 @lg:grid-cols-3 @xl:grid-cols-4"
         >
             ${section.icons?.map(icon => `
-              <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 duration-700 items icon-search-list__item bg-styleguide-bg-highlight transition hover:border-styleguide-border focus:border-styleguide-border">
+              <li class="relative grid gap-4 rounded-2xl border border-transparent px-4 py-6 items icon-search-list__item bg-styleguide-bg-highlight transition hover:border-styleguide-border focus:border-styleguide-border">
                   <div class="relative flex w-full justify-center size-6 text-styleguide-highlight [&>svg]:h-full [&>svg]:w-auto [&>i]:size-[24px] [&>i]:text-[24px] [&>i]:leading-[1em] text-styleguide-highlight">
                       ${icon.svg}
   
