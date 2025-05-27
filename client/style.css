@@ -275,7 +275,18 @@ body[data-is-mobile='true'] .desktop-device-only {
   }
 
   a {
-    @apply text-styleguide-highlight;
+    @apply text-styleguide-theme-highlight font-semibold;
+  }
+
+  a::after {
+    @apply inline-block ml-1 bg-styleguide-theme-highlight bg-contain -mb-px;
+
+    --icon-size: 1em;
+
+    content: '';
+    inline-size: var(--icon-size);
+    block-size: var(--icon-size);
+    mask-image: url('/icons/external-link.svg');
   }
 
   :is(ul, ol) {
