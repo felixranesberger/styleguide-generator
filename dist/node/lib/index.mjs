@@ -43,29 +43,55 @@ function shadeColor(hexColor, percent) {
   const newHexBColor = `${newB.toString(16)}`.padStart(2, "0");
   return `#${newHexRColor}${newHexGColor}${newHexBColor}`;
 }
-async function createFaviconPreviewFile(type, outputPath, themeColor) {
-  const faviconFilePath = path.resolve(outputPath, `favicon/preview-${type}.svg`);
+async function createFaviconPreviewFile(outputPath, theme) {
+  const faviconFilePath = path.resolve(outputPath, `favicon/preview.svg`);
   const doesFileExist = await fs.pathExists(faviconFilePath);
   if (doesFileExist)
     return;
   const faviconContent = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+      <style>
+        .fill-theme-color { fill: ${theme.light}; }
+        .fill-theme-color-20 { fill: ${shadeColor(theme.light, 20)}; }
+        .fill-theme-color-40 { fill: ${shadeColor(theme.light, 40)}; }
+        
+        ${theme.dark ? `
+            @media (prefers-color-scheme: dark) {
+              .fill-theme-color { fill: ${theme.dark}; }
+              .fill-theme-color-20 { fill: ${shadeColor(theme.dark, 20)}; }
+              .fill-theme-color-40 { fill: ${shadeColor(theme.dark, 40)}; }
+            }
+          ` : ""}
+      </style>
+    
       <g fill="none" fill-rule="nonzero">
-        <path fill="${themeColor}" d="M4.5 0C5.32842712 0 6 .67157287 6 1.5V13c0 1.6568542-1.34314575 3-3 3s-3-1.3431458-3-3V1.5C0 .67157287.67157287 0 1.5 0ZM3 11c-1.1045695 0-2 .8954305-2 2s.8954305 2 2 2 2-.8954305 2-2-.8954305-2-2-2Z" />
-        <path fill="${shadeColor(themeColor, 20)}" d="M7.5 12.743V4.257l1.51-1.51c.28133215-.28151251.6630087-.43967977 1.061-.43967977.3979913 0 .7796678.15816726 1.061.43967977l2.121 2.121c.2815125.28133215.4396798.6630087.4396798 1.061 0 .3979913-.1581673.77966785-.4396798 1.061L7.5 12.743Z" />
-        <path fill="${shadeColor(themeColor, 40)}" d="M6.364 16H14.5c.8284271 0 1.5-.6715729 1.5-1.5v-3c0-.8284271-.6715729-1.5-1.5-1.5h-2.136l-6 6Z" />
+        <path class="fill-theme-color" d="M4.5 0C5.32842712 0 6 .67157287 6 1.5V13c0 1.6568542-1.34314575 3-3 3s-3-1.3431458-3-3V1.5C0 .67157287.67157287 0 1.5 0ZM3 11c-1.1045695 0-2 .8954305-2 2s.8954305 2 2 2 2-.8954305 2-2-.8954305-2-2-2Z" />
+        <path class="fill-theme-color-20" d="M7.5 12.743V4.257l1.51-1.51c.28133215-.28151251.6630087-.43967977 1.061-.43967977.3979913 0 .7796678.15816726 1.061.43967977l2.121 2.121c.2815125.28133215.4396798.6630087.4396798 1.061 0 .3979913-.1581673.77966785-.4396798 1.061L7.5 12.743Z" />
+        <path class="fill-theme-color-40" d="M6.364 16H14.5c.8284271 0 1.5-.6715729 1.5-1.5v-3c0-.8284271-.6715729-1.5-1.5-1.5h-2.136l-6 6Z" />
       </g>
     </svg>
   `;
   await fs.outputFile(faviconFilePath, faviconContent);
 }
-async function createFaviconFullPageFile(type, outputPath, themeColor) {
-  const faviconFilePath = path.resolve(outputPath, `favicon/fullpage-${type}.svg`);
+async function createFaviconFullPageFile(outputPath, theme) {
+  const faviconFilePath = path.resolve(outputPath, `favicon/fullpage.svg`);
   const doesFileExist = await fs.pathExists(faviconFilePath);
   if (doesFileExist)
     return;
-  const faviconContent = `    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="${themeColor}" class="size-4">
+  const faviconContent = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="fill-icon">
+      <style>
+        .fill-icon {
+          fill: ${theme.light};
+        }
+        
+        ${theme.dark ? `
+            @media (prefers-color-scheme: dark) {
+              .fill-icon { fill: ${theme.dark}; }
+            }
+          ` : ""}
+      </style>
+    
       <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
       <path fill-rule="evenodd" d="M1.38 8.28a.87.87 0 0 1 0-.566 7.003 7.003 0 0 1 13.238.006.87.87 0 0 1 0 .566A7.003 7.003 0 0 1 1.379 8.28ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" clip-rule="evenodd" />
     </svg>
@@ -85,10 +111,8 @@ async function generateFaviconFiles(outputPath, theme) {
       throw new Error(`Invalid dark theme color ${theme.dark} provided. Please provide a valid hex color code.`);
     }
     await Promise.all([
-      createFaviconPreviewFile("light", outputPath, theme.light),
-      createFaviconFullPageFile("light", outputPath, theme.light),
-      createFaviconPreviewFile("dark", outputPath, theme.dark),
-      createFaviconFullPageFile("dark", outputPath, theme.dark)
+      createFaviconPreviewFile(outputPath, theme),
+      createFaviconFullPageFile(outputPath, theme)
     ]);
   } else {
     const color = theme;
@@ -97,8 +121,8 @@ async function generateFaviconFiles(outputPath, theme) {
       throw new Error(`Invalid theme color ${color} provided. Please provide a valid hex color code or an object with light and dark theme colors.`);
     }
     await Promise.all([
-      createFaviconPreviewFile("light", outputPath, color),
-      createFaviconFullPageFile("light", outputPath, color)
+      createFaviconPreviewFile(outputPath, { light: color }),
+      createFaviconFullPageFile(outputPath, { light: color })
     ]);
   }
 }
@@ -658,10 +682,7 @@ async function generateFullPageFile(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
-          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
-          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/fullpage-dark.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
       ` : `
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
@@ -1344,8 +1365,7 @@ async function generatePreviewFile(data) {
     ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
           <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
           <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/preview-light.svg?raw">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/preview-dark.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
       ` : `
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg?raw">
