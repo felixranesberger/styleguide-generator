@@ -791,8 +791,7 @@ export async function generatePreviewFile(data: {
       ? `
           <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
           <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/preview-light.svg?raw">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/preview-dark.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
       `
       : `
         <meta name="theme-color" content="${data.theme}">

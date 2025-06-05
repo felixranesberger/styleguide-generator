@@ -43,10 +43,7 @@ export async function generateFullPageFile(data: {
     <meta name="generator" content="styleguide">
     ${typeof data.theme === 'object' && 'dark' in data.theme && 'light' in data.theme
       ? `
-          <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
-          <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: light)" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
-          <link rel="icon" type="image/svg+xml" media="(prefers-color-scheme: dark)" href="/styleguide-assets/favicon/fullpage-dark.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
       `
       : `
         <meta name="theme-color" content="${data.theme}">
