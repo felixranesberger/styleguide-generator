@@ -780,7 +780,7 @@ export async function generatePreviewFile(data: {
 
   const shouldRenderMetaDescription = data.page.description
     && data.page.description.length > 0
-    && (data.page.description.includes('<') && data.page.description.includes('>'))
+    && !(data.page.description.includes('<') && data.page.description.includes('>'))
 
   const content = `
 <!DOCTYPE html>
