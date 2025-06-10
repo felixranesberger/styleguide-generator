@@ -778,12 +778,16 @@ export async function generatePreviewFile(data: {
     .map(url => `<link rel="preload" href="${url}" as="document">`)
     .join('\n')
 
+  const shouldRenderMetaDescription = data.page.description
+    && data.page.description.length > 0
+    && (data.page.description.includes('<') && data.page.description.includes('>'))
+
   const content = `
 <!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
+    ${data.page.description && shouldRenderMetaDescription ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
