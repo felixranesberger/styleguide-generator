@@ -14,7 +14,7 @@ async function compilePug(contentDir, mode, html) {
   await Promise.all(vitePugTags.map(async (vitePugTag) => {
     const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1];
     if (!pugSourcePath) {
-      return void 0;
+      return undefined;
     }
     const pugModifierClass = vitePugTag.match(/modifierClass="(.+?)"/);
     let pugLocals = {};

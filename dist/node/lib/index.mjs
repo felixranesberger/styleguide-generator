@@ -702,7 +702,7 @@ async function generateFullPageFile(data) {
 
 const sanitizeId = (id) => id.toLowerCase().replaceAll(".", "-");
 function getHasSectionExternalFullpage(section) {
-  return section.markup.length > 0 && (section.icons === void 0 || section.icons.length === 0) && (section.colors === void 0 || section.colors.length === 0);
+  return section.markup.length > 0 && (section.icons === undefined || section.icons.length === 0) && (section.colors === undefined || section.colors.length === 0);
 }
 function getHeaderHtml() {
   return `
@@ -858,7 +858,7 @@ function getMainContentHtml(secondLevelSection, config) {
     } else if (section.icons && section.icons.length > 0) {
       output += getMainContentSectionWrapper(section, getMainContentIcons(section));
     } else {
-      const content = section.markup ? getMainContentRegular(section, config) : void 0;
+      const content = section.markup ? getMainContentRegular(section, config) : undefined;
       output += getMainContentSectionWrapper(section, content);
     }
   }
@@ -1353,12 +1353,13 @@ async function generatePreviewFile(data) {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
   const computedPreloadIframes = data.html.preloadIframes.map((url) => `<link rel="preload" href="${url}" as="document">`).join("\n");
+  const shouldRenderMetaDescription = data.page.description && data.page.description.length > 0 && !(data.page.description.includes("<") && data.page.description.includes(">"));
   const content = `
 <!DOCTYPE html>
 <html lang="${data.page.lang}">
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
-    ${data.page.description ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
+    ${data.page.description && shouldRenderMetaDescription ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
@@ -1458,7 +1459,7 @@ async function compilePugMarkup(mode, contentDir, repository) {
       name: `pug-worker-${index}`
     }),
     busy: false,
-    currentTaskId: void 0
+    currentTaskId: undefined
   }));
   workerPool.forEach((workerNode) => {
     workerNode.worker.on("message", (result) => {
@@ -1513,7 +1514,7 @@ function watchForFileContentChanges(path, regex, callback) {
   };
   const handleCSSContentChanges = (filePath) => {
     const previousFileMatches = regexFileContents.get(filePath);
-    const hasFileBeenReadBefore = previousFileMatches !== void 0;
+    const hasFileBeenReadBefore = previousFileMatches !== undefined;
     const currentFileContent = readFileSync(filePath, "utf8");
     const currentFileMatches = currentFileContent.match(regex);
     if (!hasFileBeenReadBefore) {
@@ -1579,7 +1580,7 @@ async function buildStyleguide(config) {
     return isHtmlIndexPage ? path.join(baseDirectory, "index.html") : path.join(baseDirectory, fileName);
   };
   const handleGenerateFullPage = async (data) => {
-    if (data.markup === void 0 || data.markup.length === 0)
+    if (data.markup === undefined || data.markup.length === 0)
       return;
     let htmlMarkup = data.markup;
     if (data.wrapper) {
@@ -1590,7 +1591,7 @@ async function buildStyleguide(config) {
       filePath: getFullPageFilePath(data.fullpageFileName),
       page: {
         title: data.header,
-        description: !data.hasMarkdownDescription ? data.description : void 0,
+        description: !data.hasMarkdownDescription ? data.description : undefined,
         lang: config.html.lang,
         htmlclass: data.htmlclass,
         bodyclass: data.bodyclass
@@ -1599,7 +1600,7 @@ async function buildStyleguide(config) {
       js: config.html.assets.js,
       html: htmlMarkup,
       theme: config.theme,
-      ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(data) : void 0
+      ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(data) : undefined
     });
   };
   const searchSectionMapping = [];
@@ -1727,7 +1728,7 @@ async function buildStyleguide(config) {
             preloadIframes
           },
           theme: config.theme,
-          ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(secondLevelSection) : void 0
+          ogImageUrl: config.plugins?.ogImage ? config.plugins.ogImage(secondLevelSection) : undefined
         })
       );
     });
@@ -1753,7 +1754,7 @@ async function buildStyleguide(config) {
     errors.overwrittenSectionsIds = overwrittenSectionsIds;
   }
   return {
-    errors: Object.keys(errors).length > 0 ? errors : void 0
+    errors: Object.keys(errors).length > 0 ? errors : undefined
   };
 }
 async function watchStyleguide(config, onChange, onError) {

@@ -1,4 +1,4 @@
-import { r as o } from "./main-C8a5AHre.js";
+import { r as o } from "./main-0Qpa8n8A.js";
 const c = (t, a) => {
   t.forEach((e) => {
     let r = e.getAttribute(a);
