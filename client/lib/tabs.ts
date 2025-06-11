@@ -49,5 +49,32 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
         }
       })
     }))
+
+    // preload iframes on tab hover
+    const isMobileView = window.innerWidth < 768
+    if (!isMobileView) {
+      tabTriggers.forEach((trigger) => {
+        const content = tabContent.find(c => c.getAttribute('aria-labelledby') === trigger.id)
+        if (!content)
+          throw new Error(`No content found for trigger ${trigger.id}`)
+
+        const iframe = content.querySelector<HTMLIFrameElement>('iframe')
+        if (!iframe || iframe.loading !== 'lazy')
+          return
+
+        trigger.addEventListener('mouseenter', () => {
+          iframe.loading = 'eager'
+        })
+
+        // lazy load everything when browser is not busy and after 5s
+        setTimeout(() => {
+          requestIdleCallback(() => {
+            if (iframe.loading === 'lazy') {
+              iframe.loading = 'eager'
+            }
+          })
+        }, 5000)
+      })
+    }
   })
 }
