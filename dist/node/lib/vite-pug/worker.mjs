@@ -96,10 +96,9 @@ if (!parentPort) {
 parentPort.on("message", async (data) => {
   const { id, mode, html, contentDir } = data;
   let result = html;
-  if (mode === "production" && result.includes("<insert-vite-pug")) {
-    result = await compilePug(contentDir, mode, html);
-  }
-  if (!result.includes("<insert-vite-pug")) {
+  const needsFormatting = mode === "development" && !result.includes("<insert-vite-pug") || mode === "production";
+  result = await compilePug(contentDir, mode, html);
+  if (needsFormatting) {
     result = await biomeFormat(result);
   }
   parentPort.postMessage({ id, html: result });
