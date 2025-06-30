@@ -19,6 +19,13 @@ async function getBiome() {
       distribution: Distribution.NODE
     });
     projectKey = instance.openProject(".").projectKey;
+    instance.applyConfiguration(projectKey, {
+      html: {
+        formatter: {
+          lineWidth: 100
+        }
+      }
+    });
     biomeInstance = instance;
     return instance;
   })();
@@ -92,7 +99,9 @@ parentPort.on("message", async (data) => {
   if (mode === "production" && result.includes("<insert-vite-pug")) {
     result = await compilePug(contentDir, mode, html);
   }
-  result = await biomeFormat(result);
+  if (!result.includes("<insert-vite-pug")) {
+    result = await biomeFormat(result);
+  }
   parentPort.postMessage({ id, html: result });
 });
 
