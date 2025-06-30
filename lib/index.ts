@@ -21,9 +21,9 @@ import { compilePugMarkup } from './vite-pug'
 import { watchStyleguideForChanges } from './watcher.ts'
 
 declare global {
-  // eslint-disable-next-line no-var,vars-on-top
+  // eslint-disable-next-line vars-on-top
   var isWatchMode: boolean
-  // eslint-disable-next-line no-var,vars-on-top
+  // eslint-disable-next-line vars-on-top
   var styleguideConfiguration: StyleguideConfiguration
 }
 
