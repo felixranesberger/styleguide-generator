@@ -24,6 +24,15 @@ async function getBiome(): Promise<{ biome: Biome, projectKey: number }> {
     })
 
     projectKey = instance.openProject('.').projectKey
+
+    instance.applyConfiguration(projectKey, {
+      html: {
+        formatter: {
+          lineWidth: 100,
+        },
+      },
+    })
+
     biomeInstance = instance
 
     return instance
@@ -144,7 +153,11 @@ parentPort.on('message', async (data: PugWorkerInput) => {
     result = await compilePug(contentDir, mode, html)
   }
 
-  result = await biomeFormat(result)
+  // don't apply biome formatting if the content contains <insert-vite-pug> tags
+  // since this will break the replacement logic
+  if (!result.includes('<insert-vite-pug')) {
+    result = await biomeFormat(result)
+  }
 
   parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
 })
