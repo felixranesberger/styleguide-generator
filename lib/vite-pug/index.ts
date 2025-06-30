@@ -37,9 +37,8 @@ export async function compilePugMarkup(
 ) {
   const clonedRepository = structuredClone(repository)
 
-  // find all entries that have markup with <insert-vite-pug
+  // get all processing id's
   const needsProcessingIds = Array.from(clonedRepository.entries())
-    .filter(([, { markup }]) => markup.includes('<insert-vite-pug'))
     .map(([id]) => id)
 
   if (needsProcessingIds.length === 0)

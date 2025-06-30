@@ -1,9 +1,64 @@
 import type { StyleguideConfiguration } from '../index'
 import path from 'node:path'
 import { parentPort } from 'node:worker_threads'
-import { format } from 'prettier'
-import prettierOrganizeAttributes from 'prettier-plugin-organize-attributes'
+import { Biome, Distribution } from '@biomejs/js-api'
 import pug from 'pug'
+
+let biomeInstance: Biome
+let biomePromise: Promise<Biome>
+let projectKey: number
+
+async function getBiome(): Promise<{ biome: Biome, projectKey: number }> {
+  if (biomeInstance && projectKey !== undefined) {
+    return { biome: biomeInstance, projectKey }
+  }
+
+  if (biomePromise) {
+    const biome = await biomePromise
+    return { biome, projectKey }
+  }
+
+  biomePromise = (async () => {
+    const instance = await Biome.create({
+      distribution: Distribution.NODE,
+    })
+
+    projectKey = instance.openProject('.').projectKey
+    biomeInstance = instance
+
+    return instance
+  })()
+
+  const biome = await biomePromise
+  return { biome, projectKey }
+}
+
+async function biomeFormat(content: string): Promise<string> {
+  try {
+    const { biome, projectKey } = await getBiome()
+
+    // Try to format with Biome HTML support (experimental)
+    const result = biome.formatContent(projectKey, content, {
+      filePath: 'example.html',
+    })
+
+    // Check if there are any fatal errors in diagnostics
+    const hasFatalErrors = result.diagnostics?.some(
+      (diag: any) => diag.severity === 'fatal' || diag.severity === 'error',
+    )
+
+    if (hasFatalErrors) {
+      console.warn('Biome HTML formatting has errors, falling back to original content')
+      return content
+    }
+
+    return result.content
+  }
+  catch (error) {
+    console.warn('Biome HTML formatting not supported or failed:', error)
+    return content // Fallback to original content
+  }
+}
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g
@@ -51,16 +106,6 @@ export async function compilePug(contentDir: `${string}/`, mode: StyleguideConfi
 
       const pugOutput = pugFn(pugLocals)
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput)
-
-      // prettify html output only in production mode,
-      // since the function breaks the vite <pug> tag detection
-      markupOutput = await format(markupOutput, {
-        parser: 'html',
-        htmlWhitespaceSensitivity: 'ignore',
-        plugins: [
-          prettierOrganizeAttributes,
-        ],
-      })
     }
     // Vite requires no Pug compilation in development mode, since we can use a Pug plugin
     else {
@@ -93,13 +138,13 @@ if (!parentPort) {
 parentPort.on('message', async (data: PugWorkerInput) => {
   const { id, mode, html, contentDir } = data
 
-  try {
-    const result = await compilePug(contentDir, mode, html)
-    parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
+  let result = html
+
+  if (mode === 'production' && result.includes('<insert-vite-pug')) {
+    result = await compilePug(contentDir, mode, html)
   }
-  catch (error) {
-    parentPort!.postMessage({
-      error: error instanceof Error ? error.message : 'Unknown error',
-    } satisfies PugWorkerOutput)
-  }
+
+  result = await biomeFormat(result)
+
+  parentPort!.postMessage({ id, html: result } satisfies PugWorkerOutput)
 })
