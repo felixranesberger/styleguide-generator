@@ -20,4 +20,5 @@ interface PugWorkerError {
 }
 type PugWorkerOutput = PugWorkerSuccess | PugWorkerError;
 
-export { type PugWorkerInput, type PugWorkerOutput, compilePug };
+export { compilePug };
+export type { PugWorkerInput, PugWorkerOutput };

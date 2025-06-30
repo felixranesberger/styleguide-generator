@@ -1,9 +1,49 @@
 import path from 'node:path';
 import { parentPort } from 'node:worker_threads';
-import { format } from 'prettier';
-import prettierOrganizeAttributes from 'prettier-plugin-organize-attributes';
+import { Biome, Distribution } from '@biomejs/js-api';
 import pug from 'pug';
 
+let biomeInstance;
+let biomePromise;
+let projectKey;
+async function getBiome() {
+  if (biomeInstance && projectKey !== void 0) {
+    return { biome: biomeInstance, projectKey };
+  }
+  if (biomePromise) {
+    const biome2 = await biomePromise;
+    return { biome: biome2, projectKey };
+  }
+  biomePromise = (async () => {
+    const instance = await Biome.create({
+      distribution: Distribution.NODE
+    });
+    projectKey = instance.openProject(".").projectKey;
+    biomeInstance = instance;
+    return instance;
+  })();
+  const biome = await biomePromise;
+  return { biome, projectKey };
+}
+async function biomeFormat(content) {
+  try {
+    const { biome, projectKey: projectKey2 } = await getBiome();
+    const result = biome.formatContent(projectKey2, content, {
+      filePath: "example.html"
+    });
+    const hasFatalErrors = result.diagnostics?.some(
+      (diag) => diag.severity === "fatal" || diag.severity === "error"
+    );
+    if (hasFatalErrors) {
+      console.warn("Biome HTML formatting has errors, falling back to original content");
+      return content;
+    }
+    return result.content;
+  } catch (error) {
+    console.warn("Biome HTML formatting not supported or failed:", error);
+    return content;
+  }
+}
 const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g;
 async function compilePug(contentDir, mode, html) {
   const vitePugTags = html.match(regexModifierLine);
@@ -14,7 +54,7 @@ async function compilePug(contentDir, mode, html) {
   await Promise.all(vitePugTags.map(async (vitePugTag) => {
     const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1];
     if (!pugSourcePath) {
-      return undefined;
+      return void 0;
     }
     const pugModifierClass = vitePugTag.match(/modifierClass="(.+?)"/);
     let pugLocals = {};
@@ -36,13 +76,6 @@ async function compilePug(contentDir, mode, html) {
       });
       const pugOutput = pugFn(pugLocals);
       markupOutput = markupOutput.replaceAll(vitePugTag, pugOutput);
-      markupOutput = await format(markupOutput, {
-        parser: "html",
-        htmlWhitespaceSensitivity: "ignore",
-        plugins: [
-          prettierOrganizeAttributes
-        ]
-      });
     } else {
       const pugTag = pugModifierClass && pugModifierClass[1] ? `<pug src="${pugFilePath}" locals="${encodeURIComponent(JSON.stringify(pugLocals))}"></pug>` : `<pug src="${pugFilePath}"></pug>`;
       markupOutput = markupOutput.replaceAll(vitePugTag, pugTag);
@@ -55,14 +88,12 @@ if (!parentPort) {
 }
 parentPort.on("message", async (data) => {
   const { id, mode, html, contentDir } = data;
-  try {
-    const result = await compilePug(contentDir, mode, html);
-    parentPort.postMessage({ id, html: result });
-  } catch (error) {
-    parentPort.postMessage({
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
+  let result = html;
+  if (mode === "production" && result.includes("<insert-vite-pug")) {
+    result = await compilePug(contentDir, mode, html);
   }
+  result = await biomeFormat(result);
+  parentPort.postMessage({ id, html: result });
 });
 
 export { compilePug };

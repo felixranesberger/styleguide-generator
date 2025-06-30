@@ -82,4 +82,5 @@ declare function buildStyleguide(config: StyleguideConfiguration): Promise<Style
  */
 declare function watchStyleguide(config: StyleguideConfiguration, onChange?: () => void, onError?: (errorData: StyleguideBuildOutput['errors']) => void): Promise<void>;
 
-export { type StyleguideConfiguration, buildStyleguide, watchStyleguide };
+export { buildStyleguide, watchStyleguide };
+export type { StyleguideConfiguration };
