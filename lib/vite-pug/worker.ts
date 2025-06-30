@@ -149,13 +149,12 @@ parentPort.on('message', async (data: PugWorkerInput) => {
 
   let result = html
 
-  if (mode === 'production' && result.includes('<insert-vite-pug')) {
-    result = await compilePug(contentDir, mode, html)
-  }
+  const needsFormatting = (mode === 'development' && !result.includes('<insert-vite-pug'))
+    || mode === 'production'
 
-  // don't apply biome formatting if the content contains <insert-vite-pug> tags
-  // since this will break the replacement logic
-  if (!result.includes('<insert-vite-pug')) {
+  result = await compilePug(contentDir, mode, html)
+
+  if (needsFormatting) {
     result = await biomeFormat(result)
   }
 
