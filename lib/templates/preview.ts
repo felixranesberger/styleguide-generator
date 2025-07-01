@@ -205,10 +205,10 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
     headingClass = 'text-4xl'
   }
   else if (section.sectionLevel === 'third') {
-    const isDeplyNested = section.id.split('.').length > 3
+    const isDeeplyNested = section.id.split('.').length > 3
 
-    headingTag = isDeplyNested ? 'h3' : 'h2'
-    headingClass = isDeplyNested ? 'text-xl' : 'text-2xl'
+    headingTag = isDeeplyNested ? 'h3' : 'h2'
+    headingClass = isDeeplyNested ? 'text-xl' : 'text-2xl'
   }
 
   const computeDescription = () => {
