@@ -23,7 +23,7 @@ export async function createShikiHighlighter() {
   })
 }
 
-self.addEventListener('message', async (event: MessageEvent<{ html: string }>) => {
+globalThis.addEventListener('message', async (event: MessageEvent<{ html: string }>) => {
   if (!highlighter) {
     await createShikiHighlighter()
   }
@@ -36,5 +36,5 @@ self.addEventListener('message', async (event: MessageEvent<{ html: string }>) =
     },
   })
 
-  self.postMessage(result)
+  globalThis.postMessage(result)
 })

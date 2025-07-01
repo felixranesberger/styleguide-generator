@@ -28,7 +28,7 @@ const searchNoResults = document.querySelector('#search-no-results')
 if (!searchNoResults)
   throw new Error('No search no results element found')
 
-const { show, close } = useDialog(dialog, dialogBackdrop)
+const { show } = useDialog(dialog, dialogBackdrop)
 
 async function showDialog() {
   await show(
@@ -46,16 +46,6 @@ async function showDialog() {
       searchInput!.ariaExpanded = 'true'
 
       handleSearchFilter()
-    },
-  )
-}
-
-async function closeDialog() {
-  await close(
-    undefined,
-    () => {
-      openSearchTriggers.forEach(trigger => trigger.ariaExpanded = 'false')
-      searchInput!.ariaExpanded = 'false'
     },
   )
 }
