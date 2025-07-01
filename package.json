@@ -12,30 +12,30 @@
     "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@antfu/utils": "^9.2.0",
     "@biomejs/js-api": "^1.0.0",
-    "@biomejs/wasm-nodejs": "^2.0.5",
-    "@shikijs/markdown-it": "^3.1.0",
+    "@biomejs/wasm-nodejs": "^2.0.6",
+    "@shikijs/markdown-it": "^3.7.0",
     "chokidar": "^4.0.3",
-    "fs-extra": "^11.2.0",
-    "keyux": "^0.11.1",
-    "markdown-it-async": "^2.1.0",
-    "motion": "^12.4.7",
+    "fs-extra": "^11.3.0",
+    "keyux": "^0.11.2",
+    "markdown-it-async": "^2.2.0",
+    "motion": "^12.20.2",
     "pug": "^3.0.3",
-    "tinyglobby": "^0.2.10"
+    "shiki": "^3.7.0",
+    "tinyglobby": "^0.2.14"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.3.0",
-    "@antfu/utils": "^8.1.0",
-    "@tailwindcss/vite": "^4.0.0",
+    "@antfu/eslint-config": "^4.16.1",
+    "@tailwindcss/vite": "^4.1.11",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
-    "eslint": "^9.21.0",
-    "html-validate": "^9.3.0",
-    "shiki": "^2.1.0",
-    "unbuild": "^3.2.0",
+    "eslint": "^9.30.0",
+    "html-validate": "^9.7.1",
+    "unbuild": "^3.5.0",
     "vite": "^6.0.7"
   }
 }
