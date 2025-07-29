@@ -51,7 +51,6 @@ export async function parseMarkdown(data: MarkdownOptionsBase & {
     md = MarkdownItAsync({ linkify: true, typographer: true })
     md.use(
       fromAsyncCodeToHtml(
-        // @ts-expect-error - ignore
         codeToHtml,
         {
           themes: {
