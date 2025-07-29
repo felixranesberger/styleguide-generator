@@ -3,7 +3,7 @@
 
 import type { StyleguideConfiguration } from './index.ts'
 import path from 'node:path'
-import { parseMarkdown } from './markdown.ts'
+import { parseMarkdown } from './markdown'
 
 interface FileObject {
   base?: string

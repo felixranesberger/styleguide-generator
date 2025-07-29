@@ -2,7 +2,7 @@ import { fromAsyncCodeToHtml } from '@shikijs/markdown-it/async'
 import fs from 'fs-extra'
 import MarkdownItAsync from 'markdown-it-async'
 import { codeToHtml } from 'shiki'
-import { log } from './utils.ts'
+import { log } from '../utils.ts'
 
 let md: ReturnType<typeof MarkdownItAsync> | undefined
 
