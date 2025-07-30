@@ -3,6 +3,7 @@ import fs from 'fs-extra'
 import MarkdownItAsync from 'markdown-it-async'
 import { codeToHtml } from 'shiki'
 import { log } from '../utils.ts'
+import { markdownItComponentInfo } from './plugins/component-info.ts'
 
 let md: ReturnType<typeof MarkdownItAsync> | undefined
 
@@ -49,6 +50,7 @@ export async function parseMarkdown(data: MarkdownOptionsBase & {
   // Initialize Markdown parser
   if (!md) {
     md = MarkdownItAsync({ linkify: true, typographer: true })
+    md.use(markdownItComponentInfo)
     md.use(
       fromAsyncCodeToHtml(
         codeToHtml,

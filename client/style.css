@@ -55,152 +55,153 @@
   src: url(/styleguide-assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
 }
 
-html {
-  view-transition-name: none;
-}
-
-:root {
-  color-scheme: light dark;
-
-  /* Background colors */
-  --styleguide-color-background: light-dark(rgb(250, 250, 250), black);
-  --styleguide-color-background-highlight: light-dark(white, rgb(10, 10, 10));
-
-  /* Text colors */
-  --styleguide-color-highlight: light-dark(rgb(17 24 39), white);
-  --styleguide-color-regular: light-dark(hsla(0,0%,40%,1), rgb(161, 161, 161));
-
-  /* Border colors */
-  --styleguide-color-border: light-dark(rgb(235, 235, 235), rgb(31, 31, 31));
-}
-
-body {
-  @apply invisible;
-  background-color: var(--styleguide-color-background);
-  color: var(--styleguide-color-regular);
-}
-
-body.js-loaded {
-  @apply visible;
-}
-
-body.is-scrolling iframe {
-  @apply pointer-events-none;
-}
-
-summary {
-  list-style: none;
-}
-
-summary::marker,
-summary::-webkit-details-marker {
-  display: none;
-}
-
-.theme-normal {
-  color-scheme: light dark;
-}
-
-.theme-light {
-  color-scheme: only light;
-}
-
-.theme-dark {
-  color-scheme: only dark;
-}
-
-/* Hide elements based on OS */
-body:not([data-os='mac']) .mac-only,
-body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
-  display: none;
-}
-
-body[data-is-mobile='true'] .desktop-device-only {
-  display: none;
-}
-
-
-.theme-dark {
-  .shiki,
-  .shiki span {
-    color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
-    /* Optional, if you also want font styles */
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
+@layer components {
+  html {
+    view-transition-name: none;
   }
-}
 
-/* Disable shiki background color */
-.code-highlight pre.shiki.shiki-themes {
-  background-color: transparent !important;
-}
+  :root {
+    color-scheme: light dark;
 
-.theme-select input[type="radio"]:checked + label {
-  @apply outline outline-styleguide-border rounded-3xl;
-}
+    /* Background colors */
+    --styleguide-color-background: light-dark(rgb(250, 250, 250), black);
+    --styleguide-color-background-highlight: light-dark(white, rgb(10, 10, 10));
 
-.theme-select input[type="radio"]:focus + label,
-.theme-select input[type="radio"] + label:hover {
-  @apply outline-blue-600;
-}
+    /* Text colors */
+    --styleguide-color-highlight: light-dark(rgb(17 24 39), white);
+    --styleguide-color-regular: light-dark(hsla(0,0%,40%,1), rgb(161, 161, 161));
 
-.search {
-  max-height: 85dvh;
-
-  @media (max-width: 768px) {
-    min-height: 60dvh;
+    /* Border colors */
+    --styleguide-color-border: light-dark(rgb(235, 235, 235), rgb(31, 31, 31));
   }
-}
 
-.search::backdrop {
-  display: none;
-}
+  body {
+    @apply invisible;
+    background-color: var(--styleguide-color-background);
+    color: var(--styleguide-color-regular);
+  }
 
-.dialog-backdrop {
-  display: none;
-  position: absolute;
-  backdrop-filter: blur(3px) brightness(0.7);
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 100;
-}
+  body.js-loaded {
+    @apply visible;
+  }
 
-.search-category {
-  display: none;
-}
+  body.is-scrolling iframe {
+    @apply pointer-events-none;
+  }
 
-.search-category__item:not(.search-category__item--active) {
-  display: none;
-}
+  summary {
+    list-style: none;
+  }
 
-.search-category:has(.search-category__item--active) {
-  display: block;
-}
+  summary::marker,
+  summary::-webkit-details-marker {
+    display: none;
+  }
 
-.icon-search-list__item-copy-icon {
-  @apply opacity-0 pointer-events-none absolute left-1/2 -translate-x-1/2;
-}
+  .theme-normal {
+    color-scheme: light dark;
+  }
 
-.menu-item {
-  @apply block p-3 rounded-md text-sm hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition;
-}
+  .theme-light {
+    color-scheme: only light;
+  }
 
-.menu-item--active {
-  @apply bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)];
-}
+  .theme-dark {
+    color-scheme: only dark;
+  }
 
-.preview-iframe {
-  width: 100%;
-  overflow-y: hidden;
-  min-height: 0;
-  border: none;
-}
+  /* Hide elements based on OS */
+  body:not([data-os='mac']) .mac-only,
+  body:not([data-os='windows'], [data-os='linux']) .winlinux-only {
+    display: none;
+  }
 
-.c-toast {
-  @apply
+  body[data-is-mobile='true'] .desktop-device-only {
+    display: none;
+  }
+
+
+  .theme-dark {
+    .shiki,
+    .shiki span {
+      color: var(--shiki-dark) !important;
+      background-color: var(--shiki-dark-bg) !important;
+      /* Optional, if you also want font styles */
+      font-style: var(--shiki-dark-font-style) !important;
+      font-weight: var(--shiki-dark-font-weight) !important;
+      text-decoration: var(--shiki-dark-text-decoration) !important;
+    }
+  }
+
+  /* Disable shiki background color */
+  .code-highlight pre.shiki.shiki-themes {
+    background-color: transparent !important;
+  }
+
+  .theme-select input[type="radio"]:checked + label {
+    @apply outline outline-styleguide-border rounded-3xl;
+  }
+
+  .theme-select input[type="radio"]:focus + label,
+  .theme-select input[type="radio"] + label:hover {
+    @apply outline-blue-600;
+  }
+
+  .search {
+    max-height: 85dvh;
+
+    @media (max-width: 768px) {
+      min-height: 60dvh;
+    }
+  }
+
+  .search::backdrop {
+    display: none;
+  }
+
+  .dialog-backdrop {
+    display: none;
+    position: absolute;
+    backdrop-filter: blur(3px) brightness(0.7);
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .search-category {
+    display: none;
+  }
+
+  .search-category__item:not(.search-category__item--active) {
+    display: none;
+  }
+
+  .search-category:has(.search-category__item--active) {
+    display: block;
+  }
+
+  .icon-search-list__item-copy-icon {
+    @apply opacity-0 pointer-events-none absolute left-1/2 -translate-x-1/2;
+  }
+
+  .menu-item {
+    @apply block p-3 rounded-md text-sm hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition;
+  }
+
+  .menu-item--active {
+    @apply bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)];
+  }
+
+  .preview-iframe {
+    width: 100%;
+    overflow-y: hidden;
+    min-height: 0;
+    border: none;
+  }
+
+  .c-toast {
+    @apply
     fixed
     flex
     items-center
@@ -226,92 +227,93 @@ body[data-is-mobile='true'] .desktop-device-only {
     after:top-[-5px]
     after:h-[5px]
     after:w-full;
-}
-
-/* Markdown specific styling */
-.markdown-container {
-  @apply leading-6;
-
-  /* Increase spacing to headline for all elements other than paragraphs */
-  > :first-child:not(p) {
-    @apply mt-[1em];
   }
 
-  /* Add max with for everything but code blocks */
-  > :not(pre) {
-      @apply max-w-[65ch];
-  }
+  /* Markdown specific styling */
+  .markdown-container {
+    @apply leading-6;
 
-  > :not(:last-child) {
-    @apply mb-4;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6, strong) {
-    @apply font-semibold text-styleguide-highlight;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6):has(+ p) {
-    @apply !mb-1.5;
-  }
-
-  :is(h1,h2,h3,h4,h5,h6):not(:first-child) {
-    @apply mt-[1.5em];
-  }
-
-  :is(h1, h2) {
-    @apply text-xl;
-  }
-
-  h3 {
-    @apply text-lg;
-  }
-
-  h4 {
-    @apply text-base;
-  }
-
-  :is(h5, h6) {
-    @apply text-sm;
-  }
-
-  a {
-    @apply text-styleguide-theme-highlight font-semibold;
-  }
-
-  a::after {
-    @apply inline-block ml-1 bg-styleguide-theme-highlight bg-contain -mb-px;
-
-    --icon-size: 1em;
-
-    content: '';
-    inline-size: var(--icon-size);
-    block-size: var(--icon-size);
-    mask-image: url('/icons/external-link.svg');
-  }
-
-  :is(ul, ol) {
-    @apply pl-5;
-  }
-
-  ul {
-    @apply list-disc;
-  }
-
-  ol {
-    @apply list-decimal;
-  }
-
-  /* markdown code block */
-  :is(.shiki, pre:not(.shiki)) {
-    @apply max-w-[83ch] overflow-x-auto px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
-
-    > code {
-      @apply inline-block;
+    /* Increase spacing to headline for all elements other than paragraphs */
+    > :first-child:not(p) {
+      @apply mt-[1em];
     }
-  }
 
-  /* markdown inline code */
-  :not(:is(pre)) > code {
-    @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
+    /* Add max with for everything but code blocks */
+    > :not(pre) {
+      @apply max-w-[65ch];
+    }
+
+    > :not(:last-child) {
+      @apply mb-4;
+    }
+
+    :is(h1, h2, h3, h4, h5, h6, strong) {
+      @apply font-semibold text-styleguide-highlight;
+    }
+
+    :is(h1, h2, h3, h4, h5, h6):has(+ p) {
+      @apply !mb-1.5;
+    }
+
+    :is(h1,h2,h3,h4,h5,h6):not(:first-child) {
+      @apply mt-[1.5em];
+    }
+
+    :is(h1, h2) {
+      @apply text-xl;
+    }
+
+    h3 {
+      @apply text-lg;
+    }
+
+    h4 {
+      @apply text-base;
+    }
+
+    :is(h5, h6) {
+      @apply text-sm;
+    }
+
+    a {
+      @apply text-styleguide-theme-highlight font-semibold;
+    }
+
+    a::after {
+      @apply inline-block ml-1 bg-styleguide-theme-highlight bg-contain -mb-px;
+
+      --icon-size: 1em;
+
+      content: '';
+      inline-size: var(--icon-size);
+      block-size: var(--icon-size);
+      mask-image: url('/icons/external-link.svg');
+    }
+
+    :is(ul, ol) {
+      @apply pl-5;
+    }
+
+    ul {
+      @apply list-disc;
+    }
+
+    ol {
+      @apply list-decimal;
+    }
+
+    /* markdown code block */
+    :is(.shiki, pre:not(.shiki)) {
+      @apply max-w-[83ch] overflow-x-auto px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+
+      > code {
+        @apply inline-block;
+      }
+    }
+
+    /* markdown inline code */
+    :not(:is(pre)) > code {
+      @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
+    }
   }
 }
