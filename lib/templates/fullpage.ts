@@ -34,7 +34,7 @@ export async function generateFullPageFile(data: {
 
   const content = `
 <!DOCTYPE html>
-<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ''}>
+<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="scroll-smooth ${data.page.htmlclass}"` : ''}>
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ''}

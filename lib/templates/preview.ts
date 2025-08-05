@@ -792,7 +792,7 @@ export async function generatePreviewFile(data: {
 
   const content = `
 <!DOCTYPE html>
-<html lang="${data.page.lang}">
+<html lang="${data.page.lang}" class="scroll-smooth">
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description && shouldRenderMetaDescription ? `<meta name="description" content="${data.page.description.replaceAll(`'`, '').replaceAll(`"`, '')}">` : ''}
