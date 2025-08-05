@@ -1,6 +1,7 @@
 import fs from 'fs-extra'
 import { createServer } from 'vite'
-import { watchStyleguide } from './lib';
+// eslint-disable-next-line antfu/no-import-dist
+import { watchStyleguide } from './dist/node/lib/index.mjs';
 
 (async () => {
   // clear the output directory
