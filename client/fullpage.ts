@@ -3,13 +3,7 @@ interface ModifierReplacerConfig {
   placeholder?: string
 }
 
-// add styleguide preview class when in iframe preview mode
-const urlSearchParams = new URLSearchParams(window.location.search)
-if (urlSearchParams.get('preview') === 'true') {
-  document.documentElement.classList.add('styleguide-preview')
-}
-
-export class ModifierReplacer {
+class ModifierReplacer {
   private readonly modifier: string
   private readonly placeholder: string
 
@@ -25,7 +19,23 @@ export class ModifierReplacer {
     this.replaceInDocument(targetDocument)
   }
 
-  public static fromURL(targetDocument: Document = document): ModifierReplacer | null {
+  public static fromIframe(targetDocument: Document = document): ModifierReplacer | null {
+    if (!window.frameElement)
+      throw new Error('ModifierReplacer can only be initialized from an iframe context.')
+
+    const modifier = window.frameElement.getAttribute('data-modifier')
+
+    if (!modifier) {
+      return null
+    }
+
+    const computedModifier = modifier.split('.').filter(x => x.length > 0).join(' ')
+    const replacer = new ModifierReplacer({ modifier: computedModifier })
+    replacer.initialize(targetDocument)
+    return replacer
+  }
+
+  public static fromUrl(targetDocument: Document = document): ModifierReplacer | null {
     const params = new URLSearchParams(window.location.search)
     const modifier = params.get('modifier')
 
@@ -98,4 +108,20 @@ export class ModifierReplacer {
   }
 }
 
-ModifierReplacer.fromURL()
+// add styleguide preview class when in iframe preview mode
+if (window.frameElement) {
+  if (window.frameElement.getAttribute('data-preview') === 'true') {
+    document.documentElement.classList.add('styleguide-preview')
+  }
+
+  if (window.frameElement.hasAttribute('data-modifier')) {
+    ModifierReplacer.fromIframe()
+  }
+}
+else {
+  const params = new URLSearchParams(window.location.search)
+  const modifier = params.get('modifier')
+  if (modifier) {
+    ModifierReplacer.fromUrl()
+  }
+}

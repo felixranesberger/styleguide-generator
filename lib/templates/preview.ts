@@ -326,8 +326,9 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
                   id="preview-fullpage-${sanitizeId(section.id)}"
-                  src="/${section.fullpageFileName}?preview=true"
+                  src="/${section.fullpageFileName}"
                   class="preview-iframe"
+                  data-preview="true"
                   title="${section.header} Preview"
                   scrolling="no"
             ></iframe>
@@ -466,7 +467,12 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                             </button>
                         </div>
     
-                        <a class="p-2 group" href="/${section.fullpageFileName}?modifier=${modifier.value}" target="_blank" title="Open in fullpage">
+                        <a 
+                            class="p-2 group"
+                            href="/${section.fullpageFileName}?modifier=${modifier.value}" 
+                            target="_blank" 
+                            title="Open in fullpage"
+                          >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
                                 <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px"
                                       d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
@@ -476,8 +482,10 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                     </div>
     
                     <iframe
-                          src="/${section.fullpageFileName}?preview=true&modifier=${modifier.value}"
+                          src="/${section.fullpageFileName}"
                           class="preview-iframe mt-2"
+                          data-preview="true"
+                          data-modifier="${modifier.value}"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                           scrolling="no"
                     ></iframe>
