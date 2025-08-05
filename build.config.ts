@@ -1,4 +1,13 @@
+import fs from 'fs-extra'
 import { defineBuildConfig } from 'unbuild'
+
+const manifest = JSON.parse(fs.readFileSync('./dist/styleguide-assets/.vite/manifest.json', 'utf-8'))
+
+const hashedFileNames = {
+  'fullpage.js': manifest['client/fullpage.ts'].file,
+  'client.js': manifest['client/main.ts'].file,
+  'style.css': manifest['style.css'].file,
+} as const
 
 const shikiExternalPackages = [
   'shiki',
@@ -305,4 +314,9 @@ export default defineBuildConfig({
   declaration: true,
   failOnWarn: false,
   externals: ['@antfu/utils', ...shikiExternalPackages],
+  replace: {
+    __STYLEGUIDE_CSS__: hashedFileNames['style.css'],
+    __STYLEGUIDE_CLIENT_JS__: hashedFileNames['client.js'],
+    __STYLEGUIDE_FULLPAGE_JS__: hashedFileNames['fullpage.js'],
+  },
 })

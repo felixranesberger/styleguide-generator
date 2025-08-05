@@ -809,8 +809,8 @@ export async function generatePreviewFile(data: {
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg?raw">
       `}
-    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css?raw">
-    <script type="module" src="/styleguide-assets/client.js?raw"></script>
+    <link rel="stylesheet" type="text/css" href="/styleguide-assets/__STYLEGUIDE_CSS__?raw">
+    <script type="module" src="/styleguide-assets/__STYLEGUIDE_CLIENT_JS__?raw"></script>
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">

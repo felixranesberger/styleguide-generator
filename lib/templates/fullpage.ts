@@ -50,7 +50,7 @@ export async function generateFullPageFile(data: {
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
       `}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
-    <script type="module" src="/styleguide-assets/client-fullpage.js?raw"></script>
+    <script type="module" src="/styleguide-assets/__STYLEGUIDE_FULLPAGE_JS__?raw"></script>
     ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ''}>
