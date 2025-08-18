@@ -787,7 +787,7 @@ async function generateFullPageFile(data) {
   }).join("\n");
   const content = `
 <!DOCTYPE html>
-<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="${data.page.htmlclass}"` : ""}>
+<html lang="${data.page.lang}"${data.page.htmlclass ? ` class="scroll-smooth ${data.page.htmlclass}"` : ""}>
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description ? `<meta name="description" content="${sanitizeSpecialCharacters(data.page.description)}">` : ""}
@@ -795,13 +795,13 @@ async function generateFullPageFile(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="styleguide">
     ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
-          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage.svg">
       ` : `
         <meta name="theme-color" content="${data.theme}">
-        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg?raw">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/fullpage-light.svg">
       `}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ""}
-    <script type="module" src="/styleguide-assets/client-fullpage.js?raw"><\/script>
+    <script type="module" src="/styleguide-assets/client-fullpage-1rKiNQVN.js"><\/script>
     ${computedStyleTags}
 </head>
 <body${data.page.bodyclass ? ` class="${data.page.bodyclass}"` : ""}>
@@ -1079,8 +1079,9 @@ function getMainContentRegular(section, config) {
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
                   id="preview-fullpage-${sanitizeId(section.id)}"
-                  src="/${section.fullpageFileName}?preview=true"
+                  src="/${section.fullpageFileName}"
                   class="preview-iframe"
+                  data-preview="true"
                   title="${section.header} Preview"
                   scrolling="no"
             ></iframe>
@@ -1212,7 +1213,12 @@ function getMainContentRegular(section, config) {
                             </button>
                         </div>
     
-                        <a class="p-2 group" href="/${section.fullpageFileName}?modifier=${modifier.value}" target="_blank" title="Open in fullpage">
+                        <a 
+                            class="p-2 group"
+                            href="/${section.fullpageFileName}?modifier=${modifier.value}" 
+                            target="_blank" 
+                            title="Open in fullpage"
+                          >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
                                 <path class="transition group-hover:translate-x-px group-hover:-translate-y-px group-focus:translate-x-px group-focus:-translate-y-px"
                                       d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"/>
@@ -1222,8 +1228,10 @@ function getMainContentRegular(section, config) {
                     </div>
     
                     <iframe
-                          src="/${section.fullpageFileName}?preview=true&modifier=${modifier.value}"
+                          src="/${section.fullpageFileName}"
                           class="preview-iframe mt-2"
+                          data-preview="true"
+                          data-modifier="${modifier.value}"
                           title="${section.header} Preview - Modifier: ${modifier.value}"
                           scrolling="no"
                     ></iframe>
@@ -1469,7 +1477,7 @@ async function generatePreviewFile(data) {
   const shouldRenderMetaDescription = data.page.description && data.page.description.length > 0 && !(data.page.description.includes("<") && data.page.description.includes(">"));
   const content = `
 <!DOCTYPE html>
-<html lang="${data.page.lang}">
+<html lang="${data.page.lang}" class="scroll-smooth">
 <head>
     <title>${sanitizeSpecialCharacters(data.page.title)}</title>
     ${data.page.description && shouldRenderMetaDescription ? `<meta name="description" content="${data.page.description.replaceAll(`'`, "").replaceAll(`"`, "")}">` : ""}
@@ -1479,18 +1487,18 @@ async function generatePreviewFile(data) {
     ${typeof data.theme === "object" && "dark" in data.theme && "light" in data.theme ? `
           <meta name="theme-color" media="(prefers-color-scheme: light)" content="${data.theme.light}">
           <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${data.theme.dark}">
-          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg?raw">
+          <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview.svg">
       ` : `
         <meta name="theme-color" content="${data.theme}">
-        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg?raw">
+        <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg">
       `}
-    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide.css?raw">
-    <script type="module" src="/styleguide-assets/client.js?raw"><\/script>
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2?raw" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide-BQbUioN5.css">
+    <script type="module" src="/styleguide-assets/client-BZlkq2d8.js"><\/script>
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     ${computedPreloadIframes}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ""}
     ${computedStyleTags}

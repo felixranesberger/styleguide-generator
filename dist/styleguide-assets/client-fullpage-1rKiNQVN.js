@@ -1,23 +1,30 @@
-var a = Object.defineProperty;
-var d = (o, e, t) => e in o ? a(o, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : o[e] = t;
-var n = (o, e, t) => d(o, typeof e != "symbol" ? e + "" : e, t);
-const p = new URLSearchParams(window.location.search);
-p.get("preview") === "true" && document.documentElement.classList.add("styleguide-preview");
-class c {
+var s = Object.defineProperty;
+var d = (o, e, t) => e in o ? s(o, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : o[e] = t;
+var l = (o, e, t) => d(o, typeof e != "symbol" ? e + "" : e, t);
+class n {
   constructor(e) {
-    n(this, "modifier");
-    n(this, "placeholder");
+    l(this, "modifier");
+    l(this, "placeholder");
     this.modifier = e.modifier, this.placeholder = e.placeholder || "{{modifier_class}}";
   }
   initialize(e = document) {
     this.modifier && this.replaceInDocument(e);
   }
-  static fromURL(e = document) {
+  static fromIframe(e = document) {
+    if (!window.frameElement)
+      throw new Error("ModifierReplacer can only be initialized from an iframe context.");
+    const t = window.frameElement.getAttribute("data-modifier");
+    if (!t)
+      return null;
+    const i = t.split(".").filter((a) => a.length > 0).join(" "), r = new n({ modifier: i });
+    return r.initialize(e), r;
+  }
+  static fromUrl(e = document) {
     const i = new URLSearchParams(window.location.search).get("modifier");
     if (!i)
       return null;
-    const r = i.split(".").filter((s) => s.length > 0).join(" "), l = new c({ modifier: r });
-    return l.initialize(e), l;
+    const r = i.split(".").filter((c) => c.length > 0).join(" "), a = new n({ modifier: r });
+    return a.initialize(e), a;
   }
   replaceAll(e) {
     const t = encodeURIComponent(JSON.stringify(this.placeholder)), i = JSON.stringify({ modifierClass: this.placeholder }), r = encodeURIComponent(i);
@@ -52,7 +59,4 @@ class c {
     });
   }
 }
-c.fromURL();
-export {
-  c as ModifierReplacer
-};
+window.frameElement ? (window.frameElement.getAttribute("data-preview") === "true" && document.documentElement.classList.add("styleguide-preview"), window.frameElement.hasAttribute("data-modifier") && n.fromIframe()) : new URLSearchParams(window.location.search).get("modifier") && n.fromUrl();

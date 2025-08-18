@@ -1,0 +1,63 @@
+{
+  "_main-B97JcbYk.js": {
+    "file": "main-B97JcbYk.js",
+    "name": "main",
+    "dynamicImports": [
+      "client/lib/html-validator.ts",
+      "client/lib/icons.ts",
+      "client/lib/clipboard.ts"
+    ]
+  },
+  "client/fullpage.ts": {
+    "file": "client-fullpage-1rKiNQVN.js",
+    "name": "client-fullpage",
+    "src": "client/fullpage.ts",
+    "isEntry": true
+  },
+  "client/lib/clipboard.ts": {
+    "file": "clipboard-DhKzwemV.js",
+    "name": "clipboard",
+    "src": "client/lib/clipboard.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_main-B97JcbYk.js"
+    ]
+  },
+  "client/lib/html-validator.ts": {
+    "file": "html-validator-DqoaRE1y.js",
+    "name": "html-validator",
+    "src": "client/lib/html-validator.ts",
+    "isDynamicEntry": true,
+    "dynamicImports": [
+      "node_modules/html-validate/dist/es/browser.js"
+    ]
+  },
+  "client/lib/icons.ts": {
+    "file": "icons-oK5xUF8R.js",
+    "name": "icons",
+    "src": "client/lib/icons.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_main-B97JcbYk.js"
+    ]
+  },
+  "client/main.ts": {
+    "file": "client-BZlkq2d8.js",
+    "name": "client",
+    "src": "client/main.ts",
+    "isEntry": true,
+    "imports": [
+      "_main-B97JcbYk.js"
+    ]
+  },
+  "node_modules/html-validate/dist/es/browser.js": {
+    "file": "browser-BSX_g1yp.js",
+    "name": "browser",
+    "src": "node_modules/html-validate/dist/es/browser.js",
+    "isDynamicEntry": true
+  },
+  "style.css": {
+    "file": "styleguide-BQbUioN5.css",
+    "src": "style.css"
+  }
+}
