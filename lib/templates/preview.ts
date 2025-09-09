@@ -783,10 +783,6 @@ export async function generatePreviewFile(data: {
     })
     .join('\n')
 
-  const computedPreloadIframes = data.html.preloadIframes
-    .map(url => `<link rel="preload" href="${url}" as="document">`)
-    .join('\n')
-
   const shouldRenderMetaDescription = data.page.description
     && data.page.description.length > 0
     && !(data.page.description.includes('<') && data.page.description.includes('>'))
@@ -817,7 +813,6 @@ export async function generatePreviewFile(data: {
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    ${computedPreloadIframes}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ''}
     ${computedStyleTags}
     <style>
