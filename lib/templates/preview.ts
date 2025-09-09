@@ -503,6 +503,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
     computedFigmaUrl.searchParams.append('footer', 'false')
     computedFigmaUrl.searchParams.append('mode', 'dev')
     computedFigmaUrl.searchParams.append('page-selector', 'false')
+    computedFigmaUrl.searchParams.append('scaling', 'contain')
 
     return `
       <div class="mt-4">
