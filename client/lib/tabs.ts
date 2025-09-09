@@ -1,4 +1,5 @@
 import { animate, spring } from 'motion'
+import { waitForIdleNetwork } from '../utils/network.ts'
 
 export default function tabs(tabs: NodeListOf<HTMLElement>) {
   tabs.forEach((tab) => {
@@ -62,18 +63,38 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
         if (!iframe || iframe.loading !== 'lazy')
           return
 
-        trigger.addEventListener('mouseenter', () => {
-          iframe.loading = 'eager'
-        })
+        const preloadIframe = () => {
+          const isFigmaIframe = iframe.src.includes('embed.figma.com')
 
-        // lazy load everything when browser is not busy and after 5s
-        setTimeout(() => {
-          requestIdleCallback(() => {
-            if (iframe.loading === 'lazy') {
-              iframe.loading = 'eager'
-            }
-          })
-        }, 5000)
+          if (isFigmaIframe) {
+            const clonedIframe = iframe.cloneNode(true) as HTMLIFrameElement
+            clonedIframe.loading = 'eager'
+            clonedIframe.style.position = 'absolute'
+            clonedIframe.style.opacity = '0'
+            clonedIframe.style.pointerEvents = 'none'
+            clonedIframe.style.left = '-9999px'
+            clonedIframe.inert = true
+            clonedIframe.tabIndex = -1
+
+            clonedIframe.addEventListener('load', () => {
+              iframe.replaceWith(clonedIframe)
+              clonedIframe.style.position = ''
+              clonedIframe.style.opacity = ''
+              clonedIframe.style.pointerEvents = ''
+              clonedIframe.style.left = ''
+              clonedIframe.inert = false
+              clonedIframe.tabIndex = 0
+            })
+
+            document.body.appendChild(clonedIframe)
+          }
+          else {
+            iframe.loading = 'eager'
+          }
+        }
+
+        // lazy load iframes when network is ready
+        waitForIdleNetwork().then(preloadIframe)
       })
     }
   })
