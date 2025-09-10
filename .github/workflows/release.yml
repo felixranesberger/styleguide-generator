@@ -23,5 +23,8 @@ jobs:
       - name: Build dist files
         run: bun run build
 
-      - name: Release to NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc && bun publish
+      - name: Setup npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Publish
+        run: bun publish
