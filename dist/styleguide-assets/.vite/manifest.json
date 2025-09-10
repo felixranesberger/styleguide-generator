@@ -1,6 +1,6 @@
 {
-  "_main-B97JcbYk.js": {
-    "file": "main-B97JcbYk.js",
+  "_main-BT9bly9P.js": {
+    "file": "main-BT9bly9P.js",
     "name": "main",
     "dynamicImports": [
       "client/lib/html-validator.ts",
@@ -15,12 +15,12 @@
     "isEntry": true
   },
   "client/lib/clipboard.ts": {
-    "file": "clipboard-DhKzwemV.js",
+    "file": "clipboard-D_q3cDIe.js",
     "name": "clipboard",
     "src": "client/lib/clipboard.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_main-B97JcbYk.js"
+      "_main-BT9bly9P.js"
     ]
   },
   "client/lib/html-validator.ts": {
@@ -33,21 +33,21 @@
     ]
   },
   "client/lib/icons.ts": {
-    "file": "icons-oK5xUF8R.js",
+    "file": "icons-DMHfgkC0.js",
     "name": "icons",
     "src": "client/lib/icons.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_main-B97JcbYk.js"
+      "_main-BT9bly9P.js"
     ]
   },
   "client/main.ts": {
-    "file": "client-BZlkq2d8.js",
+    "file": "client-BRP4f6il.js",
     "name": "client",
     "src": "client/main.ts",
     "isEntry": true,
     "imports": [
-      "_main-B97JcbYk.js"
+      "_main-BT9bly9P.js"
     ]
   },
   "node_modules/html-validate/dist/es/browser.js": {
@@ -57,7 +57,7 @@
     "isDynamicEntry": true
   },
   "style.css": {
-    "file": "styleguide-BQbUioN5.css",
+    "file": "kss-modern-wSQZ_brF.css",
     "src": "style.css"
   }
 }

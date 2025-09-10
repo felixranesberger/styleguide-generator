@@ -1244,9 +1244,9 @@ function getMainContentRegular(section, config) {
   if (section.figma) {
     const computedFigmaUrl = new URL(section.figma);
     computedFigmaUrl.searchParams.append("theme", "system");
-    computedFigmaUrl.searchParams.append("footer", "false");
     computedFigmaUrl.searchParams.append("mode", "dev");
     computedFigmaUrl.searchParams.append("page-selector", "false");
+    computedFigmaUrl.searchParams.append("scaling", "contain");
     return `
       <div class="mt-4">
         ${renderTab([
@@ -1259,7 +1259,7 @@ function getMainContentRegular(section, config) {
         icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
         content: `
               <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
-                  <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
+                  <div class="w-full border-b px-6 pt-6 pb-3 dark:pb-6 bg-styleguide-bg-highlight border-styleguide-border">
                       <iframe 
                         width="800" 
                         height="450" 
@@ -1473,7 +1473,6 @@ async function generatePreviewFile(data) {
   const computedStyleTags = data.css.filter((entry) => entry.type === "overwriteStyleguide").map((css) => {
     return `<link rel="stylesheet" type="text/css" href="${css.src}">`;
   }).join("\n");
-  const computedPreloadIframes = data.html.preloadIframes.map((url) => `<link rel="preload" href="${url}" as="document">`).join("\n");
   const shouldRenderMetaDescription = data.page.description && data.page.description.length > 0 && !(data.page.description.includes("<") && data.page.description.includes(">"));
   const content = `
 <!DOCTYPE html>
@@ -1492,14 +1491,13 @@ async function generatePreviewFile(data) {
         <meta name="theme-color" content="${data.theme}">
         <link rel="icon" type="image/svg+xml" href="/styleguide-assets/favicon/preview-light.svg">
       `}
-    <link rel="stylesheet" type="text/css" href="/styleguide-assets/styleguide-BQbUioN5.css">
-    <script type="module" src="/styleguide-assets/client-BZlkq2d8.js"><\/script>
+    <link rel="stylesheet" type="text/css" href="/styleguide-assets/kss-modern-wSQZ_brF.css">
+    <script type="module" src="/styleguide-assets/client-BRP4f6il.js"><\/script>
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/styleguide-assets/fonts/geist-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-    ${computedPreloadIframes}
     ${data.ogImageUrl ? `<meta property="og:image" content="${data.ogImageUrl}">` : ""}
     ${computedStyleTags}
     <style>
