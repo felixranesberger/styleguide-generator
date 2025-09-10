@@ -500,7 +500,6 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
   if (section.figma) {
     const computedFigmaUrl = new URL(section.figma)
     computedFigmaUrl.searchParams.append('theme', 'system') // theme will also be overwritten by theme-selector
-    computedFigmaUrl.searchParams.append('footer', 'false')
     computedFigmaUrl.searchParams.append('mode', 'dev')
     computedFigmaUrl.searchParams.append('page-selector', 'false')
     computedFigmaUrl.searchParams.append('scaling', 'contain')
@@ -517,7 +516,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
             icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
             content: `
               <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
-                  <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
+                  <div class="w-full border-b px-6 pt-6 pb-3 dark:pb-6 bg-styleguide-bg-highlight border-styleguide-border">
                       <iframe 
                         width="800" 
                         height="450" 
