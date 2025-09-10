@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "build": "vite build && unbuild",
-    "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts"
+    "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts",
+    "lint": "eslint {lib,client}",
+    "prerelease": "bun run lint && bun run build",
+    "release": "bumpp"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
@@ -34,6 +37,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
+    "bumpp": "^10.2.3",
     "eslint": "^9.30.0",
     "html-validate": "^9.7.1",
     "unbuild": "^3.5.0",
