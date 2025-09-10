@@ -24,7 +24,6 @@ jobs:
         run: bun run build
 
       - name: Release to NPM
-        uses: tobua/release-npm-action@v3
-        with:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          MANUAL_TRIGGER: 'regular'
+        run:
+          - echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          - bun publish
