@@ -12,8 +12,7 @@
     "build": "vite build && unbuild",
     "dev": "bun run build && deno run --unstable-sloppy-imports --allow-all index.ts",
     "lint": "eslint {lib,client}",
-    "prerelease": "bun run lint && bun run build",
-    "release": "bumpp"
+    "release": "bun run lint && bumpp"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
