@@ -120,7 +120,7 @@ export function getSidebarMenuHtml(
     ${sections.map(section => `
         <li>
             <span class="block rounded-md px-3 text-sm font-semibold text-styleguide-theme-highlight">
-                ${section.title} Test
+                ${section.title}
             </span>
             <ol class="mt-3 grid gap-2">
                 ${section.items.map(item => `
