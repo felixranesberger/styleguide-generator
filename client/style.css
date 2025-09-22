@@ -192,6 +192,26 @@
     @apply bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)];
   }
 
+  [class*='menu-item--status-'] {
+    @apply grid grid-cols-[1fr_auto] items-center gap-4;
+  }
+
+  .menu-item--status-complete::after {
+    content: '🟢';
+  }
+
+  .menu-item--status-progress::after {
+    content: '🚧';
+  }
+
+  .menu-item--status-feedback::after {
+    content: '💬';
+  }
+
+  .menu-item--status-pending::after {
+    content: '🔴';
+  }
+
   .preview-iframe {
     width: 100%;
     overflow-y: hidden;

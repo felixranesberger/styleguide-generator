@@ -82,35 +82,56 @@ export function getHeaderHtml() {
 export function getSidebarMenuHtml(
   sections: {
     title: string
-    items: { label: string, href: string }[]
+    items: { label: string, href: string, status?: string }[]
   }[],
   activePageHref: string,
 ) {
-  const getItemHtml = (item: { label: string, href: string }) => {
+  const getItemStatusHTMLClasses = (status?: string) => {
+    switch (status) {
+      case 'complete':
+        return ' menu-item--status-complete'
+
+      case 'progress':
+      case 'in-progress':
+        return ' menu-item--status-progress'
+
+      case 'feedback':
+      case 'awaits-feedback':
+        return ' menu-item--status-feedback'
+
+      case 'pending':
+        return ' menu-item--status-pending'
+
+      default:
+        return ''
+    }
+  }
+
+  const getItemHtml = (item: { label: string, href: string, status?: string }) => {
     if (item.href.includes(activePageHref)) {
-      return `<div class="menu-item menu-item--active">${item.label}</div>`
+      return `<div class="menu-item menu-item--active${getItemStatusHTMLClasses(item.status)}">${item.label}</div>`
     }
 
-    return `<a class="menu-item" href="${item.href}">${item.label}</a>`
+    return `<a class="menu-item${getItemStatusHTMLClasses(item.status)}" href="${item.href}">${item.label}</a>`
   }
 
   return `
-<ul class="grid gap-6 px-3 py-6">
+<ol class="grid gap-6 px-3 py-6">
     ${sections.map(section => `
         <li>
             <span class="block rounded-md px-3 text-sm font-semibold text-styleguide-theme-highlight">
-                ${section.title}
+                ${section.title} Test
             </span>
-            <ul class="mt-3 grid gap-2">
+            <ol class="mt-3 grid gap-2">
                 ${section.items.map(item => `
                     <li>
                        ${getItemHtml(item)}
                     </li>
                 `).join('\n')}
-            </ul>
+            </ol>
         </li>
     `).join('\n')}
-</ul>
+</ol>
 `.trim()
 }
 

@@ -34,6 +34,7 @@ interface Section {
   experimental?: boolean
   colors?: ColorObject[]
   figma?: string
+  status?: string
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
@@ -226,6 +227,7 @@ function kssParser(input: string | (string | FileObject)[], options: ParseOption
       processProperty.call(newSection, paragraphs, 'bodyclass', x => x.trim())
       processProperty.call(newSection, paragraphs, 'Icons', parseIcons)
       processProperty.call(newSection, paragraphs, 'Figma', x => x.trim())
+      processProperty.call(newSection, paragraphs, 'Status', x => x.trim().toLowerCase())
       processProperty.call(newSection, paragraphs, 'Markup')
       processProperty.call(newSection, paragraphs, 'Weight', toFloat)
 
@@ -520,6 +522,7 @@ export interface in2Section {
   colors?: ColorObject[]
   icons?: IconObject[]
   figma?: string
+  status?: string
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
@@ -602,6 +605,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
         colors: section.colors,
         icons: section.icons,
         figma: section.figma,
+        status: section.status,
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
@@ -645,6 +649,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
           colors: section.colors,
           icons: section.icons,
           figma: section.figma,
+          status: section.status,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
@@ -676,6 +681,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
           colors: section.colors,
           icons: section.icons,
           figma: section.figma,
+          status: section.status,
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,

@@ -139,7 +139,7 @@ export async function buildStyleguide(config: StyleguideConfiguration): Promise<
 
   const menuSectionMapping: {
     title: string
-    items: { label: string, href: string }[]
+    items: { label: string, href: string, status?: string }[]
   }[] = []
 
   const fileWriteTasks: Promise<void>[] = []
@@ -191,6 +191,7 @@ export async function buildStyleguide(config: StyleguideConfiguration): Promise<
       menuSectionMapping[indexFirstLevel].items.push({
         label: secondLevelSection.header,
         href: menuHref,
+        status: secondLevelSection.status,
       })
 
       if (secondLevelSection.markup) {
