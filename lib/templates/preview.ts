@@ -153,7 +153,9 @@ export function getCodeAuditDialog() {
   `
 }
 
-function renderTab(data: { title: string, content: string, icon?: string }[]) {
+interface Tab { title: string, content: string, icon?: string }
+
+function renderTab(data: Tab[]) {
   const tabId = generateId()
 
   return `
@@ -206,7 +208,7 @@ export function getMainContentHtml(secondLevelSection: in2SecondLevelSection, co
       output += getMainContentSectionWrapper(section, getMainContentIcons(section))
     }
     else {
-      const content = section.markup ? getMainContentRegular(section, config) : undefined
+      const content = section.markup || (!section.markup && section.figma) ? getMainContentRegular(section, config) : undefined
       output += getMainContentSectionWrapper(section, content)
     }
   }
@@ -525,17 +527,11 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
     computedFigmaUrl.searchParams.append('page-selector', 'false')
     computedFigmaUrl.searchParams.append('scaling', 'contain')
 
-    return `
-      <div class="mt-4">
-        ${renderTab([
-          {
-            title: 'Preview',
-            content: codePreviewMarkup,
-          },
-          {
-            title: 'Design',
-            icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
-            content: `
+    const tabs: Tab[] = [
+      {
+        title: 'Design',
+        icon: `<img src="styleguide-assets/icons/figma.svg" width="600" height="600" alt="Figma Logo" class="size-3">`,
+        content: `
               <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
                   <div class="w-full border-b px-6 pt-6 pb-3 dark:pb-6 bg-styleguide-bg-highlight border-styleguide-border">
                       <iframe 
@@ -550,8 +546,19 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                   </div>
               </div>
             `,
-          },
-        ])}
+      },
+    ]
+
+    if (section.markup && section.markup.length > 0) {
+      tabs.unshift({
+        title: 'Preview',
+        content: codePreviewMarkup,
+      })
+    }
+
+    return `
+      <div class="mt-4">
+        ${renderTab(tabs)}
       </div>
     `
   }
