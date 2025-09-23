@@ -343,6 +343,16 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
       : ''
   }
 
+  const computeFigmaExternalLink = (url?: string) => {
+    if (!url)
+      return ''
+
+    const urlObj = new URL(url)
+    urlObj.hostname = 'www.figma.com'
+
+    return urlObj.toString()
+  }
+
   const codePreviewMarkup = `
     <!-- Preview Box -->
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
@@ -370,9 +380,28 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                 </span>
                 
                 <span class="flex items-center"> 
+                    ${section.figma
+                      ? `<a
+                            class="inline-flex items-center group/figma gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                            href="${computeFigmaExternalLink(section.figma)}"
+                            target="_blank"
+                        >
+                            <span class="hidden @2xl:inline-block">Open in</span>
+                            <span class="sr-only">Figma</span>
+                            <img 
+                                src="styleguide-assets/icons/figma.svg"
+                                width="600" 
+                                height="600" 
+                                class="size-4 saturate-0 group-hover/figma:saturate-100 transition" 
+                                alt="Figma Logo" 
+                                aria-hidden="true" 
+                            >
+                        </a>`
+                      : ''}
+                
                     ${openInEditorPathPhpStorm
                       ? `<a
-                            class="inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                            class="hidden @md:inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                             href="${openInEditorPathPhpStorm}"
                         >
                             <span class="hidden @2xl:inline-block">Open in</span>
@@ -391,7 +420,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                     
                     ${openInEditorPathVscode
                       ? `<a
-                            class="inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                            class="hidden @md:inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                             href="${openInEditorPathVscode}"
                         >
                             <span class="hidden @2xl:inline-block">Open in</span>
