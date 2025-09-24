@@ -55,7 +55,7 @@
   src: url(/styleguide-assets/fonts/geist-sans-latin-600-normal.woff2) format('woff2');
 }
 
-@layer components {
+@layer utilities {
   html {
     view-transition-name: none;
   }
