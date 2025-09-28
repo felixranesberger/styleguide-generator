@@ -137,12 +137,12 @@
     background-color: transparent !important;
   }
 
-  .theme-select input[type="radio"]:checked + label {
+  :is(.theme-select, .editor-select) input[type="radio"]:checked + label {
     @apply outline outline-styleguide-border rounded-3xl;
   }
 
-  .theme-select input[type="radio"]:focus + label,
-  .theme-select input[type="radio"] + label:hover {
+  :is(.theme-select, .editor-select) input[type="radio"]:focus + label,
+  :is(.theme-select, .editor-select) input[type="radio"] + label:hover {
     @apply outline-blue-600;
   }
 
@@ -335,4 +335,12 @@
       @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
     }
   }
+}
+
+body:not(.editor-vscode) .editor-vscode-only {
+  @apply hidden;
+}
+
+body:not(.editor-phpstorm) .editor-phpstorm-only {
+  @apply hidden;
 }

@@ -41,39 +41,81 @@ export function getHeaderHtml() {
             </kbd>
         </button>
 
-        ${!(globalThis.styleguideConfiguration.deactivateDarkMode ?? false)
-          ? `
-            <form class="hidden theme-select md:block">
-              <fieldset class="flex items-center rounded-3xl border border-styleguide-border">
-                  <legend class="sr-only">Select a display theme:</legend>
-  
-                  <input id="normal" class="sr-only" type="radio" value="normal" name="theme">
-                  <label for="normal" class="cursor-pointer p-2">
-                      <span class="sr-only">System</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
-                      </svg>
-                  </label>
-  
-                  <input id="light" class="sr-only" type="radio" value="light" name="theme">
-                  <label for="light" class="cursor-pointer p-2">
-                      <span class="sr-only">Light</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                      </svg>
-                  </label>
-  
-                  <input id="dark" class="sr-only" type="radio" value="dark" name="theme">
-                  <label for="dark" class="cursor-pointer p-2">
-                      <span class="sr-only">Dark</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
-                      </svg>
-                  </label>
-              </fieldset>
-            </form>
-        `
-          : ``}
+        <div class="flex gap-4">
+          ${globalThis.styleguideConfiguration.launchInEditor
+            ? `
+              <form class="hidden editor-select md:block">
+                <fieldset class="flex items-center rounded-3xl border border-styleguide-border">
+                  <legend class="sr-only">Select a preferred editor</legend>
+                  
+                  <div>
+                    <input id="phpstorm" class="sr-only peer" type="radio" value="phpstorm" name="editor">
+                    <label for="phpstorm" class="cursor-pointer p-2 block peer-checked:saturate-100 saturate-0 transition">
+                        <span class="sr-only">PHPStorm</span>
+                        <img 
+                            src="styleguide-assets/icons/phpstorm.svg"
+                            width="70" 
+                            height="70" 
+                            class="size-4" 
+                            alt="PHPStorm Logo" 
+                            aria-hidden="true" 
+                        >
+                    </label>
+                  </div>
+                  
+                  <div>
+                    <input id="vscode" class="sr-only peer" type="radio" value="vscode" name="editor">
+                    <label for="vscode" class="cursor-pointer p-2 block peer-checked:saturate-100 saturate-0 transition">
+                        <span class="sr-only">VSCode</span>
+                        <img 
+                            src="styleguide-assets/icons/vscode.svg"
+                            width="70" 
+                            height="70" 
+                            class="size-4" 
+                            alt="VSCode Logo" 
+                            aria-hidden="true" 
+                        >
+                    </label>
+                  </div>
+                </fieldset>
+              </form>
+            `
+            : ``}
+        
+          ${!(globalThis.styleguideConfiguration.deactivateDarkMode ?? false)
+            ? `
+              <form class="hidden theme-select md:block">
+                <fieldset class="flex items-center rounded-3xl border border-styleguide-border">
+                    <legend class="sr-only">Select a display theme</legend>
+    
+                    <input id="normal" class="sr-only" type="radio" value="normal" name="theme">
+                    <label for="normal" class="cursor-pointer p-2">
+                        <span class="sr-only">System</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                        </svg>
+                    </label>
+    
+                    <input id="light" class="sr-only" type="radio" value="light" name="theme">
+                    <label for="light" class="cursor-pointer p-2">
+                        <span class="sr-only">Light</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                        </svg>
+                    </label>
+    
+                    <input id="dark" class="sr-only" type="radio" value="dark" name="theme">
+                    <label for="dark" class="cursor-pointer p-2">
+                        <span class="sr-only">Dark</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+                        </svg>
+                    </label>
+                </fieldset>
+              </form>
+          `
+            : ``}
+        </div>
     </div>
 </header>
 `.trim()
@@ -299,12 +341,9 @@ ${html ?? ''}
 
 function getMainContentRegular(section: in2Section, config: StyleguideConfiguration): string {
   const openInEditorPaths: {
-    css: { vscode?: string, phpstorm?: string }
-    html: { vscode?: string, phpstorm?: string }
-  } = {
-    css: {},
-    html: {},
-  }
+    css?: { vscode: string, phpstorm: string }
+    html?: { vscode: string, phpstorm: string }
+  } = {}
 
   if (config.mode === 'development' && config.launchInEditor) {
     const computedRootPath = config.launchInEditor && typeof config.launchInEditor === 'object' && 'rootDir' in config.launchInEditor
@@ -312,13 +351,17 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
       : process.cwd()
 
     const cssFilePath = ensureStartingSlash(path.join(computedRootPath, section.source.css.file))
-    openInEditorPaths.css.vscode = `vscode://file//${cssFilePath}:${section.source.css.line}`
-    openInEditorPaths.css.phpstorm = `phpstorm://open?file=${cssFilePath}&line=${section.source.css.line}`
+    openInEditorPaths.css = {
+      vscode: `vscode://file//${cssFilePath}:${section.source.css.line}`,
+      phpstorm: `phpstorm://open?file=${cssFilePath}&line=${section.source.css.line}`,
+    }
 
     if (section.source.markup && section.source.markup.file) {
       const htmlFilePath = ensureStartingSlash(path.join(computedRootPath, section.source.markup.file))
-      openInEditorPaths.html.vscode = `vscode://file//${htmlFilePath}`
-      openInEditorPaths.html.phpstorm = `phpstorm://open?file=${htmlFilePath}`
+      openInEditorPaths.html = {
+        vscode: `vscode://file//${htmlFilePath}`,
+        phpstorm: `phpstorm://open?file=${htmlFilePath}`,
+      }
     }
   }
 
@@ -332,15 +375,28 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
     return urlObj.toString()
   }
 
-  const phpstormOpenLinks = [
-    openInEditorPaths.css.phpstorm,
-    openInEditorPaths.html.phpstorm,
-  ].filter(Boolean).join(',')
-
-  const vscodeOpenLinks = [
-    openInEditorPaths.css.vscode,
-    openInEditorPaths.html.vscode,
-  ].filter(Boolean).join(',')
+  // Preserve classes in tailwind
+  // group/phpstorm
+  // group/vscode
+  // group-hover/phpstorm:saturate-100
+  // group-hover/vscode:saturate-100
+  const renderOpenInEditorLink = (editorType: 'phpstorm' | 'vscode', contentType: 'CSS' | 'HTML' | 'Pug', link: string) => `
+    <a
+        class="hidden editor-${editorType}-only @md:inline-flex items-center group/${editorType} gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+        href="${link}"
+    >
+        <span class="hidden @2xl:inline-block">Open ${contentType}</span>
+        <span class="sr-only">in ${editorType}</span>
+        <img 
+            src="styleguide-assets/icons/${contentType.toLowerCase()}.svg"
+            width="512" 
+            height="512" 
+            class="size-4 saturate-0 group-hover/${editorType}:saturate-100 transition" 
+            alt="${editorType} Logo" 
+            aria-hidden="true"
+        >
+    </a>
+  `
 
   const codePreviewMarkup = `
     <!-- Preview Box -->
@@ -388,45 +444,19 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                         </a>`
                       : ''}
                 
-                      ${phpstormOpenLinks.length > 0
-                        ? `<a
-                                  class="hidden @md:inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
-                                  href="#"
-                                  data-link-multiple="${phpstormOpenLinks}"
-                              >
-                                  <span class="hidden @2xl:inline-block">Open in</span>
-                                  <span class="sr-only">PHPStorm</span>
-                                  <img 
-                                      src="styleguide-assets/icons/phpstorm.svg"
-                                      width="70" 
-                                      height="70" 
-                                      class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
-                                      alt="PHPStorm Logo" 
-                                      aria-hidden="true" 
-                                  >
-                              </a>
-                            `
+                      ${openInEditorPaths.html
+                        ? `
+                            ${renderOpenInEditorLink('phpstorm', openInEditorPaths.html.phpstorm.includes('.pug') ? 'Pug' : 'HTML', openInEditorPaths.html.phpstorm)}
+                            ${renderOpenInEditorLink('vscode', openInEditorPaths.html.phpstorm.includes('.pug') ? 'Pug' : 'HTML', openInEditorPaths.html.vscode)}
+                          `
                         : ''}
                           
-                          ${vscodeOpenLinks.length > 0
-                            ? `<a
-                                  class="hidden @md:inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
-                                  href="#"
-                                  data-link-multiple="${vscodeOpenLinks}"
-                              >
-                                  <span class="hidden @2xl:inline-block">Open in</span>
-                                  <span class="sr-only">VsCode</span>
-                                  <img 
-                                      src="styleguide-assets/icons/vscode.svg"
-                                      width="100" 
-                                      height="100" 
-                                      class="size-4 saturate-0 group-hover/vscode:saturate-100 transition" 
-                                      alt="VsCode Logo" 
-                                      aria-hidden="true" 
-                                  >
-                              </a>
-                            `
-                            : ''}
+                      ${openInEditorPaths.css
+                        ? `
+                            ${renderOpenInEditorLink('phpstorm', 'CSS', openInEditorPaths.css.phpstorm)}
+                            ${renderOpenInEditorLink('vscode', 'CSS', openInEditorPaths.css.vscode)}
+                          `
+                        : ''}
 
                     <button
                         class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 

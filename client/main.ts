@@ -173,20 +173,9 @@ window.addEventListener('scroll', () => {
   }, 250)
 })
 
-const openMultipleLinks = document.querySelectorAll<HTMLAnchorElement>('a[data-link-multiple]')
-if (openMultipleLinks.length > 0) {
-  openMultipleLinks.forEach((link) => {
-    const urls = link.getAttribute('data-link-multiple')
-    if (!urls)
-      return
-
-    const urlList = urls.trim().split(',')
-    link.addEventListener('click', (event) => {
-      event.preventDefault()
-      urlList.forEach((url) => {
-        const trimmedUrl = url.trim()
-        window.open(trimmedUrl, '_blank')
-      })
-    })
-  })
+const editorSelectForm = document.querySelector<HTMLFormElement>('.editor-select')
+if (editorSelectForm) {
+  import('./lib/editor-select.ts')
+    .then(({ default: init }) => init(editorSelectForm))
+    .catch(console.error)
 }
