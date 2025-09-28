@@ -16,16 +16,28 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Creating .npmrc
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+            //registry.npmjs.org/:_authToken=$NPM_TOKEN
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Build dist files
         run: bun run build
 
-      - name: Setup npm authentication
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-
       - name: Publish to npm
-        run: bun publish --access public
+        run: |
+          if [[ "${{ github.ref_name }}" == *beta* || "${{ github.ref_name }}" == *alpha* ]]; then
+            echo "Publishing beta version..."
+            bun publish --tag beta --access public
+          else
+            echo "Publishing stable version..."
+            bun publish --access public
+          fi
+        env:
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
