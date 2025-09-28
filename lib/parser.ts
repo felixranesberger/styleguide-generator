@@ -5,7 +5,7 @@ import type { StyleguideConfiguration } from './index.ts'
 import path from 'node:path'
 import { parseMarkdown } from './markdown'
 
-interface FileObject {
+export interface FileObject {
   base?: string
   path?: string
   contents: string
@@ -526,7 +526,15 @@ export interface in2Section {
   wrapper?: string
   htmlclass?: string
   bodyclass?: string
-  sourceFileName: string
+  source: {
+    css: {
+      file: string
+      line: number
+    }
+    markup?: {
+      file: string
+    }
+  }
   previewFileName: string
   fullpageFileName: string
 }
@@ -539,8 +547,8 @@ export interface in2SecondLevelSection extends in2Section {
   sections: in2Section[]
 }
 
-export async function parse(text: string, config: StyleguideConfiguration) {
-  const data = kssParser(text).sections.filter(section => Boolean(section.reference))
+export async function parse(input: string | (string | FileObject)[], config: StyleguideConfiguration) {
+  const data = kssParser(input).sections.filter(section => Boolean(section.reference))
 
   // stores the ids of the sections that are overwritten because the ids are duplicated
   const overwrittenSectionsIds: string[] = []
@@ -571,6 +579,42 @@ export async function parse(text: string, config: StyleguideConfiguration) {
     return {
       description: await parseMarkdown({ filePath: path.join(config.contentDir, markdownPath), rootHeadingLevel }),
       hasMarkdownDescription: true,
+    }
+  }
+
+  function computeSource(section: Section): in2Section['source'] {
+    const cssSource = section.source
+
+    let sourceMarkup: in2Section['source']['markup'] = undefined
+
+    const hasExtractableMarkupFile = section.markup.includes('<insert-vite-pug src="')
+    if (hasExtractableMarkupFile) {
+      // eslint-disable-next-line regexp/no-super-linear-backtracking
+      const regexModifierLine = /<insert-vite-pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/insert-vite-pug>/g
+      const vitePugTags = section.markup.match(regexModifierLine)
+      if (!vitePugTags)
+        throw new Error('No Vite Pug tags found')
+
+      vitePugTags.forEach((vitePugTag) => {
+        let pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1]
+        if (!pugSourcePath || !pugSourcePath.endsWith('.pug')) {
+          throw new Error('No or invalid Pug source path found')
+        }
+
+        pugSourcePath = path.join(config.contentDir, pugSourcePath)
+
+        sourceMarkup = {
+          file: pugSourcePath,
+        }
+      })
+    }
+
+    return {
+      css: {
+        file: cssSource.filename,
+        line: cssSource.line,
+      },
+      markup: sourceMarkup,
     }
   }
 
@@ -609,7 +653,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
         wrapper: section.wrapper,
         htmlclass: section.htmlclass,
         bodyclass: section.bodyclass,
-        sourceFileName: section.source.filename,
+        source: computeSource(section),
         previewFileName: `preview-${section.reference}.html`,
         fullpageFileName: `fullpage-${section.reference}.html`,
       }
@@ -653,7 +697,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
           wrapper: section.wrapper,
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
-          sourceFileName: section.source.filename,
+          source: computeSource(section),
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         })
@@ -686,7 +730,7 @@ export async function parse(text: string, config: StyleguideConfiguration) {
           htmlclass: section.htmlclass,
           bodyclass: section.bodyclass,
           sections: [],
-          sourceFileName: section.source.filename,
+          source: computeSource(section),
           previewFileName: `preview-${section.reference}.html`,
           fullpageFileName: `fullpage-${section.reference}.html`,
         }

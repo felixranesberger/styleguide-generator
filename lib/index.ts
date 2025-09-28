@@ -1,4 +1,4 @@
-import type { in2Section } from './parser.ts'
+import type { FileObject, in2Section } from './parser.ts'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -77,7 +77,12 @@ export async function buildStyleguide(config: StyleguideConfiguration): Promise<
   // find all files in the content directory that have .css or .scss extension recursive
   // and also contain the styleguide comment
   const styleguideContentPaths = await glob(`${config.contentDir}/**/*.{css,scss}`)
-  const styleguideContent = (await Promise.all(styleguideContentPaths.map(file => fs.readFile(file, 'utf-8')))).join('\n')
+  const styleguideContent: FileObject[] = await Promise.all(
+    styleguideContentPaths.map(async filePath => ({
+      path: filePath,
+      contents: await fs.readFile(filePath, 'utf-8'),
+    })),
+  )
 
   const rawParsedOutput = await parse(styleguideContent, config)
   if (!rawParsedOutput)

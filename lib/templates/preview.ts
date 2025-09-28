@@ -298,49 +298,28 @@ ${html ?? ''}
 }
 
 function getMainContentRegular(section: in2Section, config: StyleguideConfiguration): string {
-  let sourceFilePath = ''
-
-  if (config.mode === 'development' && config.launchInEditor && section.markup.includes('<pug src="')) {
-    // eslint-disable-next-line regexp/no-super-linear-backtracking
-    const regexModifierLine = /<pug src="(.+?)".*(?:[\n\r\u2028\u2029]\s*)?(modifierClass="(.+?)")? *><\/pug>/g
-    const vitePugTags = section.markup.match(regexModifierLine)
-    if (!vitePugTags)
-      throw new Error('No Vite Pug tags found')
-
-    vitePugTags.forEach((vitePugTag) => {
-      const pugSourcePath = vitePugTag.match(/src="(.+?)"/)?.[1]
-      if (!pugSourcePath || !pugSourcePath.endsWith('.pug')) {
-        throw new Error('No or invalid Pug source path found')
-      }
-
-      sourceFilePath = pugSourcePath
-    })
-  }
-  else if (config.mode === 'development' && section.sourceFileName) {
-    sourceFilePath = path.join(config.contentDir, section.sourceFileName)
+  const openInEditorPaths: {
+    css: { vscode?: string, phpstorm?: string }
+    html: { vscode?: string, phpstorm?: string }
+  } = {
+    css: {},
+    html: {},
   }
 
-  const shouldLaunchInEditor = config.mode === 'development'
-    && config.launchInEditor
-    && sourceFilePath
-
-  let openInEditorPathPhpStorm = ''
-  let openInEditorPathVscode = ''
-
-  if (shouldLaunchInEditor) {
+  if (config.mode === 'development' && config.launchInEditor) {
     const computedRootPath = config.launchInEditor && typeof config.launchInEditor === 'object' && 'rootDir' in config.launchInEditor
       ? config.launchInEditor.rootDir
       : process.cwd()
 
-    const computedFilePath = ensureStartingSlash(path.join(computedRootPath, sourceFilePath))
+    const cssFilePath = ensureStartingSlash(path.join(computedRootPath, section.source.css.file))
+    openInEditorPaths.css.vscode = `vscode://file//${cssFilePath}:${section.source.css.line}`
+    openInEditorPaths.css.phpstorm = `phpstorm://open?file=${cssFilePath}&line=${section.source.css.line}`
 
-    openInEditorPathPhpStorm = shouldLaunchInEditor
-      ? `phpstorm://open?file=${computedFilePath}`
-      : ''
-
-    openInEditorPathVscode = shouldLaunchInEditor
-      ? `vscode://file//${computedFilePath}`
-      : ''
+    if (section.source.markup && section.source.markup.file) {
+      const htmlFilePath = ensureStartingSlash(path.join(computedRootPath, section.source.markup.file))
+      openInEditorPaths.html.vscode = `vscode://file//${htmlFilePath}`
+      openInEditorPaths.html.phpstorm = `phpstorm://open?file=${htmlFilePath}`
+    }
   }
 
   const computeFigmaExternalLink = (url?: string) => {
@@ -352,6 +331,16 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
 
     return urlObj.toString()
   }
+
+  const phpstormOpenLinks = [
+    openInEditorPaths.css.phpstorm,
+    openInEditorPaths.html.phpstorm,
+  ].filter(Boolean).join(',')
+
+  const vscodeOpenLinks = [
+    openInEditorPaths.css.vscode,
+    openInEditorPaths.html.vscode,
+  ].filter(Boolean).join(',')
 
   const codePreviewMarkup = `
     <!-- Preview Box -->
@@ -399,43 +388,45 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                         </a>`
                       : ''}
                 
-                    ${openInEditorPathPhpStorm
-                      ? `<a
-                            class="hidden @md:inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
-                            href="${openInEditorPathPhpStorm}"
-                        >
-                            <span class="hidden @2xl:inline-block">Open in</span>
-                            <span class="sr-only">PHPStorm</span>
-                            <img 
-                                src="styleguide-assets/icons/phpstorm.svg"
-                                width="70" 
-                                height="70" 
-                                class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
-                                alt="PHPStorm Logo" 
-                                aria-hidden="true" 
-                            >
-                        </a>
-                      `
-                      : ''}
-                    
-                    ${openInEditorPathVscode
-                      ? `<a
-                            class="hidden @md:inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
-                            href="${openInEditorPathVscode}"
-                        >
-                            <span class="hidden @2xl:inline-block">Open in</span>
-                            <span class="sr-only">VsCode</span>
-                            <img 
-                                src="styleguide-assets/icons/vscode.svg"
-                                width="100" 
-                                height="100" 
-                                class="size-4 saturate-0 group-hover/vscode:saturate-100 transition" 
-                                alt="VsCode Logo" 
-                                aria-hidden="true" 
-                            >
-                        </a>
-                      `
-                      : ''}
+                      ${phpstormOpenLinks.length > 0
+                        ? `<a
+                                  class="hidden @md:inline-flex items-center group/phpstorm gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                                  href="#"
+                                  data-link-multiple="${phpstormOpenLinks}"
+                              >
+                                  <span class="hidden @2xl:inline-block">Open in</span>
+                                  <span class="sr-only">PHPStorm</span>
+                                  <img 
+                                      src="styleguide-assets/icons/phpstorm.svg"
+                                      width="70" 
+                                      height="70" 
+                                      class="size-4 saturate-0 group-hover/phpstorm:saturate-100 transition" 
+                                      alt="PHPStorm Logo" 
+                                      aria-hidden="true" 
+                                  >
+                              </a>
+                            `
+                        : ''}
+                          
+                          ${vscodeOpenLinks.length > 0
+                            ? `<a
+                                  class="hidden @md:inline-flex items-center group/vscode gap-1.5 p-4 desktop-device-only cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
+                                  href="#"
+                                  data-link-multiple="${vscodeOpenLinks}"
+                              >
+                                  <span class="hidden @2xl:inline-block">Open in</span>
+                                  <span class="sr-only">VsCode</span>
+                                  <img 
+                                      src="styleguide-assets/icons/vscode.svg"
+                                      width="100" 
+                                      height="100" 
+                                      class="size-4 saturate-0 group-hover/vscode:saturate-100 transition" 
+                                      alt="VsCode Logo" 
+                                      aria-hidden="true" 
+                                  >
+                              </a>
+                            `
+                            : ''}
 
                     <button
                         class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 

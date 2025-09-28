@@ -9,7 +9,7 @@ import { watchStyleguide } from './dist/node/lib/index.mjs';
 
   const buildStyleguideStart = Date.now()
   await watchStyleguide({
-    mode: 'production',
+    mode: 'development',
     outDir: './styleguide-export',
     contentDir: './test/',
     projectTitle: 'Project name',
