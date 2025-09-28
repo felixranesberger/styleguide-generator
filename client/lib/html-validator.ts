@@ -96,12 +96,12 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
     // sort by severity
     .sort((a, b) => a.severity - b.severity)
     .reduce<{
-      ruleId: string
-      message: string
-      ruleUrl: string
-      selectors: string[]
-      context: any
-    }[]>((acc, error) => {
+    ruleId: string
+    message: string
+    ruleUrl: string
+    selectors: string[]
+    context: any
+  }[]>((acc, error) => {
       // Find existing group for this rule ID
       const existingGroup = acc.find(group => group.ruleId === error.ruleId)
 
