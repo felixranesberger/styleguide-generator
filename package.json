@@ -1,7 +1,7 @@
 {
   "name": "kss-modern",
   "type": "module",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Modern KSS compatible styleguide generator",
   "main": "./dist/node/lib/index.mjs",
   "types": "./dist/node/lib/index.d.ts",
