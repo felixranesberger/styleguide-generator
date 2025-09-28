@@ -45,11 +45,13 @@ function detectPageArrowNavigation() {
   const nextLink = document.querySelector<HTMLButtonElement>('#styleguide-next')
 
   const handleKeydown = (event: KeyboardEvent) => {
-    // don't do anything if a button is focused
+    // don't do anything if an input tag is focused
     // because the user might be in a tab trigger element and using arrow keys
-    // to change button
+    // to change button, select or similar
     const isButtonFocused = document.activeElement instanceof HTMLButtonElement
-    if (isButtonFocused)
+    const isInputFocused = document.activeElement instanceof HTMLInputElement
+    const isTextareaFocused = document.activeElement instanceof HTMLTextAreaElement
+    if (isButtonFocused || isInputFocused || isTextareaFocused)
       return
 
     // make sure the user is not holding cmd or ctrl key
