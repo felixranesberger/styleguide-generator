@@ -20,6 +20,5 @@ export default {
       },
     },
   },
-  plugins: [],
   darkMode: ['class', '.theme-dark'],
 }
