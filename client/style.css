@@ -63,16 +63,32 @@
   :root {
     color-scheme: light dark;
 
+    /* color primitive black */
+    --cp-neutral-0: hsl(0deg 0% 0%);
+    --cp-neutral-04: hsl(0deg 0% 4%);
+    --cp-neutral-12: hsl(0deg 0% 12%);
+    --cp-neutral-40: hsl(0deg 0% 40%);
+    --cp-neutral-64: hsl(0deg 0% 64%);
+    --cp-neutral-92: hsl(0deg 0% 92%);
+    --cp-neutral-98: hsl(0deg 0% 98%);
+    --cp-neutral-100: hsl(0deg 0% 100%);
+
+    /* Color primitive blue */
+    --cp-blue-11: hsl(221deg 40% 11%);
+
+    /* Color alias primary theme color */
+    --ca-theme-highlight: var(--cp-blue-11);
+
     /* Background colors */
-    --styleguide-color-background: light-dark(rgb(250, 250, 250), black);
-    --styleguide-color-background-highlight: light-dark(white, rgb(10, 10, 10));
+    --styleguide-color-background: light-dark(var(--cp-neutral-98), var(--cp-neutral-0));
+    --styleguide-color-background-highlight: light-dark(var(--cp-neutral-100), var(--cp-neutral-04));
 
     /* Text colors */
-    --styleguide-color-highlight: light-dark(rgb(17 24 39), white);
-    --styleguide-color-regular: light-dark(hsla(0,0%,40%,1), rgb(161, 161, 161));
+    --styleguide-color-highlight: light-dark(var(--ca-theme-highlight), var(--cp-neutral-100));
+    --styleguide-color-regular: light-dark(var(--cp-neutral-40), var(--cp-neutral-64));
 
     /* Border colors */
-    --styleguide-color-border: light-dark(rgb(235, 235, 235), rgb(31, 31, 31));
+    --styleguide-color-border: light-dark(var(--cp-neutral-92), var(--cp-neutral-12));
   }
 
   body {
