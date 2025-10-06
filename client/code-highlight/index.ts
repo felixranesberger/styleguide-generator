@@ -35,15 +35,13 @@ async function runShiki(html: string) {
   const workerEntry = await getFreeWorker()
   workerEntry.isBusy = true
 
-  // send the code to the worker
-  workerEntry.worker.postMessage({ html })
-
-  // wait for the worker to finish
   return new Promise<string>((resolve) => {
     workerEntry.worker.onmessage = (event) => {
       workerEntry.isBusy = false
       resolve(event.data)
     }
+
+    workerEntry.worker.postMessage({ html })
   })
 }
 

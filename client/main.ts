@@ -2,7 +2,6 @@ import { animate } from 'motion'
 import { highlightCode } from './code-highlight'
 import { useDialog } from './hooks/use-dialog.ts'
 import { useElementHorizontalOverflow } from './hooks/use-overflow.ts'
-import { renderAlert } from './lib/alerts.ts'
 import initPreviewIframes, { removeDocumentLoadingClass } from './lib/iframe.ts'
 import initTabs from './lib/tabs.ts'
 import initThemeSelect from './lib/theme-select.ts'
@@ -53,45 +52,26 @@ const codeAuditDialog = document.querySelector<HTMLDialogElement>('#code-audit-d
 const dialogBackdrop = document.querySelector<HTMLElement>('.dialog-backdrop')
 if (codeAuditButtons.length > 0 && codeAuditDialog && dialogBackdrop) {
   (async () => {
-    const { createHtmlValidator, auditCode } = await import('./lib/html-validator.ts')
+    const { auditCode } = await import('./lib/html-validator.ts')
     const { show: showDialog, close: closeDialog } = useDialog(codeAuditDialog, dialogBackdrop)
 
     codeAuditButtons.forEach(button => button.addEventListener('click', async () => {
       codeAuditButtons.forEach(button => button.setAttribute('aria-expanded', 'false'))
+
       button.setAttribute('disabled', '')
+      await auditCode(button, codeAuditDialog, closeDialog)
+      button.removeAttribute('disabled')
 
-      const { isValid } = await auditCode(button, codeAuditDialog, closeDialog)
-      if (isValid) {
-        button.classList.add('text-green-500', '!cursor-not-allowed')
-        renderAlert(
-          'Scanned HTML, no issues found!',
-          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 text-green-500/50"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" /></svg>`,
-        )
-
-        setTimeout(() => {
-          button.classList.remove('text-green-500', '!cursor-not-allowed')
-          button.removeAttribute('disabled')
-        }, 5000)
-      }
-      else {
-        button.setAttribute('aria-expanded', 'true')
-        button.removeAttribute('disabled')
-        button.classList.add('text-red-500')
-        await showDialog(
-          undefined,
-          () => {
-            codeAuditButtons.forEach((button) => {
-              button.setAttribute('aria-expanded', 'false')
-              setTimeout(() => button.classList.remove('text-red-500'), 2500)
-            })
-          },
-        )
-      }
+      button.setAttribute('aria-expanded', 'true')
+      await showDialog(
+        undefined,
+        () => {
+          codeAuditButtons.forEach((button) => {
+            button.setAttribute('aria-expanded', 'false')
+          })
+        },
+      )
     }))
-
-    setTimeout(() => {
-      requestIdleCallback(createHtmlValidator)
-    }, 8000)
   })()
 }
 

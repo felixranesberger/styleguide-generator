@@ -24,9 +24,7 @@
     "@shikijs/markdown-it": "^3.13.0",
     "chokidar": "^4.0.3",
     "fs-extra": "^11.3.2",
-    "keyux": "^0.11.3",
     "markdown-it-async": "^2.2.0",
-    "motion": "^12.23.22",
     "pug": "^3.0.3",
     "shiki": "^3.13.0",
     "tinyglobby": "^0.2.15"
@@ -36,9 +34,12 @@
     "@tailwindcss/vite": "^4.1.13",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
+    "axe-core": "^4.10.3",
     "bumpp": "^10.2.3",
     "eslint": "^9.36.0",
-    "html-validate": "^10.0.0",
+    "eslint-plugin-format": "^1.0.2",
+    "keyux": "^0.11.3",
+    "motion": "^12.23.22",
     "unbuild": "^3.6.1",
     "vite": "^7.1.7"
   }

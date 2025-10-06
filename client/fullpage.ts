@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    runAxe: () => Promise<void>
+  }
+}
+
 interface ModifierReplacerConfig {
   modifier: string
   placeholder?: string
@@ -116,6 +122,18 @@ if (window.frameElement) {
 
   if (window.frameElement.hasAttribute('data-modifier')) {
     ModifierReplacer.fromIframe()
+  }
+
+  // This function is executed by the parent, when we want to run a code audit
+  window.runAxe = async () => {
+    const { default: axe } = await import('axe-core')
+    const result = await axe.run('body').catch(console.error)
+
+    const event = new CustomEvent('axe-result', {
+      detail: result
+    })
+
+    window.frameElement?.dispatchEvent(event)
   }
 }
 else {
