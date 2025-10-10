@@ -1,3 +1,11 @@
+import type { CrossTreeSelector, NodeResult, Result } from 'axe-core'
+
+declare global {
+  interface Window {
+    runAccessibilityTest: () => Promise<void>
+  }
+}
+
 interface ModifierReplacerConfig {
   modifier: string
   placeholder?: string
@@ -116,6 +124,82 @@ if (window.frameElement) {
 
   if (window.frameElement.hasAttribute('data-modifier')) {
     ModifierReplacer.fromIframe()
+  }
+
+  // This function is executed by the parent, when we want to run a code audit
+  window.runAccessibilityTest = async () => {
+    const runAxe = async () => {
+      const { default: axe } = await import('axe-core')
+      const result = await axe.run('body').catch(console.error)
+      if (!result)
+        throw new Error('No results from html-validate')
+
+      const targetMap = new Map<CrossTreeSelector, HTMLElement>()
+
+      const fillTargetMap = (results: Result[]) => {
+        results.forEach((result) => {
+          result.nodes.forEach((node: NodeResult) => {
+            node.target.forEach((selector) => {
+              const element = axe.utils.shadowSelect(selector)
+              if (!element)
+                throw new Error(`Could not find element for selector: ${selector}`)
+
+              targetMap.set(selector, element as HTMLElement)
+            })
+          })
+        })
+      }
+
+      fillTargetMap(result.violations)
+      fillTargetMap(result.inapplicable)
+      fillTargetMap(result.passes)
+      fillTargetMap(result.incomplete)
+
+      return {
+        result,
+        targetMap,
+      }
+    }
+
+    const runHtmlValidate = async () => {
+      const { HtmlValidate, StaticConfigLoader } = await import('html-validate/browser')
+      const loader = new StaticConfigLoader()
+      const validator = new HtmlValidate(loader)
+
+      const html = document.documentElement.outerHTML
+      const { results } = await validator.validateString(html, {
+        rules: {
+          'no-trailing-whitespace': 'off',
+          'no-inline-style': 'off',
+        },
+      })
+
+      const messages = results.map(r => r.messages).flat()
+
+      return await Promise.all(messages.map(async (message) => {
+        const ruleContext = await validator.getContextualDocumentation(message)
+        const ruleDescription = ruleContext?.description
+
+        return {
+          ...message,
+          ruleDescription,
+        }
+      }))
+    }
+
+    const [axeResult, htmlValidateResult] = await Promise.all([
+      runAxe(),
+      runHtmlValidate(),
+    ])
+
+    const event = new CustomEvent('accessibility-result', {
+      detail: {
+        axe: axeResult,
+        htmlValidate: htmlValidateResult,
+      },
+    })
+
+    window.frameElement?.dispatchEvent(event)
   }
 }
 else {

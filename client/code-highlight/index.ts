@@ -1,5 +1,7 @@
 import HighlightWorker from './worker.ts?worker'
 
+const cache = new Map<string, string>()
+
 const CODE_HIGHLIGHTED_ATTRIBUTE = 'data-highlighted'
 
 interface WorkerEntry {
@@ -31,19 +33,17 @@ function getFreeWorker(): Promise<WorkerEntry> {
   })
 }
 
-async function runShiki(html: string) {
+async function runShiki(lang: 'text' | 'html', text: string) {
   const workerEntry = await getFreeWorker()
   workerEntry.isBusy = true
 
-  // send the code to the worker
-  workerEntry.worker.postMessage({ html })
-
-  // wait for the worker to finish
   return new Promise<string>((resolve) => {
     workerEntry.worker.onmessage = (event) => {
       workerEntry.isBusy = false
       resolve(event.data)
     }
+
+    workerEntry.worker.postMessage({ lang, text })
   })
 }
 
@@ -56,6 +56,10 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
   if (!source)
     throw new Error('No source code provided')
 
+  const lang = (element.getAttribute('data-source-lang') || 'html') as 'text' | 'html'
+  if (!lang)
+    throw new Error('No source code language provided')
+
   source = decodeURIComponent(source).trim()
 
   // if modifier is provided, replace the modifier class
@@ -63,7 +67,16 @@ export async function highlightCode(element: HTMLElement, modifierClass?: string
     source = source.replaceAll('{{modifier_class}}', modifierClass)
   }
 
-  const code = await runShiki(source)
+  let code = ''
+  const cacheKey = `${lang}:::${source}`
+
+  if (cache.has(cacheKey)) {
+    code = cache.get(cacheKey)!
+  }
+  else {
+    code = await runShiki(lang, source)
+    cache.set(cacheKey, code)
+  }
 
   // add code to the element
   element.insertAdjacentHTML('beforeend', code)

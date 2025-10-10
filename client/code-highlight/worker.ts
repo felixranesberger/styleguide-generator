@@ -23,13 +23,13 @@ export async function createShikiHighlighter() {
   })
 }
 
-globalThis.addEventListener('message', async (event: MessageEvent<{ html: string }>) => {
+globalThis.addEventListener('message', async (event: MessageEvent<{ lang: 'html' | 'text', text: string }>) => {
   if (!highlighter) {
     await createShikiHighlighter()
   }
 
-  const result = highlighter.codeToHtml(event.data.html, {
-    lang: 'html',
+  const result = highlighter.codeToHtml(event.data.text, {
+    lang: event.data.lang,
     themes: {
       light: 'github-light-default',
       dark: 'aurora-x',

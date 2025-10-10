@@ -181,7 +181,7 @@ export function getCodeAuditDialog() {
   return `
     <dialog 
         id="code-audit-dialog"
-        class="fixed -inset-x-0 top-auto bottom-0 z-30 pt-6 -mb-px w-full max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+        class="fixed inset-0 top-8 z-30 py-6 backdrop:hidden -mb-px size-full md:h-auto md:max-h-[85dvh] max-w-none overflow-y-auto rounded-t-2xl border bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[720px] md:top-12 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:rounded-2xl mx-0 lg:top-24"
       >
           <h2 class="flex items-center gap-2 mb-4 px-6">
             <svg class="-mt-0.5 h-4 transition duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.88" aria-hidden="true"><title>accessibility</title><path fill="currentcolor" d="M61.44,0A61.46,61.46,0,1,1,18,18,61.21,61.21,0,0,1,61.44,0Zm-.39,74.18L52.1,98.91a4.94,4.94,0,0,1-2.58,2.83A5,5,0,0,1,42.7,95.5l6.24-17.28a26.3,26.3,0,0,0,1.17-4,40.64,40.64,0,0,0,.54-4.18c.24-2.53.41-5.27.54-7.9s.22-5.18.29-7.29c.09-2.63-.62-2.8-2.73-3.3l-.44-.1-18-3.39A5,5,0,0,1,27.08,46a5,5,0,0,1,5.05-7.74l19.34,3.63c.77.07,1.52.16,2.31.25a57.64,57.64,0,0,0,7.18.53A81.13,81.13,0,0,0,69.9,42c.9-.1,1.75-.21,2.6-.29l18.25-3.42A5,5,0,0,1,94.5,39a5,5,0,0,1,1.3,7,5,5,0,0,1-3.21,2.09L75.15,51.37c-.58.13-1.1.22-1.56.29-1.82.31-2.72.47-2.61,3.06.08,1.89.31,4.15.61,6.51.35,2.77.81,5.71,1.29,8.4.31,1.77.6,3.19,1,4.55s.79,2.75,1.39,4.42l6.11,16.9a5,5,0,0,1-6.82,6.24,4.94,4.94,0,0,1-2.58-2.83L63,74.23,62,72.4l-1,1.78Zm.39-53.52a8.83,8.83,0,1,1-6.24,2.59,8.79,8.79,0,0,1,6.24-2.59Zm36.35,4.43a51.42,51.42,0,1,0,15,36.35,51.27,51.27,0,0,0-15-36.35Z"/></svg>
@@ -190,7 +190,7 @@ export function getCodeAuditDialog() {
             </span>
           </h2>
           
-          <ul class="audit-results"></ul>
+          <ol class="audit-results"></ol>
     </dialog>
   `
 }
@@ -507,6 +507,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                   id="code-fullpage-${sanitizeId(section.id)}" 
                   class="overflow-x-auto w-full code-highlight"
                   data-source-code="${encodeURIComponent(section.markup)}"
+                  data-source-lang="html"
                 ></div>
             </div>
         </details>
@@ -767,7 +768,7 @@ export function getSearchHtml(sections: {
   return `
 <dialog
     id="search-dialog"
-    class="fixed -inset-x-px top-auto bottom-0 z-30 -mb-px w-full opacity-0 max-w-none overflow-y-auto rounded-t-2xl border search bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[640px] md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl mx-0"
+    class="fixed inset-0 top-8 z-30 backdrop:hidden -mb-px size-full md:h-auto md:max-h-[85dvh] max-w-none overflow-y-auto rounded-t-2xl border bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[720px] md:top-12 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:rounded-2xl mx-0 lg:top-24"
 >
     <h2 class="sr-only">Search</h2>
     <div class="border-b px-4 py-3 border-styleguide-border">

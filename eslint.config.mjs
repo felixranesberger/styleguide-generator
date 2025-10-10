@@ -5,6 +5,9 @@ export default antfu(
     rules: {
       'no-console': ['error', { allow: ['error', 'warn', 'group', 'groupEnd', 'info'] }],
     },
+    formatters: {
+      html: true,
+    },
     ignores: [
       'lib/parser.ts',
     ],

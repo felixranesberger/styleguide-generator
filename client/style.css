@@ -162,18 +162,6 @@
     @apply outline-blue-600;
   }
 
-  .search {
-    max-height: 85dvh;
-
-    @media (max-width: 768px) {
-      min-height: 60dvh;
-    }
-  }
-
-  .search::backdrop {
-    display: none;
-  }
-
   .dialog-backdrop {
     display: none;
     position: absolute;
@@ -339,16 +327,24 @@
 
     /* markdown code block */
     :is(.shiki, pre:not(.shiki)) {
-      @apply max-w-[83ch] overflow-x-auto px-6 py-5 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
-
-      > code {
-        @apply inline-block;
-      }
+      @apply max-w-[83ch] px-6 py-5;
     }
 
     /* markdown inline code */
     :not(:is(pre)) > code {
       @apply px-1.5 py-0.5 text-sm bg-[rgb(242,242,242)] dark:bg-[rgb(26,26,26)] font-mono text-styleguide-highlight rounded-md;
+    }
+  }
+
+  :is(.markdown-container, .code-audit-container) {
+
+    /* code block */
+    :is(.shiki, pre:not(.shiki)) {
+      @apply max-w-full overflow-x-auto px-4 py-2 text-sm rounded-2xl bg-styleguide-bg-highlight border border-styleguide-border;
+
+      > code {
+        @apply inline-block;
+      }
     }
   }
 }

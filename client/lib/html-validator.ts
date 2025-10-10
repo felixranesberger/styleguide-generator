@@ -1,4 +1,14 @@
-import type { HtmlValidate } from 'html-validate/browser'
+import type {
+  Result as AxeResult,
+  AxeResults,
+  CrossTreeSelector,
+  ImpactValue,
+  resultGroups,
+  UnlabelledFrameSelector,
+} from 'axe-core'
+import type { Message as HTMLValidateMessage } from 'html-validate'
+import { each, when } from '../../lib/template-utils.ts'
+import { highlightCode } from '../code-highlight'
 
 interface ConsoleStyles {
   header: string
@@ -28,8 +38,6 @@ const styles: ConsoleStyles = {
   ].join(';'),
 }
 
-let validator: HtmlValidate
-
 function prettyValidationError<T extends HTMLElement>(error: string, element: T): void {
   console.group('%cValidation Error', styles.header)
 
@@ -48,19 +56,21 @@ function prettyValidationError<T extends HTMLElement>(error: string, element: T)
   console.groupEnd()
 }
 
-export async function createHtmlValidator() {
-  const { HtmlValidate, StaticConfigLoader } = await import('html-validate/browser')
-
-  if (validator)
-    return validator
-
-  const loader = new StaticConfigLoader()
-  validator = new HtmlValidate(loader)
-  return validator
+interface AccessibilityTestResultEvent extends CustomEvent {
+  detail: {
+    axe: {
+      result: AxeResults
+      targetMap: Map<CrossTreeSelector, HTMLElement>
+    }
+    htmlValidate: (HTMLValidateMessage & {
+      ruleDescription?: string
+    })[]
+  }
 }
 
-function escapeHtml(text: string) {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+// Add interface for iframe window
+interface IFrameWindow extends Window {
+  runAccessibilityTest: () => Promise<void>
 }
 
 export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResultDialog: HTMLDialogElement, closeDialog: () => Promise<void>) {
@@ -72,102 +82,250 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
   if (!codeAuditIFrame)
     throw new Error('Code audit template not found')
 
-  const validator = await createHtmlValidator()
+  if (!codeAuditIFrame.contentWindow)
+    throw new Error('Code audit iframe has no content window')
 
-  const htmlResponse = await fetch(codeAuditIFrame.src)
-  const html = await htmlResponse.text()
-
-  const resultsList = auditResultDialog.querySelector<HTMLUListElement>('.audit-results')
+  const resultsList = auditResultDialog.querySelector<HTMLDivElement>('.audit-results')
   if (!resultsList)
     throw new Error('No audit results list found')
 
-  const { results: validatorResults, valid: isHTMLValid } = await validator.validateString(html, {
-    rules: {
-      'no-trailing-whitespace': 'off',
-      'no-inline-style': 'off',
-    },
+  const results = await new Promise<AccessibilityTestResultEvent['detail']>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Accessibility audit timed out'))
+    }, 30000)
+
+    const eventHandler = (event: Event) => {
+      const castedEvent = event as AccessibilityTestResultEvent
+
+      clearTimeout(timeout)
+      codeAuditIFrame.removeEventListener('accessibility-result', eventHandler)
+      resolve(castedEvent.detail)
+    }
+
+    codeAuditIFrame.addEventListener('accessibility-result', eventHandler)
+
+    const iframeWindow = codeAuditIFrame.contentWindow as IFrameWindow
+    if (iframeWindow.runAccessibilityTest) {
+      iframeWindow.runAccessibilityTest()
+    }
+    else {
+      clearTimeout(timeout)
+      codeAuditIFrame.removeEventListener('accessibility-result', eventHandler)
+      reject(new Error('runAxe function not found in iframe'))
+    }
   })
 
-  if (isHTMLValid || validatorResults.length === 0) {
-    return { isValid: true }
+  interface ResultNodeAxe {
+    type: 'axe'
+    html: string
+    target: UnlabelledFrameSelector
   }
 
-  const result = validatorResults[0].messages
-    // sort by severity
-    .sort((a, b) => a.severity - b.severity)
-    .reduce<{
-    ruleId: string
-    message: string
-    ruleUrl: string
-    selectors: string[]
-    context: any
-  }[]>((acc, error) => {
-      // Find existing group for this rule ID
-      const existingGroup = acc.find(group => group.ruleId === error.ruleId)
+  interface ResultNodeHTMLValidate {
+    type: 'htmlvalidate'
+    selector: string
+  }
 
-      if (existingGroup) {
-        // Add selector to existing group if not already present and exists
-        if (error.selector && !existingGroup.selectors.includes(error.selector)) {
-          existingGroup.selectors.push(error.selector)
-        }
-        return acc
-      }
+  interface AccessibilityTest {
+    id: string
+    description: string
+    helpUrl: string
+    impact: AxeResult['impact']
+    nodes: (ResultNodeAxe | ResultNodeHTMLValidate)[]
+  }
 
-      // Create new group if one doesn't exist
-      acc.push({
-        // escape possible html entities
-        ruleId: error.ruleId.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
-        message: error.message,
-        ruleUrl: error.ruleUrl || `https://html-validate.org/rules/${error.ruleId}.html`,
-        selectors: error.selector ? [error.selector] : [],
-        context: error.context,
-      })
+  const mergedResults: Record<resultGroups, AccessibilityTest[]> = {
+    violations: [],
+    incomplete: [],
+    passes: [],
+    inapplicable: [],
+  }
 
-      return acc
-    }, [])
+  // add axe results
+  const pushAxeResults = (type: resultGroups, axeResults: AxeResult[]) => {
+    const output = axeResults.map(result => ({
+      id: result.id,
+      description: result.description,
+      helpUrl: result.helpUrl,
+      impact: result.impact,
+      nodes: result.nodes.map(node => ({
+        type: 'axe',
+        html: node.html || '',
+        target: node.target,
+      })),
+    }) satisfies AccessibilityTest)
 
-  resultsList.innerHTML = `
-    ${result.map(message => `
-        <li class="border-b border-styleguide-border first:border-t last:border-none">
-            <details class="group">
-                <summary class="flex cursor-pointer justify-start items-center px-6 py-4 text-sm bg-styleguide-bg transition hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)]">
-                    <svg class="h-4 w-4 group-open:rotate-90 transition-transform mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span>
-                        <span class="font-semibold mr-1">${message.ruleId}:</span><span>${escapeHtml(message.message)}</span>
-                    </span>
-                </summary>
-                
-                <div class="border-t pl-12 pr-6 py-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
-                     <p class="mb-3 pb-3 border-b border-styleguide-border">
-                        <a class="flex gap-1 group/link items-center text-sm text-blue-600" href="${message.ruleUrl}" target="_blank">
+    mergedResults[type].push(...output)
+  }
+
+  pushAxeResults('violations', results.axe.result.violations)
+  pushAxeResults('incomplete', results.axe.result.incomplete)
+  pushAxeResults('passes', results.axe.result.passes)
+  pushAxeResults('inapplicable', results.axe.result.inapplicable)
+
+  // add html-validate results
+  function calculateHtmlValidatorImpact(ruleId: string, severity: string): ImpactValue {
+    switch (severity) {
+      case 'off':
+      case '0':
+        return 'minor'
+      case 'warn':
+      case '1':
+        return 'moderate'
+      case 'error':
+      case '2':
+        return 'serious'
+      default:
+        throw new Error(`Invalid severity "${severity}" for rule "${ruleId}"`)
+    }
+  }
+
+  results.htmlValidate.forEach((message) => {
+    mergedResults.violations.push({
+      id: message.ruleId,
+      description: message.ruleDescription || message.message,
+      helpUrl: message.ruleUrl || '',
+      impact: calculateHtmlValidatorImpact(message.ruleId, message.severity.toString()),
+      nodes: [{
+        type: 'htmlvalidate',
+        selector: message.selector!,
+      }],
+    })
+  })
+
+  const axeTargetMap = results.axe.targetMap
+
+  const renderSection = (
+    impact: resultGroups,
+    labelIcon: string,
+    results: AccessibilityTest[],
+  ) => {
+    const label = impact.charAt(0).toUpperCase() + impact.slice(1)
+
+    // sort results by severity: critical, serious, moderate, minor
+    const severityOrder = ['critical', 'serious', 'moderate', 'minor'] as const
+    const sortedResults = results.toSorted((a, b) => {
+      const aIndex = severityOrder.indexOf(a.impact || 'minor')
+      const bIndex = severityOrder.indexOf(b.impact || 'minor')
+      return aIndex - bIndex
+    })
+
+    const renderNodeAxe = (node: ResultNodeAxe) => {
+      const elements = node.target
+        .map(selector => axeTargetMap.get(selector))
+        .filter(Boolean) as HTMLElement[]
+
+      if (elements.length === 0)
+        throw new Error(`No elements found for axe-core target: ${node.target}`)
+
+      return `
+        ${each(elements, element => `
+          <div 
+            class="overflow-x-auto w-full code-highlight"
+            data-source-code="${encodeURIComponent(element.outerHTML)}"
+            data-source-lang="html"
+          ></div>
+        `)}
+      `
+    }
+
+    const renderNodeHtmlValidate = (node: ResultNodeHTMLValidate) => {
+      const element = codeAuditIFrame.contentWindow?.document.querySelector<HTMLElement>(node.selector)
+      if (!element)
+        throw new Error(`Element not found for selector: ${node.selector}`)
+
+      return `
+        <div 
+          class="overflow-x-auto w-full code-highlight"
+          data-source-code="${encodeURIComponent(element.outerHTML)}"
+          data-source-lang="html"
+        ></div>
+      `
+    }
+
+    return `
+      ${when(sortedResults.length > 0, () => `
+        <li>
+          <details${['violations', 'incomplete'].includes(impact) ? ' open' : ''}>
+            <summary class="cursor-pointer">
+              <h3 class="px-6 py-4 text-sm font-semibold leading-[1]">
+                <span class="mr-2" aria-hidden="true">${labelIcon}</span>
+                <span class="text-styleguide-highlight">${label}:</span>
+                <span class="ml-2">(${results.length})</span>        
+              </h3>
+            </summary>
+            
+            <div class="px-6 pb-6 text-sm code-audit-container">
+               <ol>
+                ${each(sortedResults, result => `
+                  <li class="ml-6 border-b border-styleguide-border">
+                    <details class="group">
+                      <summary class="flex cursor-pointer group-open:text-styleguide-highlight justify-between items-center py-4 text-sm gap-2 transition">
+                        <span>
+                          <span class="font-semibold">${result.id}</span>
+                          ${when(result.impact && ['violations', 'incomplete'].includes(impact), () => `<span>${result.impact!}</span>`)}                        
+                        </span>
+                       
+                        <svg class="h-4 w-4 group-open:rotate-90 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                          <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path>
+                        </svg>
+                      </summary>
+                      
+                      <div class="pt-2 pb-6 text-sm code-audit-container">
+                        <p class="mb-3">
+                            ${result.description.replace(/`([^`]*)`/g, '<code>$1</code>')}
+                        </p>
+                        
+                        <p class="mb-3 pb-3 border-b border-styleguide-border">
+                          <a 
+                            class="flex gap-1 group/link items-center text-sm text-blue-600" 
+                            href="${result.helpUrl}" 
+                            target="_blank"
+                          >
                             Learn more about the rule
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-3 w-3">
-                                <path class="transition group-hover/link:translate-x-px group-hover/link:-translate-y-px group-focus/link:translate-x-px group-focus/link:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"></path>
-                                <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"></path>
+                              <path class="transition group-hover/link:translate-x-px group-hover/link:-translate-y-px group-focus/link:translate-x-px group-focus/link:-translate-y-px" d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72Z"></path>
+                              <path d="M3.5 6.75c0-.69.56-1.25 1.25-1.25H7A.75.75 0 0 0 7 4H4.75A2.75 2.75 0 0 0 2 6.75v4.5A2.75 2.75 0 0 0 4.75 14h4.5A2.75 2.75 0 0 0 12 11.25V9a.75.75 0 0 0-1.5 0v2.25c0 .69-.56 1.25-1.25 1.25h-4.5c-.69 0-1.25-.56-1.25-1.25v-4.5Z"></path>
                             </svg>
-                        </a>
-                    </p>
-                    
-                    <h3 class="font-bold text-sm text-styleguide-highlight">Selectors</h3>
-                    <ul>
-                        ${message.selectors.map(selector => `
-                            <li>
-                                <button 
-                                    class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer text-left"
-                                    data-iframe-selector="${escapeHtml(`${message.ruleId}: ${message.message}`)}"
-                                  >
-                                    ${selector}
-                                </button>
-                            </li>
-                        `).join('\n')}
-                    </ul>
-                </div>
-            </details>
-        </li>
-    `).join('\n')}
+                          </a>
+                        </p>
+                        
+                        ${when(['violations', 'incomplete'].includes(impact) && result.nodes.length > 0, () => `
+                          <h3 class="font-semibold mb-2">Affected nodes (${result.nodes.length}):</h3>
+    
+                          <ol class="!pl-0 !list-none">
+                            ${each(result.nodes, node => `
+                              <li class="mb-4 last:mb-0">
+                                ${when(node.type === 'axe', () => `${renderNodeAxe(node as ResultNodeAxe)}`)}
+                                ${when(node.type === 'htmlvalidate', () => `${renderNodeHtmlValidate(node as ResultNodeHTMLValidate)}`)}
+                              </li>
+                            `)}  
+                          </ol>
+                        `)}
+                      </div>
+                    </details>
+                  </li>
+                `)}
+              </ol>
+            </div>
+          </details>
+      </li>
+      `)}
   `
+  }
+
+  const axeViolationIcon = mergedResults.violations.length > 0 ? '🔴' : '🟢'
+  const axeIncompleteIcon = mergedResults.incomplete.length > 0 ? '🟠' : '🟢'
+
+  resultsList.innerHTML = `
+    ${renderSection('violations', axeViolationIcon, mergedResults.violations)}
+    ${renderSection('incomplete', axeIncompleteIcon, mergedResults.incomplete)}
+    ${renderSection('passes', '🟢', mergedResults.passes)}
+    ${renderSection('inapplicable', '⚪', mergedResults.inapplicable)}
+  `
+
+  const codeHighlights = resultsList.querySelectorAll<HTMLElement>('[data-source-code]')
+  codeHighlights.forEach(e => highlightCode(e))
 
   const iframeSelectors = resultsList.querySelectorAll<HTMLButtonElement>('[data-iframe-selector]')
   iframeSelectors.forEach((selector) => {
@@ -194,6 +352,4 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
       })
     })
   })
-
-  return { isValid: isHTMLValid }
 }
