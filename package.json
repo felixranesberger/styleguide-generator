@@ -15,12 +15,12 @@
     "release": "bun run lint && bumpp"
   },
   "peerDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@antfu/utils": "^9.2.1",
+    "@antfu/utils": "^9.3.0",
     "@biomejs/js-api": "^3.0.0",
-    "@biomejs/wasm-nodejs": "^2.2.4",
+    "@biomejs/wasm-nodejs": "^2.2.6",
     "@shikijs/markdown-it": "^3.13.0",
     "chokidar": "^4.0.3",
     "fs-extra": "^11.3.2",
@@ -31,17 +31,17 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",
-    "@tailwindcss/vite": "^4.1.13",
+    "@tailwindcss/vite": "^4.1.14",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
-    "axe-core": "^4.10.3",
-    "bumpp": "^10.2.3",
-    "eslint": "^9.36.0",
+    "axe-core": "^4.11.0",
+    "bumpp": "^10.3.1",
+    "eslint": "^9.37.0",
     "eslint-plugin-format": "^1.0.2",
-    "html-validate": "^10.1.1",
+    "html-validate": "^10.1.2",
     "keyux": "^0.11.3",
-    "motion": "^12.23.22",
+    "motion": "^12.23.24",
     "unbuild": "^3.6.1",
-    "vite": "^7.1.7"
+    "vite": "^7.1.9"
   }
 }
