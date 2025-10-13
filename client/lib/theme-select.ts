@@ -6,7 +6,7 @@ const THEME_CLASSES = {
   dark: 'theme-dark',
 } as const
 
-export default (themeSelectForm: HTMLFormElement) => {
+function handleThemeSelect(themeSelectForm: HTMLFormElement) {
   // Media query for system dark mode preference
   const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -101,5 +101,11 @@ export default (themeSelectForm: HTMLFormElement) => {
   const currentThemeInput = themeSelectForm.querySelector<HTMLInputElement>(`input[value="${currentTheme}"]`)
   if (!currentThemeInput)
     throw new Error('No current theme input found')
+
   currentThemeInput.checked = true
+}
+
+const themeSelectForm = document.querySelector<HTMLFormElement>('.theme-select')
+if (themeSelectForm) {
+  handleThemeSelect(themeSelectForm)
 }

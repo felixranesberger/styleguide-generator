@@ -5,7 +5,8 @@ const manifest = JSON.parse(fs.readFileSync('./dist/styleguide-assets/.vite/mani
 
 const hashedFileNames = {
   'fullpage.js': manifest['client/fullpage.ts'].file,
-  'client.js': manifest['client/main.ts'].file,
+  'preview.js': manifest['client/preview.ts'].file,
+  'preview-inline.js': manifest['client/preview-inline.ts'].file,
   'style.css': manifest['style.css'].file,
 } as const
 
@@ -308,6 +309,23 @@ const shikiExternalPackages = [
   'character-entities-html4',
 ]
 
+function escapeForTemplateLiteral(str: string) {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, '\\`')
+    .replace(/\$/g, '\\$')
+}
+
+const previewInlineFilePath = `dist/styleguide-assets/${hashedFileNames['preview-inline.js']}`
+if (!fs.existsSync(previewInlineFilePath))
+  throw new Error(`File not found: ${previewInlineFilePath}`)
+
+const previewInlineContent = `<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    ${escapeForTemplateLiteral(fs.readFileSync(previewInlineFilePath, 'utf-8'))}
+  });
+</script>`
+
 export default defineBuildConfig({
   outDir: 'dist/node',
   entries: ['./lib/index', './lib/vite-pug/worker'],
@@ -316,7 +334,8 @@ export default defineBuildConfig({
   externals: ['@antfu/utils', ...shikiExternalPackages],
   replace: {
     __STYLEGUIDE_CSS__: hashedFileNames['style.css'],
-    __STYLEGUIDE_CLIENT_JS__: hashedFileNames['client.js'],
+    __STYLEGUIDE_PREVIEW_JS__: hashedFileNames['preview.js'],
+    __STYLEGUIDE_PREVIEW_INLINE__: previewInlineContent,
     __STYLEGUIDE_FULLPAGE_JS__: hashedFileNames['fullpage.js'],
   },
 })

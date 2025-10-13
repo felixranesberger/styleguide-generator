@@ -9,8 +9,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
-        'client': resolve(__dirname, 'client/main.ts'),
-        'client-fullpage': resolve(__dirname, 'client/fullpage.ts'),
+        'preview': resolve(__dirname, 'client/preview.ts'),
+        'preview-inline': resolve(__dirname, 'client/preview-inline.ts'),
+        'fullpage': resolve(__dirname, 'client/fullpage.ts'),
       },
       formats: ['es'],
       name: 'Styleguide',

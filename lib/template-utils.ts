@@ -4,7 +4,7 @@ interface RawHTML {
   readonly raw: string
 }
 
-function escape(str: unknown): string {
+export function escape(str: unknown): string {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
