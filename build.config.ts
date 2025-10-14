@@ -321,9 +321,7 @@ if (!fs.existsSync(previewInlineFilePath))
   throw new Error(`File not found: ${previewInlineFilePath}`)
 
 const previewInlineContent = `<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    ${escapeForTemplateLiteral(fs.readFileSync(previewInlineFilePath, 'utf-8'))}
-  });
+  ${escapeForTemplateLiteral(fs.readFileSync(previewInlineFilePath, 'utf-8'))};
 </script>`
 
 export default defineBuildConfig({

@@ -6,7 +6,7 @@ const THEME_CLASSES = {
   dark: 'theme-dark',
 } as const
 
-function handleThemeSelect(themeSelectForm: HTMLFormElement) {
+export function handleThemeSelect(themeSelectForm: HTMLFormElement) {
   // Media query for system dark mode preference
   const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -73,6 +73,10 @@ function handleThemeSelect(themeSelectForm: HTMLFormElement) {
 
         iframe.src = url.href
       })
+
+    setTimeout(() => {
+      document.body.classList.add('allow-transitions')
+    }, 500)
   }
 
   // Handle system theme changes when normal theme is selected
@@ -103,9 +107,4 @@ function handleThemeSelect(themeSelectForm: HTMLFormElement) {
     throw new Error('No current theme input found')
 
   currentThemeInput.checked = true
-}
-
-const themeSelectForm = document.querySelector<HTMLFormElement>('.theme-select')
-if (themeSelectForm) {
-  handleThemeSelect(themeSelectForm)
 }
