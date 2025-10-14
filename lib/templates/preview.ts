@@ -351,9 +351,10 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
       : process.cwd()
 
     const cssFilePath = ensureStartingSlash(path.join(computedRootPath, section.source.css.file))
+    const cssLineNumber = section.source.css.line + 1 // increment by one to match section title directly
     openInEditorPaths.css = {
-      vscode: `vscode://file//${cssFilePath}:${section.source.css.line}`,
-      phpstorm: `phpstorm://open?file=${cssFilePath}&line=${section.source.css.line}`,
+      vscode: `vscode://file//${cssFilePath}:${cssLineNumber}`,
+      phpstorm: `phpstorm://open?file=${cssFilePath}&line=${cssLineNumber}`,
     }
 
     if (section.source.markup && section.source.markup.file) {
