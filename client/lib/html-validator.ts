@@ -202,6 +202,16 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
   }
 
   results.htmlValidate.forEach((message) => {
+    const alreadyPresentViolation = mergedResults.violations.find(violation => violation.id === message.ruleId)
+    if (alreadyPresentViolation) {
+      alreadyPresentViolation.nodes.push({
+        type: 'htmlvalidate',
+        selector: message.selector!,
+      })
+
+      return
+    }
+
     mergedResults.violations.push({
       id: message.ruleId,
       description: message.ruleDescription || message.message,
@@ -304,7 +314,7 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
                       
                       <div class="pt-2 pb-6 text-sm code-audit-container">
                         <p class="mb-3">
-                            ${result.description.replace(/`([^`]*)`/g, '<code>$1</code>')}
+                            ${result.description}
                         </p>
                         
                         <p class="mb-3 pb-3 border-b border-styleguide-border">
