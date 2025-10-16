@@ -41,7 +41,7 @@ export async function logicalWriteFile(filepath: string, content: string) {
 export function fixAccessibilityIssues(html: string): string {
   let parsedMarkup = html
 
-  const omitValue = ['required', 'disabled', 'checked', 'selected', 'multiple', 'readonly']
+  const omitValue = ['required', 'disabled', 'checked', 'selected', 'multiple', 'readonly', 'open']
   omitValue.forEach((value) => {
     parsedMarkup = parsedMarkup
       .replaceAll(`${value}="${value}"`, value)
