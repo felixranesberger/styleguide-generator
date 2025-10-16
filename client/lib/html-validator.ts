@@ -9,6 +9,16 @@ import type {
 import type { Message as HTMLValidateMessage } from 'html-validate'
 import { each, when } from '../../lib/template-utils.ts'
 import { highlightCode } from '../code-highlight'
+import { id } from '../utils.ts'
+
+declare global {
+  interface Window {
+    validator: {
+      referenceMap: Map<string, HTMLElement>
+      logReferenceAlert: (element: HTMLElement) => void
+    }
+  }
+}
 
 interface ConsoleStyles {
   header: string
@@ -88,6 +98,17 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
   const resultsList = auditResultDialog.querySelector<HTMLDivElement>('.audit-results')
   if (!resultsList)
     throw new Error('No audit results list found')
+
+  window.validator = {
+    referenceMap: new Map<string, HTMLElement>(),
+    logReferenceAlert: (element: HTMLElement) => {
+      const initialText = element.textContent
+      element.textContent = 'Logged to console'
+      setTimeout(() => {
+        element.textContent = initialText
+      }, 2000)
+    },
+  }
 
   const results = await new Promise<AccessibilityTestResultEvent['detail']>((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -219,13 +240,19 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
         throw new Error(`No elements found for axe-core target: ${node.target}`)
 
       return `
-        ${each(elements, element => `
-          <div 
-            class="overflow-x-auto w-full code-highlight"
-            data-source-code="${encodeURIComponent(element.outerHTML)}"
-            data-source-lang="html"
-          ></div>
-        `)}
+        ${each(elements, (element) => {
+          const refId = id.next().value
+          window.validator.referenceMap.set(refId, element)
+
+          return `
+            <button 
+                class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer text-left"
+                onclick="console.log(window.validator.referenceMap.get('${refId}')); window.validator.logReferenceAlert(this)"
+              >
+                ${node.target.join(' ')}
+            </button>
+          `
+        })}
       `
     }
 
@@ -234,12 +261,16 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
       if (!element)
         throw new Error(`Element not found for selector: ${node.selector}`)
 
+      const refId = id.next().value
+      window.validator.referenceMap.set(refId, element)
+
       return `
-        <div 
-          class="overflow-x-auto w-full code-highlight"
-          data-source-code="${encodeURIComponent(element.outerHTML)}"
-          data-source-lang="html"
-        ></div>
+        <button 
+            class="block font-mono py-1.5 text-[13px] text-blue-600 text-sm cursor-pointer text-left"
+            onclick="console.log(window.validator.referenceMap.get('${refId}')); window.validator.logReferenceAlert(this)"
+          >
+            ${node.selector}
+        </button>
       `
     }
 
@@ -295,7 +326,7 @@ export async function auditCode(codeAuditTrigger: HTMLButtonElement, auditResult
     
                           <ol class="!pl-0 !list-none">
                             ${each(result.nodes, node => `
-                              <li class="mb-4 last:mb-0">
+                              <li>
                                 ${when(node.type === 'axe', () => `${renderNodeAxe(node as ResultNodeAxe)}`)}
                                 ${when(node.type === 'htmlvalidate', () => `${renderNodeHtmlValidate(node as ResultNodeHTMLValidate)}`)}
                               </li>

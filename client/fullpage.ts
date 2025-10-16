@@ -130,7 +130,14 @@ if (window.frameElement) {
   window.runAccessibilityTest = async () => {
     const runAxe = async () => {
       const { default: axe } = await import('axe-core')
-      const result = await axe.run('body').catch(console.error)
+
+      const result = await axe.run('body', {
+        rules: {
+          'region': { enabled: false },
+          'landmark-one-main': { enabled: false },
+        },
+      }).catch(console.error)
+
       if (!result)
         throw new Error('No results from html-validate')
 
