@@ -133,6 +133,9 @@ if (window.frameElement) {
 
       const result = await axe.run('body', {
         rules: {
+          // color contrast can't be calculated correctly yet in axe-core
+          // when using dark-mode. See: https://github.com/dequelabs/axe-core/issues/3605
+          'color-contrast': { enabled: false },
           'region': { enabled: false },
           'landmark-one-main': { enabled: false },
         },
