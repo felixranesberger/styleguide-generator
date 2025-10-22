@@ -176,7 +176,12 @@ if (window.frameElement) {
       const loader = new StaticConfigLoader()
       const validator = new HtmlValidate(loader)
 
-      const html = document.documentElement.outerHTML
+      const response = await fetch(window.location.href)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch document for html-validate: ${response.status} ${response.statusText}`)
+      }
+
+      const html = await response.text()
       const { results } = await validator.validateString(html, {
         rules: {
           'no-trailing-whitespace': 'off',
