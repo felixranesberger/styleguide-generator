@@ -20,7 +20,7 @@
   "dependencies": {
     "@antfu/utils": "^9.3.0",
     "@biomejs/js-api": "^3.0.0",
-    "@biomejs/wasm-nodejs": "^2.2.6",
+    "@biomejs/wasm-nodejs": "^2.2.7",
     "@shikijs/markdown-it": "^3.13.0",
     "chokidar": "^4.0.3",
     "fs-extra": "^11.3.2",
@@ -31,17 +31,17 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.0.0",
-    "@tailwindcss/vite": "^4.1.14",
+    "@tailwindcss/vite": "^4.1.16",
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
     "axe-core": "^4.11.0",
     "bumpp": "^10.3.1",
-    "eslint": "^9.37.0",
+    "eslint": "^9.38.0",
     "eslint-plugin-format": "^1.0.2",
     "html-validate": "^10.1.2",
     "keyux": "^0.11.3",
     "motion": "^12.23.24",
     "unbuild": "^3.6.1",
-    "vite": "^7.1.10"
+    "vite": "^7.1.12"
   }
 }
