@@ -3,7 +3,9 @@ import fs from 'fs-extra'
 import MarkdownItAsync from 'markdown-it-async'
 import { codeToHtml } from 'shiki'
 import { log } from '../utils.ts'
-import { markdownItComponentInfo } from './plugins/component-info.ts'
+import { accordionRenderer } from './plugins/components/accordion.ts'
+import { alertRenderer } from './plugins/components/alert.ts'
+import { markdownItComponent } from './plugins/custom-component-renderer.ts'
 
 let md: ReturnType<typeof MarkdownItAsync> | undefined
 
@@ -50,7 +52,12 @@ export async function parseMarkdown(data: MarkdownOptionsBase & {
   // Initialize Markdown parser
   if (!md) {
     md = MarkdownItAsync({ linkify: true, typographer: true })
-    md.use(markdownItComponentInfo)
+    md.use(markdownItComponent, {
+      components: {
+        alert: alertRenderer,
+        accordion: accordionRenderer,
+      },
+    })
     md.use(
       fromAsyncCodeToHtml(
         codeToHtml,
