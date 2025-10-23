@@ -593,7 +593,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                         class="aspect-video size-full"
                         title="${section.header} Figma Design Preview" 
                         allowfullscreen
-                        loading="lazy"
+                        loading="<replace-figma-iframe-loading-strategy>"
                       ></iframe>
                   </div>
               </div>
@@ -610,7 +610,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
 
     return `
       <div class="mt-4">
-        ${renderTab(tabs)}
+        ${renderTab(tabs).replaceAll('<replace-figma-iframe-loading-strategy>', tabs.length > 1 ? 'lazy' : 'eager')}
       </div>
     `
   }
