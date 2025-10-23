@@ -73,6 +73,7 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
             clonedIframe.style.opacity = '0'
             clonedIframe.style.pointerEvents = 'none'
             clonedIframe.style.left = '-9999px'
+            clonedIframe.style.top = '-9999px'
             clonedIframe.inert = true
             clonedIframe.tabIndex = -1
 
@@ -81,6 +82,7 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
               clonedIframe.style.position = ''
               clonedIframe.style.opacity = ''
               clonedIframe.style.pointerEvents = ''
+              clonedIframe.style.top = ''
               clonedIframe.style.left = ''
               clonedIframe.inert = false
               clonedIframe.tabIndex = 0
