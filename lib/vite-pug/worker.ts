@@ -29,6 +29,8 @@ async function getBiome(): Promise<{ biome: Biome, projectKey: number }> {
       html: {
         formatter: {
           lineWidth: 100,
+          whitespaceSensitivity: 'ignore',
+          attributePosition: 'multiline',
         },
       },
     })
@@ -108,7 +110,6 @@ export async function compilePug(contentDir: `${string}/`, mode: StyleguideConfi
       }
 
       const pugFn = pug.compileFile(pugFilePath, {
-        pretty: true,
         // define doctype to avoid self-closing tags on wrong places
         doctype: 'html',
       })
