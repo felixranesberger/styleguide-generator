@@ -1,3 +1,4 @@
+import type { MenuSearchKeywords } from '../../lib/templates/preview.ts'
 import { useDialog } from '../hooks/use-dialog.ts'
 
 const dialog = document.querySelector<HTMLDialogElement>('#search-dialog')
@@ -28,7 +29,7 @@ const searchNoResults = document.querySelector('#search-no-results')
 if (!searchNoResults)
   throw new Error('No search no results element found')
 
-const { show } = useDialog(dialog, dialogBackdrop)
+const { show, close } = useDialog(dialog, dialogBackdrop)
 
 async function showDialog() {
   await show(
@@ -55,11 +56,33 @@ function handleSearchFilter() {
   let hasSearchResults = false
 
   searchResults.forEach((result) => {
-    let isValidResult: boolean
+    const link = result.querySelector<HTMLLinkElement>('a')
+    if (!link)
+      throw new Error('No link found inside search result item')
 
-    const searchKeywords = result.getAttribute('data-search-keywords')?.split(',') || []
+    let isValidResult = false
+
+    const rawSearchKeywords = result.getAttribute('data-search-keywords')
+    if (!rawSearchKeywords)
+      throw new Error('No data-search-keywords attribute found on search result item')
+
+    const searchKeywords: MenuSearchKeywords = JSON.parse(decodeURIComponent(rawSearchKeywords))
     if (searchKeywords.length > 0) {
-      isValidResult = searchKeywords.some(keyword => keyword.toLowerCase().includes(searchValue))
+      searchKeywords.forEach((x) => {
+        if (isValidResult)
+          return
+
+        const hasValidKeyword = x.keywords.some(kw => kw.toLowerCase().includes(searchValue))
+        if (hasValidKeyword) {
+          isValidResult = true
+
+          if (x.id) {
+            const url = new URL(link.href, window.location.origin)
+            url.hash = `#${x.id}`
+            link.href = url.toString()
+          }
+        }
+      })
     }
     else {
       const resultText = result.textContent?.toLowerCase() ?? ''
@@ -81,3 +104,21 @@ openSearchTriggers.forEach(button => button.addEventListener('click', showDialog
 
 // detect custom event to open search
 window.addEventListener('styleguideOpenSearch', showDialog)
+
+// close dialog when link click is on the same page
+dialog.addEventListener('click', async (event) => {
+  const isTargetLink = event.target && event.target instanceof HTMLElement && event.target.tagName === 'A'
+  if (!isTargetLink)
+    return
+
+  const link = event.target as HTMLAnchorElement
+
+  const currentUrl = new URL(window.location.href)
+  const linkUrl = new URL(link.href)
+
+  const isSamePage = currentUrl.pathname === linkUrl.pathname && currentUrl.search === linkUrl.search
+  if (!isSamePage)
+    return
+
+  await close()
+})

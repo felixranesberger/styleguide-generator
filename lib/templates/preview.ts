@@ -3,9 +3,8 @@ import type { in2SecondLevelSection, in2Section } from '../parser.ts'
 import path from 'node:path'
 import process from 'node:process'
 import { objectEntries } from '@antfu/utils'
+import { sectionSanitizeId } from '../../client/utils.ts'
 import { ensureStartingSlash, generateId, logicalWriteFile, sanitizeSpecialCharacters } from '../utils.ts'
-
-const sanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
 
 function getHasSectionExternalFullpage(section: in2Section) {
   return section.markup.length > 0
@@ -304,11 +303,11 @@ function getMainContentSectionWrapper(section: in2Section, html?: string): strin
 
   return `
 <section 
-  id="section-${sanitizeId(section.id)}" 
+  id="section-${sectionSanitizeId(section.id)}" 
   class="styleguide-section border-b px-4 py-10 border-b-styleguide-border scroll-mt-[50px] md:px-10"
 >
     <div class="flex items-center justify-between gap-6">
-        <a class="relative group" href="#section-${sanitizeId(section.id)}">
+        <a class="relative group" href="#section-${sectionSanitizeId(section.id)}">
             <svg class="absolute top-1/2 -left-6 -translate-y-1/2 opacity-0 transition size-[18px] group-hover:opacity-100 group-focus:opacity-100"
                  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/>
@@ -404,7 +403,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
     <div class="mt-4 overflow-hidden rounded-2xl border border-styleguide-border">
         <div class="w-full border-b p-6 bg-styleguide-bg-highlight border-styleguide-border">
             <iframe
-                  id="preview-fullpage-${sanitizeId(section.id)}"
+                  id="preview-fullpage-${sectionSanitizeId(section.id)}"
                   src="/${section.fullpageFileName}"
                   class="preview-iframe"
                   data-preview="true"
@@ -477,7 +476,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
                     <button
                         class="inline-flex items-center gap-1.5 p-4 cursor-pointer active:scale-90 transition hover:text-styleguide-highlight duration-200" 
                         type="button"
-                        data-code-audit-iframe="preview-fullpage-${sanitizeId(section.id)}"
+                        data-code-audit-iframe="preview-fullpage-${sectionSanitizeId(section.id)}"
                         aria-controls="code-audit-dialog"
                         aria-expanded="false"
                     >
@@ -505,7 +504,7 @@ function getMainContentRegular(section: in2Section, config: StyleguideConfigurat
 
             <div class="border-t p-6 text-sm bg-styleguide-bg-highlight border-styleguide-border">
                 <div 
-                  id="code-fullpage-${sanitizeId(section.id)}" 
+                  id="code-fullpage-${sectionSanitizeId(section.id)}" 
                   class="overflow-x-auto w-full code-highlight"
                   data-source-code="${encodeURIComponent(section.markup)}"
                   data-source-lang="html"
@@ -762,17 +761,26 @@ export function getNextPageControlsHtml(data: {
 `.trim()
 }
 
+export type MenuSearchKeywords = {
+  id?: string
+  keywords: string[]
+}[]
+
 export function getSearchHtml(sections: {
   title: string
-  items: { label: string, searchKeywords: string[], href: string }[]
+  items: {
+    label: string
+    href: string
+    searchKeywords: MenuSearchKeywords
+  }[]
 }[]) {
   return `
 <dialog
     id="search-dialog"
-    class="fixed inset-0 top-8 z-30 backdrop:hidden -mb-px size-full md:h-auto md:max-h-[85dvh] max-w-none overflow-y-auto rounded-t-2xl border bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[720px] md:top-12 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:rounded-2xl mx-0 lg:top-24"
+    class="fixed inset-0 top-8 z-30 backdrop:hidden -mb-px size-full max-sm:max-h-none md:h-auto overflow-y-hidden max-w-none rounded-t-2xl border bg-styleguide-bg border-styleguide-border text-styleguide md:max-w-[720px] md:top-12 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:rounded-2xl mx-0 lg:top-24"
 >
     <h2 class="sr-only">Search</h2>
-    <div class="border-b px-4 py-3 border-styleguide-border">
+    <div class="h-[53px] border-b px-4 py-3 border-styleguide-border">
         <label for="search-input" class="sr-only">Search styleguide</label>
         <input
             id="search-input"
@@ -788,7 +796,10 @@ export function getSearchHtml(sections: {
         >
     </div>
 
-    <nav id="search-list" class="grid gap-4 px-4 py-3 text-sm">
+    <nav 
+      id="search-list" 
+      class="grid gap-4 px-4 py-3 text-sm overflow-y-auto max-h-[calc(100%-2rem-53px)] md:max-h-[calc(85dvh-53px)]"
+    >
         ${sections.map(section => `
             <div class="search-category">
                 <h3 class="mb-2">${section.title}</h3>
@@ -796,7 +807,7 @@ export function getSearchHtml(sections: {
                     ${section.items.map(item => `
                         <li 
                             class="search-category__item search-category__item--active" 
-                            data-search-keywords="${item.searchKeywords.map(x => x.replaceAll('"', `'`)).join(',')}"
+                            data-search-keywords="${encodeURIComponent(JSON.stringify(item.searchKeywords))}"
                           >
                             <a 
                                 class="flex items-center gap-4 px-1.5 py-2.5 group rounded-md hover:bg-[rgb(242,242,242)] focus:bg-[rgb(242,242,242)] dark:hover:bg-[rgb(26,26,26)] dark:focus:bg-[rgb(26,26,26)] transition" 
@@ -805,9 +816,8 @@ export function getSearchHtml(sections: {
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="transition-all size-5 group-hover:translate-x-0.5 group-focus:translate-x-0.5">
                                     <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
                                 </svg>
-                                <span class="text-styleguide-highlight">
-                                ${item.label}
-                            </span>
+                                <span class="text-styleguide-highlight">${item.label}</span>
+                                <span data-type="search-hint" class="text-styleguide-highlight"></span>
                             </a>
                         </li>
                     `).join('\n')}

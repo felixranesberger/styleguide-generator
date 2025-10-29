@@ -1,9 +1,11 @@
 import type { FileObject, in2Section } from './parser.ts'
+import type { MenuSearchKeywords } from './templates/preview.ts'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { glob } from 'tinyglobby'
+import { sectionSanitizeId } from '../client/utils.ts'
 import { generateFaviconFiles } from './favicon.ts'
 import { parse } from './parser.ts'
 import { generateFullPageFile } from './templates/fullpage.ts'
@@ -137,8 +139,8 @@ export async function buildStyleguide(config: StyleguideConfiguration): Promise<
     title: string
     items: {
       label: string
-      searchKeywords: string[]
       href: string
+      searchKeywords: MenuSearchKeywords
     }[]
   }[] = []
 
@@ -181,15 +183,17 @@ export async function buildStyleguide(config: StyleguideConfiguration): Promise<
       searchSectionMapping[indexFirstLevel].items.push({
         label: secondLevelSection.header,
         searchKeywords: [
-          secondLevelSection.header,
-          secondLevelSection.description,
+          {
+            keywords: [secondLevelSection.header, secondLevelSection.description].filter(Boolean),
+          },
           ...secondLevelSection.sections
-            .map(thirdLevelSection => [thirdLevelSection.header, thirdLevelSection.description])
-            .flat()
-            .filter(Boolean),
-        ]
-          .filter(Boolean)
-          .map(keyword => keyword.replaceAll('"', '')),
+            .flatMap((thirdLevelSection) => {
+              return {
+                id: sectionSanitizeId(`section-${thirdLevelSection.id}`),
+                keywords: [thirdLevelSection.header, thirdLevelSection.description].filter(Boolean),
+              }
+            }),
+        ],
         href: menuHref,
       })
 

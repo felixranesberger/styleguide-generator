@@ -6,3 +6,5 @@ function* idGenerator(prefix: string = 'id', start: number = 0): Generator<strin
 }
 
 export const id = idGenerator()
+
+export const sectionSanitizeId = (id: string) => id.toLowerCase().replaceAll('.', '-')
