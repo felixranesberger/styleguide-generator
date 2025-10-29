@@ -18,9 +18,9 @@ function parseProps(propsStr: string): Record<string, any> {
 
   // Match key="value" pairs, including support for nested quotes
   const regex = /(\w+)=(?:"([^"]*)"|'([^']*)'|(\w+))/g
-  let match
+  let match = regex.exec(propsStr)
 
-  while ((match = regex.exec(propsStr)) !== null) {
+  while (match !== null) {
     const key = match[1]
     const value = match[2] || match[3] || match[4]
 
@@ -31,6 +31,8 @@ function parseProps(propsStr: string): Record<string, any> {
     catch {
       props[key] = value
     }
+
+    match = regex.exec(propsStr)
   }
 
   return props
