@@ -9,14 +9,13 @@ export default function tabs(tabs: NodeListOf<HTMLElement>) {
     if (!tabTriggerBackground)
       throw new Error('No tab trigger background found')
 
-    setupTabInteraction(tabTriggers, tabContent, tabTriggerBackground)
+    setupTabInteraction(tabTriggers, tabTriggerBackground)
     setupIframePreloading(tabTriggers, tabContent)
   })
 }
 
 function setupTabInteraction(
   tabTriggers: NodeListOf<HTMLElement>,
-  tabContent: HTMLElement[],
   tabTriggerBackground: HTMLElement,
 ) {
   const calculateBackgroundPosition = (activeTrigger: HTMLElement, shouldAnimate: boolean) => {
@@ -46,6 +45,12 @@ function setupTabInteraction(
 
   const initialActiveTrigger = tabTriggers[0]
   calculateBackgroundPosition(initialActiveTrigger, false)
+
+  tabTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      calculateBackgroundPosition(trigger, true)
+    })
+  })
 
   return { calculateBackgroundPosition }
 }
