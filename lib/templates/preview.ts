@@ -12,11 +12,37 @@ function getHasSectionExternalFullpage(section: in2Section) {
     && (section.colors === undefined || section.colors.length === 0)
 }
 
+function getLogoContent() {
+  if (!globalThis.styleguideConfiguration.logoSignet)
+    return globalThis.styleguideConfiguration.projectTitle
+
+  let signetContent = ''
+
+  if ('href' in globalThis.styleguideConfiguration.logoSignet) {
+    signetContent += `<img 
+      src="${globalThis.styleguideConfiguration.logoSignet.href}"
+      width="24"
+      height="24"
+      alt="${globalThis.styleguideConfiguration.projectTitle} Logo"
+    >`
+  }
+  else if ('svgContent' in globalThis.styleguideConfiguration.logoSignet) {
+    signetContent += `${globalThis.styleguideConfiguration.logoSignet.svgContent}`
+  }
+
+  signetContent += globalThis.styleguideConfiguration.projectTitle
+
+  return signetContent
+}
+
 export function getHeaderHtml() {
   return `
 <header class="sticky top-0 z-10 mx-auto flex w-full min-[1222px]:border-x border-b pr-6 max-w-[1600px] border-styleguide-border bg-styleguide-bg-highlight">
-    <a class="mr-4 flex items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-theme-highlight" href="/">
-        ${globalThis.styleguideConfiguration.projectTitle}
+    <a 
+      class="mr-4 flex gap-4 items-center border-r py-4 pr-4 pl-6 border-styleguide-border w-[260px] font-semibold tracking-tight text-styleguide-theme-highlight [&>svg]:!size-6 [&>img]:!size-6" 
+      href="/"
+    >
+        ${getLogoContent()}
     </a>
 
     <div class="flex grow items-center justify-end py-4 md:justify-between">

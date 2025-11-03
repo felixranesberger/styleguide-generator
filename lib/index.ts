@@ -44,6 +44,11 @@ export interface StyleguideConfiguration {
     light: string
     dark: string
   }
+  logoSignet?: {
+    href: string
+  } | {
+    svgContent: string
+  }
   html: {
     lang: string
     assets: {
